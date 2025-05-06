@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
-import { FaEnvelope, FaLock, FaGoogle, FaCheck } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 
@@ -26,6 +27,7 @@ const Login = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,32 +86,20 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Redirect to Google OAuth endpoint
-    window.location.href = `https://mev-tech-api.onrender.com/signin-with-google?redirectUri=https%3A%2F%2Fmev-tech-web.onrender.com%2F`;
-  };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const validation = !formData.email || !formData.password;
 
   return (
     <div className="flex items-center justify-center">
-      <div className="w-1/2 h-screen bg-primary hidden md:block">
-        <img src={imageAsset.login} alt="loginImg" className="w-full h-full object-cover" />
-      </div>
-
       <div className="md:w-1/2 h-[100dvh] grid place-items-center bg-white overflow-y-auto p-12">
         <div className="w-full max-w-lg">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to continue your learning journey</p>
+          <div className="text-center mb-8 flex flex-col items-center">
+            <img src={imageAsset.loginlogo} alt="logo" className="w-18" />
+            <h1 className="text-2xl font-semibold text-gray-800">Sign in to your account</h1>
+            <p className="text-gray-600 mt-2">Log in with your credentials</p>
           </div>
 
           {loginError && (
-            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
-              {loginError}
-            </div>
+            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">{loginError}</div>
           )}
 
           {success && (
@@ -131,7 +121,8 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`pl-10 w-full rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'} outline-none focus:border-primary py-2 px-4`}
+                  className={`pl-10 w-full rounded-lg border ${errors.email ? "border-red-500" : "border-gray-200"
+                    } outline-none focus:border-primary py-2 px-4`}
                   placeholder="your@email.com"
                 />
               </div>
@@ -145,13 +136,28 @@ const Login = () => {
                   <FaLock className="text-gray-400" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`pl-10 w-full rounded-lg border ${errors.password ? 'border-red-500' : 'border-gray-300'} outline-none focus:border-primary py-2 px-4`}
+                  className={`pl-10 w-full rounded-lg border ${errors.password ? "border-red-500" : "border-gray-200"
+                    } outline-none focus:border-primary py-2 px-4`}
                   placeholder="••••••••"
                 />
+                {showPassword && (
+                  <EyeIcon
+                    size={18}
+                    className="cursor-pointer absolute top-3 right-4"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                )}
+                {!showPassword && (
+                  <EyeOffIcon
+                    size={18}
+                    className="cursor-pointer absolute top-3 right-4"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                )}
               </div>
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
             </div>
@@ -178,46 +184,36 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className={`w-full bg-primary hover:bg-primary/80 text-white font-medium py-3 px-4 rounded-lg transition duration-200 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={validation || isSubmitting}
+              className={`w-full flex items-center justify-center ${validation ? "bg-gray-300" : "bg-primary hover:bg-primary/80"
+                } text-white font-medium py-2 px-4 rounded-lg transition duration-200 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
             >
-              {isSubmitting ? 'Signing In...' : 'Sign In'}
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : 'Sign-in'}
             </button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button
-                onClick={handleGoogleLogin}
-                type="button"
-                className="w-full inline-flex justify-center items-center py-3 px-4 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 font-medium"
-              >
-                <FaGoogle className="text-red-700 mr-3" />
-                Sign in with Google
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link to="/signup" className="text-primary font-medium hover:text-primary/80">
                 Sign up
               </Link>
             </p>
-          </div>
+          </div> */}
         </div>
+      </div>
+
+      <div className="w-1/2 h-screen bg-primary hidden md:block">
+        <img src={imageAsset.loginImage} alt="loginImg" className="w-full h-full " />
       </div>
     </div>
   );
