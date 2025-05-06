@@ -1,6 +1,6 @@
 import {Routes, Route} from 'react-router-dom'
 import HomePage from './pages/HomePage';
-import SignUp from './pages/Auth/SignUp';
+// import SignUp from './pages/Auth/SignUp';
 import Login from './pages/Auth/Login';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import Otp from './pages/Auth/Otp';
@@ -11,7 +11,7 @@ function App() {
   return (
     <Routes>
       {/* <Route path="/" element={<UpgradePage />} /> */}
-      <Route path="/signup" element={<SignUp />} />
+      {/* <Route path="/signup" element={<SignUp />} /> */}
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/otp" element={<Otp />} />
