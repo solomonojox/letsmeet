@@ -1,0 +1,181 @@
+
+/* eslint-disable no-unused-vars */
+
+import { Link, NavLink } from 'react-router-dom';
+import { Users } from 'lucide-react';
+// import { useDispatch } from 'react-redux';
+// import { api } from '../../services/api';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import imageAsset from '../assets/imageAsset';
+
+const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+  // const dispatch = useDispatch();
+  const location = useLocation();
+
+  const isLinkActive = (link) => {
+    return location.pathname === link ? location.pathname === link : false
+    // || localStorage.getItem("currentRegSidebarPath") === link;
+  };
+
+  const icons = {
+    dbActive: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 10.75H17C14.58 10.75 13.25 9.42 13.25 7V5C13.25 2.58 14.58 1.25 17 1.25H19C21.42 1.25 22.75 2.58 22.75 5V7C22.75 9.42 21.42 10.75 19 10.75ZM17 2.75C15.42 2.75 14.75 3.42 14.75 5V7C14.75 8.58 15.42 9.25 17 9.25H19C20.58 9.25 21.25 8.58 21.25 7V5C21.25 3.42 20.58 2.75 19 2.75H17Z" fill="#01008A" />
+      <path d="M7 22.75H5C2.58 22.75 1.25 21.42 1.25 19V17C1.25 14.58 2.58 13.25 5 13.25H7C9.42 13.25 10.75 14.58 10.75 17V19C10.75 21.42 9.42 22.75 7 22.75ZM5 14.75C3.42 14.75 2.75 15.42 2.75 17V19C2.75 20.58 3.42 21.25 5 21.25H7C8.58 21.25 9.25 20.58 9.25 19V17C9.25 15.42 8.58 14.75 7 14.75H5Z" fill="#01008A" />
+      <path d="M6 10.75C3.38 10.75 1.25 8.62 1.25 6C1.25 3.38 3.38 1.25 6 1.25C8.62 1.25 10.75 3.38 10.75 6C10.75 8.62 8.62 10.75 6 10.75ZM6 2.75C4.21 2.75 2.75 4.21 2.75 6C2.75 7.79 4.21 9.25 6 9.25C7.79 9.25 9.25 7.79 9.25 6C9.25 4.21 7.79 2.75 6 2.75Z" fill="#01008A" />
+      <path d="M18 22.75C15.38 22.75 13.25 20.62 13.25 18C13.25 15.38 15.38 13.25 18 13.25C20.62 13.25 22.75 15.38 22.75 18C22.75 20.62 20.62 22.75 18 22.75ZM18 14.75C16.21 14.75 14.75 16.21 14.75 18C14.75 19.79 16.21 21.25 18 21.25C19.79 21.25 21.25 19.79 21.25 18C21.25 16.21 19.79 14.75 18 14.75Z" fill="#01008A" />
+    </svg>,
+
+    dbNotActive: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 10.75H17C14.58 10.75 13.25 9.42 13.25 7V5C13.25 2.58 14.58 1.25 17 1.25H19C21.42 1.25 22.75 2.58 22.75 5V7C22.75 9.42 21.42 10.75 19 10.75ZM17 2.75C15.42 2.75 14.75 3.42 14.75 5V7C14.75 8.58 15.42 9.25 17 9.25H19C20.58 9.25 21.25 8.58 21.25 7V5C21.25 3.42 20.58 2.75 19 2.75H17Z" fill="#6B7280" />
+      <path d="M7 22.75H5C2.58 22.75 1.25 21.42 1.25 19V17C1.25 14.58 2.58 13.25 5 13.25H7C9.42 13.25 10.75 14.58 10.75 17V19C10.75 21.42 9.42 22.75 7 22.75ZM5 14.75C3.42 14.75 2.75 15.42 2.75 17V19C2.75 20.58 3.42 21.25 5 21.25H7C8.58 21.25 9.25 20.58 9.25 19V17C9.25 15.42 8.58 14.75 7 14.75H5Z" fill="#6B7280" />
+      <path d="M6 10.75C3.38 10.75 1.25 8.62 1.25 6C1.25 3.38 3.38 1.25 6 1.25C8.62 1.25 10.75 3.38 10.75 6C10.75 8.62 8.62 10.75 6 10.75ZM6 2.75C4.21 2.75 2.75 4.21 2.75 6C2.75 7.79 4.21 9.25 6 9.25C7.79 9.25 9.25 7.79 9.25 6C9.25 4.21 7.79 2.75 6 2.75Z" fill="#6B7280" />
+      <path d="M18 22.75C15.38 22.75 13.25 20.62 13.25 18C13.25 15.38 15.38 13.25 18 13.25C20.62 13.25 22.75 15.38 22.75 18C22.75 20.62 20.62 22.75 18 22.75ZM18 14.75C16.21 14.75 14.75 16.21 14.75 18C14.75 19.79 16.21 21.25 18 21.25C19.79 21.25 21.25 19.79 21.25 18C21.25 16.21 19.79 14.75 18 14.75Z" fill="#6B7280" />
+    </svg>,
+
+    userActive: <svg width="20" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 17.128C14.853 17.3757 15.7368 17.5009 16.625 17.5C18.0534 17.5021 19.4632 17.1764 20.746 16.548C20.7839 15.6517 20.5286 14.7675 20.0188 14.0293C19.5089 13.2912 18.7724 12.7394 17.9207 12.4575C17.069 12.1757 16.1487 12.1791 15.2992 12.4674C14.4496 12.7557 13.7172 13.313 13.213 14.055M14 17.128V17.125C14 16.012 13.714 14.965 13.213 14.055M14 17.128V17.234C12.0755 18.3931 9.8706 19.0038 7.62399 19C5.29299 19 3.11199 18.355 1.24999 17.234L1.24899 17.125C1.24823 15.7095 1.71861 14.3339 2.58598 13.2153C3.45335 12.0966 4.66837 11.2984 6.03948 10.9466C7.4106 10.5948 8.85982 10.7093 10.1587 11.2721C11.4575 11.8349 12.5321 12.814 13.213 14.055M11 4.375C11 5.27011 10.6444 6.12855 10.0115 6.76149C9.37854 7.39442 8.5201 7.75 7.62499 7.75C6.72989 7.75 5.87144 7.39442 5.23851 6.76149C4.60557 6.12855 4.24999 5.27011 4.24999 4.375C4.24999 3.47989 4.60557 2.62145 5.23851 1.98851C5.87144 1.35558 6.72989 1 7.62499 1C8.5201 1 9.37854 1.35558 10.0115 1.98851C10.6444 2.62145 11 3.47989 11 4.375ZM19.25 6.625C19.25 7.32119 18.9734 7.98887 18.4811 8.48116C17.9889 8.97344 17.3212 9.25 16.625 9.25C15.9288 9.25 15.2611 8.97344 14.7688 8.48116C14.2766 7.98887 14 7.32119 14 6.625C14 5.92881 14.2766 5.26113 14.7688 4.76884C15.2611 4.27656 15.9288 4 16.625 4C17.3212 4 17.9889 4.27656 18.4811 4.76884C18.9734 5.26113 19.25 5.92881 19.25 6.625Z" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    userNotActive: <svg width="20" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 17.128C14.853 17.3757 15.7368 17.5009 16.625 17.5C18.0534 17.5021 19.4632 17.1764 20.746 16.548C20.7839 15.6517 20.5286 14.7675 20.0188 14.0293C19.5089 13.2912 18.7724 12.7394 17.9207 12.4575C17.069 12.1757 16.1487 12.1791 15.2992 12.4674C14.4496 12.7557 13.7172 13.313 13.213 14.055M14 17.128V17.125C14 16.012 13.714 14.965 13.213 14.055M14 17.128V17.234C12.0755 18.3931 9.8706 19.0038 7.62399 19C5.29299 19 3.11199 18.355 1.24999 17.234L1.24899 17.125C1.24823 15.7095 1.71861 14.3339 2.58598 13.2153C3.45335 12.0966 4.66837 11.2984 6.03948 10.9466C7.4106 10.5948 8.85982 10.7093 10.1587 11.2721C11.4575 11.8349 12.5321 12.814 13.213 14.055M11 4.375C11 5.27011 10.6444 6.12855 10.0115 6.76149C9.37854 7.39442 8.5201 7.75 7.62499 7.75C6.72989 7.75 5.87144 7.39442 5.23851 6.76149C4.60557 6.12855 4.24999 5.27011 4.24999 4.375C4.24999 3.47989 4.60557 2.62145 5.23851 1.98851C5.87144 1.35558 6.72989 1 7.62499 1C8.5201 1 9.37854 1.35558 10.0115 1.98851C10.6444 2.62145 11 3.47989 11 4.375ZM19.25 6.625C19.25 7.32119 18.9734 7.98887 18.4811 8.48116C17.9889 8.97344 17.3212 9.25 16.625 9.25C15.9288 9.25 15.2611 8.97344 14.7688 8.48116C14.2766 7.98887 14 7.32119 14 6.625C14 5.92881 14.2766 5.26113 14.7688 4.76884C15.2611 4.27656 15.9288 4 16.625 4C17.3212 4 17.9889 4.27656 18.4811 4.76884C18.9734 5.26113 19.25 5.92881 19.25 6.625Z" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    requestsActive: <svg width="20" height="20" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.75 8.00002V8.90602C20.75 9.31226 20.64 9.71092 20.4318 10.0597C20.2235 10.4085 19.9247 10.6944 19.567 10.887L13.089 14.375M1.25 8.00002V8.90602C1.24998 9.31226 1.35995 9.71092 1.56824 10.0597C1.77652 10.4085 2.07534 10.6944 2.433 10.887L8.911 14.375M8.911 14.375L9.933 13.825C10.2609 13.6484 10.6275 13.5559 11 13.5559C11.3725 13.5559 11.7391 13.6484 12.067 13.825L13.09 14.375L17.75 16.885M8.911 14.375L4.25 16.885M20.75 18.5C20.75 19.0968 20.5129 19.6691 20.091 20.091C19.669 20.513 19.0967 20.75 18.5 20.75H3.5C2.90326 20.75 2.33097 20.513 1.90901 20.091C1.48705 19.6691 1.25 19.0968 1.25 18.5V7.84402C1.24998 7.43778 1.35995 7.03912 1.56824 6.69033C1.77652 6.34155 2.07534 6.05567 2.433 5.86302L9.933 1.82402C10.2609 1.64739 10.6275 1.55493 11 1.55493C11.3725 1.55493 11.7391 1.64739 12.067 1.82402L19.567 5.86302C19.9245 6.05559 20.2232 6.34132 20.4315 6.6899C20.6398 7.03849 20.7498 7.43695 20.75 7.84302V18.5Z" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    requestsNotActive: <svg width="20" height="20" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.75 8.00002V8.90602C20.75 9.31226 20.64 9.71092 20.4318 10.0597C20.2235 10.4085 19.9247 10.6944 19.567 10.887L13.089 14.375M1.25 8.00002V8.90602C1.24998 9.31226 1.35995 9.71092 1.56824 10.0597C1.77652 10.4085 2.07534 10.6944 2.433 10.887L8.911 14.375M8.911 14.375L9.933 13.825C10.2609 13.6484 10.6275 13.5559 11 13.5559C11.3725 13.5559 11.7391 13.6484 12.067 13.825L13.09 14.375L17.75 16.885M8.911 14.375L4.25 16.885M20.75 18.5C20.75 19.0968 20.5129 19.6691 20.091 20.091C19.669 20.513 19.0967 20.75 18.5 20.75H3.5C2.90326 20.75 2.33097 20.513 1.90901 20.091C1.48705 19.6691 1.25 19.0968 1.25 18.5V7.84402C1.24998 7.43778 1.35995 7.03912 1.56824 6.69033C1.77652 6.34155 2.07534 6.05567 2.433 5.86302L9.933 1.82402C10.2609 1.64739 10.6275 1.55493 11 1.55493C11.3725 1.55493 11.7391 1.64739 12.067 1.82402L19.567 5.86302C19.9245 6.05559 20.2232 6.34132 20.4315 6.6899C20.6398 7.03849 20.7498 7.43695 20.75 7.84302V18.5Z" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    reportsActive: <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1.5V3M1 3L3.77 2.307C5.8544 1.78605 8.05641 2.02795 9.978 2.989L10.086 3.043C11.9688 3.9843 14.1219 4.23589 16.171 3.754L19.281 3.022C18.9029 6.51155 18.9046 10.0318 19.286 13.521L16.172 14.253C14.1227 14.7354 11.9692 14.4842 10.086 13.543L9.978 13.489C8.05641 12.528 5.8544 12.286 3.77 12.807L1 13.5M1 3V13.5M1 19.5V13.5" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    reportsNotActive: <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1.5V3M1 3L3.77 2.307C5.8544 1.78605 8.05641 2.02795 9.978 2.989L10.086 3.043C11.9688 3.9843 14.1219 4.23589 16.171 3.754L19.281 3.022C18.9029 6.51155 18.9046 10.0318 19.286 13.521L16.172 14.253C14.1227 14.7354 11.9692 14.4842 10.086 13.543L9.978 13.489C8.05641 12.528 5.8544 12.286 3.77 12.807L1 13.5M1 3V13.5M1 19.5V13.5" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    settingsActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 9.99996C2.5 11.9891 3.29018 13.8967 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8967 17.5 11.9891 17.5 9.99996M2.5 9.99996C2.5 8.01084 3.29018 6.10318 4.6967 4.69666C6.10322 3.29014 8.01088 2.49996 10 2.49996C11.9891 2.49996 13.8968 3.29014 15.3033 4.69666C16.7098 6.10318 17.5 8.01084 17.5 9.99996M2.5 9.99996H1M17.5 9.99996H19M17.5 9.99996H10L5.5 2.20496M1.543 13.077L2.953 12.564M17.048 7.43396L18.458 6.92096M3.106 15.785L4.256 14.821M15.746 5.17896L16.895 4.21496M5.501 17.795L6.251 16.495L10.002 9.99996M13.751 3.50496L14.501 2.20496M8.438 18.863L8.698 17.386M11.303 2.61396L11.563 1.13696M11.563 18.863L11.303 17.386M8.698 2.61396L8.438 1.13696M14.5 17.794L13.75 16.495M16.894 15.785L15.745 14.821M4.256 5.17796L3.106 4.21396M18.458 13.078L17.048 12.565M2.954 7.43496L1.544 6.92096" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    settingsNotActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 9.99996C2.5 11.9891 3.29018 13.8967 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8967 17.5 11.9891 17.5 9.99996M2.5 9.99996C2.5 8.01084 3.29018 6.10318 4.6967 4.69666C6.10322 3.29014 8.01088 2.49996 10 2.49996C11.9891 2.49996 13.8968 3.29014 15.3033 4.69666C16.7098 6.10318 17.5 8.01084 17.5 9.99996M2.5 9.99996H1M17.5 9.99996H19M17.5 9.99996H10L5.5 2.20496M1.543 13.077L2.953 12.564M17.048 7.43396L18.458 6.92096M3.106 15.785L4.256 14.821M15.746 5.17896L16.895 4.21496M5.501 17.795L6.251 16.495L10.002 9.99996M13.751 3.50496L14.501 2.20496M8.438 18.863L8.698 17.386M11.303 2.61396L11.563 1.13696M11.563 18.863L11.303 17.386M8.698 2.61396L8.438 1.13696M14.5 17.794L13.75 16.495M16.894 15.785L15.745 14.821M4.256 5.17796L3.106 4.21396M18.458 13.078L17.048 12.565M2.954 7.43496L1.544 6.92096" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    logout: <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.8125 5.75V2.9375C8.8125 2.48995 8.63471 2.06072 8.31824 1.74426C8.00177 1.42779 7.57255 1.25 7.125 1.25H2.625C2.17745 1.25 1.74823 1.42779 1.43176 1.74426C1.11529 2.06072 0.9375 2.48995 0.9375 2.9375V13.0625C0.9375 13.5101 1.11529 13.9393 1.43176 14.2557C1.74823 14.5722 2.17745 14.75 2.625 14.75H7.125C7.57255 14.75 8.00177 14.5722 8.31824 14.2557C8.63471 13.9393 8.8125 13.5101 8.8125 13.0625V10.25M6 5.75L3.75 8M3.75 8L6 10.25M3.75 8H13.3125" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  }
+
+  const handleNavLinkClick = (link) => {
+    // dispatch(api.endpoints.getCompany.initiate());
+    // dispatch(api.endpoints.getNormalDematList.initiate());
+    // dispatch(api.endpoints.getDualListingDemart.initiate());
+
+    if (isSidebarOpen) {
+      toggleSidebar();
+    }
+
+    localStorage.setItem("currentRegSidebarPath", link);
+  };
+
+  const sidebarData = [
+    { id: 1, title: "Dashboard", link: "/dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive },
+    { id: 2, title: "Users", link: "/users", icon: icons.userActive, notActiveIcon: icons.userNotActive },
+    { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive },
+    { id: 4, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive },
+    { id: 5, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive },
+  ];
+
+  return (
+    <div className="pb-24 font-lato">
+      {/* Mobile overlay */}
+      <div
+        className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-all duration-1000"
+        style={
+          isSidebarOpen
+            ? { transition: "all 1s ease", visibility: "visible", opacity: "60%" }
+            : { transition: "all 1s ease", visibility: "hidden", opacity: "0" }
+        }
+        onClick={toggleSidebar}
+      ></div>
+
+      {/* Desktop sidebar */}
+      <div className="lg:flex hidden w-[200px] bg-white border border-gray-200 h-screen flex-col justify-between px-4 pt-4 gap-8 fixed">
+        <div>
+          <Link to="/dashboard">
+            <img src={imageAsset.logo_dashboard} alt="logo" className="w-24 mb-6" />
+          </Link>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs">Menu</p>
+            {sidebarData.map((item) => {
+              const isActive = isLinkActive(item.link);
+              return (
+                <NavLink
+                  to={item.link}
+                  key={item.id}
+                  className={`hover:bg-gray-200 flex items-center justify-start px-2 py-2 gap-1 rounded-md 2xl:truncate ${
+                    isActive ? "bg-gray-200 text-primary" : ""
+                  }`}
+                  onClick={() => handleNavLinkClick(item.link)}
+                >
+                  <span>{isActive ? item.icon : item.notActiveIcon}</span>
+                  <p className="text-[14px]">{item.title}</p>
+                </NavLink>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="border-t flex flex-col py-4 gap-2">
+          <p className="text-xs">Profile</p>
+
+          <div className="flex items-center gap-1">
+            <img src={imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <div>
+              <h1 className="font-semibold text-xs">Admin</h1>
+              <p className="text-xs">letsmeet@mail.com</p>
+            </div>
+          </div>
+
+          <button className="border border-[#FAC5C5] bg-[#FDECEC] hover:bg-[#FAC5C5] rounded-lg px-10 py-1.5 flex items-center gap-1 transition-colors">
+            {icons.logout}
+            <p className="text-xs">Log out</p>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile sidebar */}
+      <div
+        className={`lg:hidden z-50 w-[60%] md:w-[25%] px-4 bg-white border h-screen flex-col items-center pt-4 top-0 gap-8 fixed ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex flex-col gap-5">
+          {sidebarData.map((item) => {
+            const isActive = isLinkActive(item.link);
+            return (
+              <NavLink
+                to={item.link}
+                key={item.id}
+                className={`flex items-center justify-start px-2 py-2 gap-1 ${
+                  isActive ? "bg-red-600 text-white rounded-md" : ""
+                }`}
+                onClick={() => handleNavLinkClick(item.link)}
+              >
+                <span>{isActive ? item.icon : item.notActiveIcon}</span>
+                <p className="text-[14px]">{item.title}</p>
+              </NavLink>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
