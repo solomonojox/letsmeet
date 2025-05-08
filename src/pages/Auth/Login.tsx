@@ -56,6 +56,7 @@ const Login = () => {
     return newErrors;
   };
 
+  console.log(`${baseUrl}/api/Admin/AdminLogin`)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate();
