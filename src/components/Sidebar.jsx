@@ -1,7 +1,7 @@
 
 /* eslint-disable no-unused-vars */
 
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
 // import { useDispatch } from 'react-redux';
 // import { api } from '../../services/api';
@@ -12,6 +12,7 @@ import imageAsset from '../assets/imageAsset';
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate()
 
   const isLinkActive = (link) => {
     return location.pathname === link ? location.pathname === link : false
@@ -90,6 +91,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { id: 5, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive },
   ];
 
+  const logOut = () => {
+    localStorage.clear()
+    navigate("/login");
+  }
+
   return (
     <div className="pb-24 font-lato">
       {/* Mobile overlay */}
@@ -142,7 +148,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             </div>
           </div>
 
-          <button className="border border-[#FAC5C5] bg-[#FDECEC] hover:bg-[#FAC5C5] rounded-lg px-10 py-1.5 flex items-center gap-1 transition-colors">
+          <button className="border border-[#FAC5C5] bg-[#FDECEC] hover:bg-[#FAC5C5] rounded-lg px-10 py-1.5 flex items-center gap-1 transition-colors" onClick={logOut}>
             {icons.logout}
             <p className="text-xs">Log out</p>
           </button>

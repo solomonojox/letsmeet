@@ -17,7 +17,7 @@ interface FormErrors {
 }
 
 const Login = () => {
-  // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
@@ -66,13 +66,14 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`/api/users/login`, formData);
+      const response = await axios.post(`${baseUrl}/api/Admin/AdminLogin`, formData);
 
-      console.log(response);
+      // console.log(response.data.data);
       setLoginError('');
       setSuccess(true);
-      // localStorage.setItem('authToken', response.data.token);
-      // navigate('/dashboard');
+      localStorage.setItem('letsmeetUser', JSON.stringify(response.data.data));
+      localStorage.setItem('letsmeetUserId', response.data.data.adminId);
+      navigate('/dashboard');
     } catch (error) {
       const axiosError = error as AxiosError;
       console.log(axiosError);
