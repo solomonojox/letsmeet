@@ -13,9 +13,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
-      <TopBar toggleSidebar={toggleSidebar}/>
-      <AllRoutes />
+      <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      <TopBar toggleSidebar={toggleSidebar} />
+      <div className="lg:ml-[200px] px-6">
+        <AllRoutes />
+      </div>
     </BrowserRouter>
   );
 }

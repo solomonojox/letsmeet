@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Login from '../pages/Auth/Login';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import Otp from '../pages/Auth/Otp';
@@ -14,6 +14,7 @@ const AllRoutes = () => {
         <Route path="/otp" element={<Otp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        <Route path="/" element={<Navigate to='/dashboard' replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   )
