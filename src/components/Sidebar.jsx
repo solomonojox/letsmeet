@@ -63,6 +63,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
     settingsNotActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M2.5 9.99996C2.5 11.9891 3.29018 13.8967 4.6967 15.3033C6.10322 16.7098 8.01088 17.5 10 17.5C11.9891 17.5 13.8968 16.7098 15.3033 15.3033C16.7098 13.8967 17.5 11.9891 17.5 9.99996M2.5 9.99996C2.5 8.01084 3.29018 6.10318 4.6967 4.69666C6.10322 3.29014 8.01088 2.49996 10 2.49996C11.9891 2.49996 13.8968 3.29014 15.3033 4.69666C16.7098 6.10318 17.5 8.01084 17.5 9.99996M2.5 9.99996H1M17.5 9.99996H19M17.5 9.99996H10L5.5 2.20496M1.543 13.077L2.953 12.564M17.048 7.43396L18.458 6.92096M3.106 15.785L4.256 14.821M15.746 5.17896L16.895 4.21496M5.501 17.795L6.251 16.495L10.002 9.99996M13.751 3.50496L14.501 2.20496M8.438 18.863L8.698 17.386M11.303 2.61396L11.563 1.13696M11.563 18.863L11.303 17.386M8.698 2.61396L8.438 1.13696M14.5 17.794L13.75 16.495M16.894 15.785L15.745 14.821M4.256 5.17796L3.106 4.21396M18.458 13.078L17.048 12.565M2.954 7.43496L1.544 6.92096" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>,
+
+    logout: <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.8125 5.75V2.9375C8.8125 2.48995 8.63471 2.06072 8.31824 1.74426C8.00177 1.42779 7.57255 1.25 7.125 1.25H2.625C2.17745 1.25 1.74823 1.42779 1.43176 1.74426C1.11529 2.06072 0.9375 2.48995 0.9375 2.9375V13.0625C0.9375 13.5101 1.11529 13.9393 1.43176 14.2557C1.74823 14.5722 2.17745 14.75 2.625 14.75H7.125C7.57255 14.75 8.00177 14.5722 8.31824 14.2557C8.63471 13.9393 8.8125 13.5101 8.8125 13.0625V10.25M6 5.75L3.75 8M3.75 8L6 10.25M3.75 8H13.3125" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   }
 
@@ -87,42 +91,70 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   ];
 
   return (
-    <div className='pb-24 font-lato'>
+    <div className="pb-24 font-lato">
       {/* Mobile overlay */}
       <div
         className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-all duration-1000"
-        style={isSidebarOpen ? { transition: 'all 1s ease', visibility: 'visible', opacity: '60%' } : { transition: 'all 1s ease', visibility: 'hidden', opacity: '0' }}
+        style={
+          isSidebarOpen
+            ? { transition: "all 1s ease", visibility: "visible", opacity: "60%" }
+            : { transition: "all 1s ease", visibility: "hidden", opacity: "0" }
+        }
         onClick={toggleSidebar}
       ></div>
 
       {/* Desktop sidebar */}
-      <div className="lg:flex hidden w-[200px] bg-white border border-gray-200 h-screen flex-col px-4 pt-4 gap-8 fixed">
-        <Link to="/dashboard">
-          <img src={imageAsset.logo_dashboard} alt="logo" className='w-24 mb-6 mt-4' />
-        </Link>
+      <div className="lg:flex hidden w-[200px] bg-white border border-gray-200 h-screen flex-col justify-between px-4 pt-4 gap-8 fixed">
+        <div>
+          <Link to="/dashboard">
+            <img src={imageAsset.logo_dashboard} alt="logo" className="w-24 mb-6" />
+          </Link>
 
-        <div className="flex flex-col gap-2">
-          <p className='text-xs'>Menu</p>
-          {sidebarData.map((item) => {
-            const isActive = isLinkActive(item.link);
-            return (
-              <NavLink
-                to={item.link}
-                key={item.id}
-                className={`flex items-center justify-start px-2 py-2 gap-1 rounded-md 2xl:truncate ${isActive ? 'bg-gray-200 text-primary' : ''
+          <div className="flex flex-col gap-2">
+            <p className="text-xs">Menu</p>
+            {sidebarData.map((item) => {
+              const isActive = isLinkActive(item.link);
+              return (
+                <NavLink
+                  to={item.link}
+                  key={item.id}
+                  className={`hover:bg-gray-200 flex items-center justify-start px-2 py-2 gap-1 rounded-md 2xl:truncate ${
+                    isActive ? "bg-gray-200 text-primary" : ""
                   }`}
-                onClick={() => handleNavLinkClick(item.link)}
-              >
-                <span>{isActive ? item.icon : item.notActiveIcon}</span>
-                <p className='text-[14px]'>{item.title}</p>
-              </NavLink>
-            );
-          })}
+                  onClick={() => handleNavLinkClick(item.link)}
+                >
+                  <span>{isActive ? item.icon : item.notActiveIcon}</span>
+                  <p className="text-[14px]">{item.title}</p>
+                </NavLink>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="border-t flex flex-col py-4 gap-2">
+          <p className="text-xs">Profile</p>
+
+          <div className="flex items-center gap-1">
+            <img src={imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <div>
+              <h1 className="font-semibold text-xs">Admin</h1>
+              <p className="text-xs">letsmeet@mail.com</p>
+            </div>
+          </div>
+
+          <button className="border border-[#FAC5C5] bg-[#FDECEC] hover:bg-[#FAC5C5] rounded-lg px-10 py-1.5 flex items-center gap-1 transition-colors">
+            {icons.logout}
+            <p className="text-xs">Log out</p>
+          </button>
         </div>
       </div>
 
       {/* Mobile sidebar */}
-      <div className={`lg:hidden z-50 w-[60%] md:w-[25%] px-4 bg-white border h-screen flex-col items-center pt-4 top-0 gap-8 fixed ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div
+        className={`lg:hidden z-50 w-[60%] md:w-[25%] px-4 bg-white border h-screen flex-col items-center pt-4 top-0 gap-8 fixed ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex flex-col gap-5">
           {sidebarData.map((item) => {
             const isActive = isLinkActive(item.link);
@@ -130,12 +162,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               <NavLink
                 to={item.link}
                 key={item.id}
-                className={`flex items-center justify-start px-2 py-2 gap-1 ${isActive ? 'bg-red-600 text-white rounded-md' : ''
-                  }`}
+                className={`flex items-center justify-start px-2 py-2 gap-1 ${
+                  isActive ? "bg-red-600 text-white rounded-md" : ""
+                }`}
                 onClick={() => handleNavLinkClick(item.link)}
               >
                 <span>{isActive ? item.icon : item.notActiveIcon}</span>
-                <p className='text-[14px]'>{item.title}</p>
+                <p className="text-[14px]">{item.title}</p>
               </NavLink>
             );
           })}
