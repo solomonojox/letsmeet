@@ -13,6 +13,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate()
+  const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
+  // console.log(userInfo)
 
   const isLinkActive = (link) => {
     return location.pathname === link ? location.pathname === link : false
@@ -141,10 +143,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           <p className="text-xs">Profile</p>
 
           <div className="flex items-center gap-1">
-            <img src={imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 rounded-full" />
             <div>
-              <h1 className="font-semibold text-xs">Admin</h1>
-              <p className="text-xs">letsmeet@mail.com</p>
+              <h1 className="font-semibold text-xs">{userInfo?.firstname} {userInfo?.lastname}</h1>
+              <p className="text-[10px]">{userInfo?.email}</p>
             </div>
           </div>
 

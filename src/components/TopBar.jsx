@@ -12,12 +12,7 @@ import { LiaAngleDownSolid } from "react-icons/lia";
 
 
 const TopBar = ({ toggleSidebar }) => {
-  const registrarInfo = JSON.parse(localStorage.getItem('registrarInfo'));
-  // useEffect(() => {
-  //   if (!registrarInfo) {
-  //     navigate('/registrar/login')
-  //   }
-  // })
+  const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
 
   const navigate = useNavigate()
 
@@ -121,13 +116,8 @@ const TopBar = ({ toggleSidebar }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('registrarInfo');
-    localStorage.removeItem('activeRegDematTab');
-    localStorage.removeItem('activeRegRemediationTab');
-    localStorage.removeItem('activeRegPaymentTab');
-    localStorage.removeItem('activeRegTransactionTab');
-    // localStorage.removeItem('currentRegSidebarPath');
-    navigate('/registrar/login');
+    localStorage.clear();
+    navigate('/login');
   };
 
   return (
@@ -162,7 +152,7 @@ const TopBar = ({ toggleSidebar }) => {
               <div className="relative mr-1">
                 <img
                   className="w-8 h-8 rounded-full object-cover"
-                  src={imageAsset.avatar}
+                  src={userInfo?.imageUrl || imageAsset.avatar}
                   alt="User Avatar"
                 />
                 {/* <span className="w-3.5 h-3.5 bg-[#8937CE] rounded-full border-2 border-white absolute bottom-0 right-0"></span> */}
@@ -170,7 +160,7 @@ const TopBar = ({ toggleSidebar }) => {
 
               <div className="flex items-center gap-2">
                 <div className="flex flex-col text-[12px]">
-                  <p className="font-medium">{registrarInfo?.firstName || ''}Admin</p>
+                  <p className="font-medium">{userInfo?.firstname || ''}</p>
                 </div>
                 {icons.dropDown}
               </div>
