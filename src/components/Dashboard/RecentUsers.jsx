@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { useState } from 'react';
-import { MoreVertical, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft } from 'lucide-react';
 import imageAsset from '../../assets/imageAsset';
 
 const RecentUsers = () => {
@@ -52,6 +52,59 @@ const RecentUsers = () => {
     }
   ]);
 
+  // State for search and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+
+  // State to track which row's modal is open
+  const [openModal, setOpenModal] = useState(null);
+  // State to track if the modal should be positioned above
+  const [modalPositions, setModalPositions] = useState({});
+
+  // References for outside click detection
+  const modalRef = useRef({});
+  const buttonRef = useRef({});
+
+  useEffect(() => {
+    // Handle clicks outside the modal
+    function handleClickOutside(event) {
+      if (openModal !== null) {
+        const modalElement = modalRef.current[openModal];
+        const buttonElement = buttonRef.current[openModal];
+
+        if (modalElement &&
+          !modalElement.contains(event.target) &&
+          buttonElement &&
+          !buttonElement.contains(event.target)) {
+          setOpenModal(null);
+        }
+      }
+    }
+
+    // Add event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openModal]);
+
+  // Function to calculate if modal should be positioned above
+  const calculateModalPosition = (userId) => {
+    if (!buttonRef.current[userId]) return;
+
+    const buttonRect = buttonRef.current[userId].getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const bottomSpace = viewportHeight - buttonRect.bottom;
+
+    // If there's less than 250px below the button, position the modal above
+    setModalPositions(prev => ({
+      ...prev,
+      [userId]: bottomSpace < 250
+    }));
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Active':
@@ -65,6 +118,63 @@ const RecentUsers = () => {
     }
   };
 
+  const toggleModal = (userId) => {
+    // Calculate position whenever modal is opened
+    calculateModalPosition(userId);
+
+    if (openModal === userId) {
+      setOpenModal(null);
+    } else {
+      setOpenModal(userId);
+    }
+  };
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.dateCreated.includes(searchTerm)
+  );
+
+  // Get current items for pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  // Generate page numbers
+  const pageNumbers = [];
+  const maxPageButtons = 5;
+  const middlePoint = Math.floor(maxPageButtons / 2);
+
+  let startPage = 1;
+  let endPage = totalPages;
+
+  if (totalPages > maxPageButtons) {
+    // Always show current page and some pages before and after
+    const middlePoint = Math.floor(maxPageButtons / 2);
+
+    if (currentPage <= middlePoint) {
+      // Near the start
+      endPage = maxPageButtons;
+    } else if (currentPage >= totalPages - middlePoint) {
+      // Near the end
+      startPage = totalPages - maxPageButtons + 1;
+    } else {
+      // In the middle
+      startPage = currentPage - middlePoint;
+      endPage = currentPage + middlePoint;
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
@@ -73,7 +183,21 @@ const RecentUsers = () => {
           View all users <ChevronRight className="w-4 h-4 ml-1" />
         </a>
       </div>
-      
+
+      {/* Search bar */}
+      <div className="relative mb-4">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <Search className="w-5 h-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="Search users..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead>
@@ -89,23 +213,22 @@ const RecentUsers = () => {
               <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                 <div className="flex items-center">
                   Action
-                  <MoreVertical className="ml-1 w-4 h-4 text-gray-400" />
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {currentUsers.map((user) => (
               <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
                 </td>
                 <td className="py-4">
                   <div className="flex items-center">
-                    <img 
-                      src={user.avatar} 
-                      alt={user.name} 
-                      className="w-8 h-8 rounded-full mr-3" 
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full mr-3"
                     />
                     <span className="font-medium">{user.name}</span>
                   </div>
@@ -118,15 +241,116 @@ const RecentUsers = () => {
                     {user.status}
                   </span>
                 </td>
-                <td className="py-4 pr-4 text-right">
-                  <button className="text-gray-500 hover:text-gray-700">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
+                <td className="py-4 pr-4 text-right relative">
+                  <div className="flex items-center justify-end">
+                    <button
+                      className="text-gray-500 hover:text-gray-700 flex items-center"
+                      onClick={() => toggleModal(user.id)}
+                      ref={el => buttonRef.current[user.id] = el}
+                    >
+                      <Settings className="w-5 h-5 mr-1" />
+                      {openModal === user.id ?
+                        <ChevronUp className="w-4 h-4" /> :
+                        <ChevronDown className="w-4 h-4" />
+                      }
+                    </button>
+                  </div>
+
+                  {/* Modal for actions */}
+                  {openModal === user.id && (
+                    <div
+                      ref={el => modalRef.current[user.id] = el}
+                      className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                    >
+                      <div className="py-3 px-4 border-b border-gray-200">
+                        <a href="#" className="text-gray-600 block text-left text-md">View profile</a>
+                      </div>
+                      <div className="p-4">
+                        <div className="text-gray-400 mb-2 text-md">Decisions:</div>
+
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-green-500 text-md">Activate account</span>
+                          <input type="checkbox" className="h-4 w-4" />
+                        </div>
+
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-red-500 text-md">Deactivate account</span>
+                          <input type="checkbox" className="h-4 w-4" />
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-yellow-500 text-md">Review account</span>
+                          <input type="checkbox" className="h-4 w-4" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4 px-2">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Previous
+        </button>
+
+        <div className="flex space-x-1">
+          {totalPages > maxPageButtons && currentPage > middlePoint && (
+            <>
+              <button
+                onClick={() => setCurrentPage(1)}
+                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+              >
+                1
+              </button>
+              {startPage > 2 && (
+                <span className="px-2 py-1 text-gray-500">...</span>
+              )}
+            </>
+          )}
+
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => setCurrentPage(number)}
+              className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
+            <>
+              {endPage < totalPages - 1 && (
+                <span className="px-2 py-1 text-gray-500">...</span>
+              )}
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+        </div>
+
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
       </div>
     </div>
   );

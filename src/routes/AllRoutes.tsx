@@ -5,6 +5,8 @@ import ForgotPassword from '../pages/Auth/ForgotPassword';
 import Otp from '../pages/Auth/Otp';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import Dashboard from '../pages/Dashboard';
+import Users from '../pages/Users';
+import UserDetails from '../components/Users/UserDetails';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('letsmeetUserId');
@@ -21,6 +23,8 @@ const AllRoutes = () => {
 
       <Route path="/" element={<Navigate to='/dashboard' replace />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+      <Route path="/user/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
     </Routes>
   )
 }
