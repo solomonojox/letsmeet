@@ -79,6 +79,8 @@ const Login = () => {
       console.log(axiosError);
       if (axiosError.response?.status === 401) {
         setLoginError('Invalid credentials. Please try again.');
+      } else if (error.response?.data.responseMessage){
+        setLoginError(error.response?.data.responseMessage);
       } else {
         setLoginError('Server error. Please try again.');
       }
