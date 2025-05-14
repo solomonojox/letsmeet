@@ -1,6 +1,6 @@
 import React from 'react'
 import AllUsers from '../components/Users/AllUsers'
-import UserDetails from '../components/Users/UserDetails'
+// import UserDetails from '../components/Users/UserDetails'
 
 const Users = () => {
     return (

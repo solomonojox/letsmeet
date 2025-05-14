@@ -4,8 +4,8 @@ import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Fi
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 
-const AllUsers = () => {
-    const [users, setUsers] = useState([
+const AllReports = () => {
+    const [senders, setSenders] = useState([
         {
             id: 1,
             name: 'Brooklyn Simmons',
@@ -254,7 +254,7 @@ const AllUsers = () => {
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = users.filter(user => {
+    const filteredUsers = senders.filter(user => {
         // Search filter
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -312,7 +312,7 @@ const AllUsers = () => {
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium text-gray-700">All users</h2>
+                <h2 className="text-lg font-medium text-gray-700">All reports</h2>
                 <div className="relative">
                     <button
                         ref={filterButtonRef}
@@ -404,7 +404,7 @@ const AllUsers = () => {
                 <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search for users"
+                    placeholder="Search for reports"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -417,11 +417,11 @@ const AllUsers = () => {
                             <th className="w-12 py-3 pl-4">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created(M/D/Y)</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Reporter</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Reported User</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Issue</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Start Date(M/D/Y)</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
@@ -447,7 +447,6 @@ const AllUsers = () => {
                                 </td>
                                 <td className="py-4 text-gray-500">{user.dateCreated}</td>
                                 <td className="py-4 text-gray-500">{user.plan}</td>
-                                <td className="py-4 text-gray-500">{user.location}</td>
                                 <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                                         {user.status}
@@ -568,4 +567,4 @@ const AllUsers = () => {
     );
 };
 
-export default AllUsers;
+export default AllReports;

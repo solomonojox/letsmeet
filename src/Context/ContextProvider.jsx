@@ -72,6 +72,16 @@ const ContextProvider = (props) => {
     return text.substr(0, maxLength) + '...';
   };
 
+  function formatPath(path) {
+    if (!path) return '';
+
+    // Remove leading slash if present
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+    // Capitalize first letter
+    return cleanPath.charAt(0).toUpperCase() + cleanPath.slice(1);
+  }
+
   const removeSpecialChars = (text) => {
     return text.replace(/[^a-zA-Z0-9 ]/g, '');
   };
@@ -228,6 +238,7 @@ const ContextProvider = (props) => {
     // String Manipulation
     capitalizeText,
     truncateText,
+    formatPath,
     removeSpecialChars,
     slugify,
     getInitials,

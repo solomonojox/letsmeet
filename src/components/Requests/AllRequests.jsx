@@ -4,8 +4,8 @@ import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Fi
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 
-const AllUsers = () => {
-    const [users, setUsers] = useState([
+const AllRequests = () => {
+    const [senders, setSenders] = useState([
         {
             id: 1,
             name: 'Brooklyn Simmons',
@@ -254,7 +254,7 @@ const AllUsers = () => {
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = users.filter(user => {
+    const filteredUsers = senders.filter(user => {
         // Search filter
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -404,7 +404,7 @@ const AllUsers = () => {
                 <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search for users"
+                    placeholder="Search for requests"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -417,7 +417,7 @@ const AllUsers = () => {
                             <th className="w-12 py-3 pl-4">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Senders</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created(M/D/Y)</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
@@ -568,4 +568,4 @@ const AllUsers = () => {
     );
 };
 
-export default AllUsers;
+export default AllRequests;
