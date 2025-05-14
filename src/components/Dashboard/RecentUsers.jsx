@@ -1,9 +1,16 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft } from 'lucide-react';
 import imageAsset from '../../assets/imageAsset';
+import { useGetAllUsersQuery } from '../../Services/API/api';
+import { AppContext } from '../../Context/AppContext';
+import { Link } from 'react-router-dom';
 
 const RecentUsers = () => {
+  const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
+  const { data: usersr, isLoading } = useGetAllUsersQuery([]);
+  // console.log(usersr);
+
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -53,6 +60,7 @@ const RecentUsers = () => {
   ]);
 
   // State for search and pagination
+
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
@@ -89,6 +97,14 @@ const RecentUsers = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openModal]);
+
+  useEffect(() => {
+    if (isLoading) {
+      showOverlay()
+    } else {
+      hideOverlay(false)
+    }
+  })
 
   // Function to calculate if modal should be positioned above
   const calculateModalPosition = (userId) => {
@@ -130,21 +146,22 @@ const RecentUsers = () => {
   };
 
   // Filter users based on search term
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.dateCreated.includes(searchTerm)
+  const filteredUsers = usersr?.filter(user =>
+    user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // user.subscriptionPlan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.createdAt.includes(searchTerm)
   );
 
   // Get current items for pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const currentUsers = filteredUsers?.slice(indexOfFirstItem, indexOfLastItem);
 
   // Calculate total pages
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
 
   // Generate page numbers
   const pageNumbers = [];
@@ -179,9 +196,9 @@ const RecentUsers = () => {
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-gray-700">Recent Users</h2>
-        <a href="#" className="text-blue-600 text-sm flex items-center">
+        <Link to="/users" className="text-blue-600 text-sm flex items-center">
           View all users <ChevronRight className="w-4 h-4 ml-1" />
-        </a>
+        </Link>
       </div>
 
       {/* Search bar */}
@@ -202,68 +219,82 @@ const RecentUsers = () => {
         <table className="min-w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="w-12 py-3 pl-4">
+              <th className="w-12 py-3 ">
                 <input type="checkbox" className="h-4 w-4" />
               </th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
-              <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created(M/D/Y)</th>
+              <th className="text-left py-3 text-sm font-medium text-gray-500">
+                Date Created(M/D/Y)
+              </th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
-                <div className="flex items-center">
-                  Action
-                </div>
+                <div className="flex items-center">Action</div>
               </th>
             </tr>
           </thead>
           <tbody>
-            {currentUsers.map((user) => (
-              <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+            {currentUsers?.map((user) => (
+              <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
                 </td>
                 <td className="py-4">
                   <div className="flex items-center">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={imageAsset.avatar}
+                      alt={user?.firstName}
                       className="w-8 h-8 rounded-full mr-3"
                     />
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">
+                      {user?.firstName} {user?.lastName}
+                    </span>
                   </div>
                 </td>
-                <td className="py-4 text-gray-500">{user.dateCreated}</td>
-                <td className="py-4 text-gray-500">{user.plan}</td>
-                <td className="py-4 text-gray-500">{user.location}</td>
+                <td className="py-4 text-gray-500">{formatDate(user?.createdAt)}</td>
+                <td className="py-4 text-gray-500">
+                  {user?.subscriptionPlan === 1 ? "Free" : user?.subscriptionPlan === 2 ? "Gold" : "Platinum"}
+                </td>
+                <td className="py-4 text-gray-500">
+                  {user.state}, {user?.country}
+                </td>
                 <td className="py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                      user.status
+                    )}`}
+                  >
                     {user.status}
                   </span>
                 </td>
                 <td className="py-4 pr-4 text-right relative">
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-start">
                     <button
                       className="text-gray-500 hover:text-gray-700 flex items-center"
                       onClick={() => toggleModal(user.id)}
-                      ref={el => buttonRef.current[user.id] = el}
+                      ref={(el) => (buttonRef.current[user.id] = el)}
                     >
                       <Settings className="w-5 h-5 mr-1" />
-                      {openModal === user.id ?
-                        <ChevronUp className="w-4 h-4" /> :
+                      {openModal === user.id ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
                         <ChevronDown className="w-4 h-4" />
-                      }
+                      )}
                     </button>
                   </div>
 
                   {/* Modal for actions */}
                   {openModal === user.id && (
                     <div
-                      ref={el => modalRef.current[user.id] = el}
-                      className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                      ref={(el) => (modalRef.current[user.id] = el)}
+                      className={`absolute ${modalPositions[user.id] ? "bottom-full mb-2" : "mt-2"
+                        } right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                     >
                       <div className="py-3 px-4 border-b border-gray-200">
-                        <a href="#" className="text-gray-600 block text-left text-md">View profile</a>
+                        <a href="#" className="text-gray-600 block text-left text-md">
+                          View profile
+                        </a>
                       </div>
                       <div className="p-4">
                         <div className="text-gray-400 mb-2 text-md">Decisions:</div>
@@ -295,9 +326,10 @@ const RecentUsers = () => {
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4 px-2">
         <button
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
+            }`}
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
@@ -308,34 +340,39 @@ const RecentUsers = () => {
             <>
               <button
                 onClick={() => setCurrentPage(1)}
-                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 1
               </button>
-              {startPage > 2 && (
-                <span className="px-2 py-1 text-gray-500">...</span>
-              )}
+              {startPage > 2 && <span className="px-2 py-1 text-gray-500">...</span>}
             </>
           )}
 
-          {pageNumbers.map(number => (
+          {pageNumbers.map((number) => (
             <button
               key={number}
               onClick={() => setCurrentPage(number)}
-              className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`px-3 py-1 rounded-md text-sm ${number === currentPage
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               {number}
             </button>
           ))}
 
-          {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
+          {totalPages > maxPageButtons && currentPage < totalPages - middlePoint && (
             <>
-              {endPage < totalPages - 1 && (
-                <span className="px-2 py-1 text-gray-500">...</span>
-              )}
+              {endPage < totalPages - 1 && <span className="px-2 py-1 text-gray-500">...</span>}
               <button
                 onClick={() => setCurrentPage(totalPages)}
-                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 {totalPages}
               </button>
@@ -344,9 +381,10 @@ const RecentUsers = () => {
         </div>
 
         <button
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
+            }`}
         >
           Next
           <ChevronRight className="w-4 h-4 ml-1" />
