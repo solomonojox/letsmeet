@@ -220,7 +220,7 @@ const RecentUsers = () => {
           <thead>
             <tr className="border-b border-gray-200">
               <th className="w-12 py-3 ">
-                <input type="checkbox" className="h-4 w-4" />
+                <input type="checkbox" className="h-4 w-4 accent-primary" />
               </th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">
@@ -272,11 +272,11 @@ const RecentUsers = () => {
                   <div className="flex items-center justify-start">
                     <button
                       className="text-gray-500 hover:text-gray-700 flex items-center"
-                      onClick={() => toggleModal(user.id)}
-                      ref={(el) => (buttonRef.current[user.id] = el)}
+                      onClick={() => toggleModal(user.userId)}
+                      ref={(el) => (buttonRef.current[user.userId] = el)}
                     >
                       <Settings className="w-5 h-5 mr-1" />
-                      {openModal === user.id ? (
+                      {openModal === user.userId ? (
                         <ChevronUp className="w-4 h-4" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
@@ -285,10 +285,10 @@ const RecentUsers = () => {
                   </div>
 
                   {/* Modal for actions */}
-                  {openModal === user.id && (
+                  {openModal === user.userId && (
                     <div
-                      ref={(el) => (modalRef.current[user.id] = el)}
-                      className={`absolute ${modalPositions[user.id] ? "bottom-full mb-2" : "mt-2"
+                      ref={(el) => (modalRef.current[user.userId] = el)}
+                      className={`absolute ${modalPositions[user.userId] ? "bottom-full mb-2" : "mt-2"
                         } right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                     >
                       <div className="py-3 px-4 border-b border-gray-200">
