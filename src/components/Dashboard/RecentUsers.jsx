@@ -215,8 +215,8 @@ const RecentUsers = () => {
         />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-[800px] w-full">
           <thead>
             <tr className="border-b border-gray-200">
               <th className="w-12 py-3 ">
@@ -224,7 +224,7 @@ const RecentUsers = () => {
               </th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">
-                Date Created(M/D/Y)
+                Date Created
               </th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
               <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
@@ -253,7 +253,7 @@ const RecentUsers = () => {
                   </div>
                 </td>
                 <td className="py-4 text-gray-500">{formatDate(user?.createdAt)}</td>
-                <td className="py-4 text-gray-500">
+                <td className="py-4 pr-4 text-gray-500">
                   {user?.subscriptionPlan === 1 ? "Free" : user?.subscriptionPlan === 2 ? "Gold" : "Platinum"}
                 </td>
                 <td className="py-4 text-gray-500">
@@ -324,7 +324,7 @@ const RecentUsers = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 px-2">
+      {/* <div className="flex items-center justify-between mt-4 px-2">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
@@ -389,7 +389,7 @@ const RecentUsers = () => {
           Next
           <ChevronRight className="w-4 h-4 ml-1" />
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

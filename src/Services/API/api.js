@@ -10,17 +10,8 @@ export const api = createApi({
         getAllUsers: builder.query({
             query: () => "/api/User/GetAllUser",
         }),
-        getEventById: builder.query({
-            query: (eventId) => `/api/event/getEventById/${eventId}`,
-        }),
-        getEventByCreatorId: builder.query({
-            query: (userId) => `/api/event/getEventsByCreatorId/${userId}`,
-        }),
-        getEventByAttendeeId: builder.query({
-            query: (userId) => `/api/event/getEventByAttendeeId/${userId}`,
-        }),
         getUserById: builder.query({
-            query: (userId) => `/api/User/getUserById/${userId}`,
+            query: (userId) => `/api/User/GetUserById/${userId}`,
         }),
         getDashboardSummary: builder.query({
             query: () => ({
@@ -79,4 +70,4 @@ export const api = createApi({
     }),
 });
 
-export const { useGetAllUsersQuery, } = api
+export const { useGetAllUsersQuery, useGetUserByIdQuery } = api

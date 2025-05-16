@@ -99,7 +99,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { id: 1, title: "Dashboard", link: "/dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive },
     { id: 2, title: "Users", link: "/users", icon: icons.userActive, notActiveIcon: icons.userNotActive },
     { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive },
-    { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive},
+    { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive },
     { id: 5, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive },
     { id: 6, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive },
   ];
@@ -111,6 +111,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
   return (
     <div className="pb-24 font-lato">
+      
       {/* Mobile overlay */}
       <div
         className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-all duration-1000"
@@ -169,17 +170,18 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
       {/* Mobile sidebar */}
       <div
-        className={`lg:hidden z-50 w-[60%] md:w-[25%] px-4 bg-white border h-screen flex-col items-center pt-4 top-0 gap-8 fixed ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`lg:hidden z-50 w-[60%] md:w-[25%] px-4 bg-white border h-screen flex flex-col justify-between pt-20 top-0 bottom-0 gap-8 fixed ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs">Menu</p>
           {sidebarData.map((item) => {
             const isActive = isLinkActive(item.link);
             return (
               <NavLink
                 to={item.link}
                 key={item.id}
-                className={`flex items-center justify-start px-2 py-2 gap-1 ${isActive ? "bg-red-600 text-white rounded-md" : ""
+                className={`hover:bg-gray-200 flex items-center justify-start px-2 py-2 gap-1 rounded-md 2xl:truncate ${isActive ? "bg-gray-200 text-primary" : ""
                   }`}
                 onClick={() => handleNavLinkClick(item.link)}
               >
@@ -188,6 +190,23 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               </NavLink>
             );
           })}
+        </div>
+
+        <div className="border-t flex flex-col py-4 gap-2">
+          <p className="text-xs">Profile</p>
+
+          <div className="flex items-center gap-1">
+            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <div>
+              <h1 className="font-semibold text-xs">{userInfo?.firstname} {userInfo?.lastname}</h1>
+              <p className="text-[10px]">{userInfo?.email}</p>
+            </div>
+          </div>
+
+          <button className="border border-[#FAC5C5] bg-[#FDECEC] hover:bg-[#FAC5C5] rounded-lg px-10 py-1.5 flex items-center gap-1 transition-colors" onClick={logOut}>
+            {icons.logout}
+            <p className="text-xs">Log out</p>
+          </button>
         </div>
       </div>
     </div>

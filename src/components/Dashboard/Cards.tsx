@@ -1,17 +1,49 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { FaUsers, FaUserPlus, FaUserCheck, FaFlag } from 'react-icons/fa';
 import { HiUsers } from "react-icons/hi2";
 import { useGetAllUsersQuery } from '../../Services/API/api';
+import { AppContext } from '../../Context/AppContext';
 
 
 const Cards = () => {
+    const { formatNumberWithCommas } = useContext(AppContext);
     const { data: users } = useGetAllUsersQuery([]);
-    console.log(users);
-    
+    interface User {
+        isAvailable: boolean;
+        [key: string]: any;
+    }
+
+    interface CardData {
+        title: string;
+        value: number | string;
+        icon: React.ReactNode;
+        change: string;
+        changeText: string;
+        color: string;
+        textColor: string;
+        border: string;
+        iconBg: string;
+    }
+
+    const usersTyped: User[] = users as User[] || [];
+    const availableUserCount: number = usersTyped?.filter((user: User) => user.isAvailable === true).length;
+
+    // Get current date and date 7 days ago
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    // Count users created in the last 7 days
+    interface RecentUser {
+        createdAt: string;
+        [key: string]: any;
+    }
+    const recentUserCount: number = (users as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;
+
     const cardsData = [
         {
             title: 'Total users',
-            value: users?.length || 0,
+            value: formatNumberWithCommas(users?.length || 0),
             icon: <HiUsers className="text-primary" />,
             change: '+6.5%',
             changeText: 'since yesterday',
@@ -22,7 +54,7 @@ const Cards = () => {
         },
         {
             title: 'Active users',
-            value: '5,000',
+            value: formatNumberWithCommas(availableUserCount || 0),
             icon: <HiUsers className="text-[#22C55E]" />,
             change: '-6.5%',
             changeText: 'since yesterday',
@@ -33,7 +65,7 @@ const Cards = () => {
         },
         {
             title: 'New users',
-            value: '100',
+            value: formatNumberWithCommas(recentUserCount || 0),
             icon: <HiUsers className="text-[#F4B8DC]" />,
             change: '+6.5%',
             changeText: 'since yesterday',
@@ -54,7 +86,7 @@ const Cards = () => {
             iconBg: 'bg-[#FDECEC]',
         },
     ];
-    
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {cardsData.map((card, index) => (
