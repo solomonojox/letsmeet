@@ -429,11 +429,11 @@ const AllUsers = () => {
                                         <span className="font-medium">{user?.firstName} {user?.lastName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500 pr-4">{formatDate(user?.createdAt)}</td>
-                                <td className="py-4 text-gray-500">
+                                <td className="py-4 text-gray-500 min-w-34">{formatDate(user?.createdAt)}</td>
+                                <td className="py-4 pr-4 text-gray-500">
                                     {getPlanName(user.subscriptionPlan)}
                                 </td>
-                                <td className="py-4 text-gray-500 pr-4">{user.state}, {user?.country}</td>
+                                <td className="py-4 text-gray-500 ">{user.state}, {user?.country}</td>
                                 <td className="py-4 pr-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                                         {user.status}

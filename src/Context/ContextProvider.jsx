@@ -104,7 +104,7 @@ const ContextProvider = (props) => {
   function formatDate(dateString) {
     const date = new Date(dateString);
     const day = date.getDate();
-    const month = date.toLocaleString('en-US', { month: 'long' });
+    const month = date.toLocaleString('en-US', { month: 'short' });
     const year = date.getFullYear();
 
     const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
