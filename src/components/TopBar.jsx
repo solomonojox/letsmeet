@@ -2,14 +2,16 @@
 import { useContext, useEffect, useState } from "react";
 // import assets from "../../assets/images/assets";
 // import Input from "../SHAREHOLDER/Shareholder/Ui/Input";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 // import { Icon } from "@iconify/react/dist/iconify.js";
 import { IoLogOut } from "react-icons/io5";
 import imageAsset from "../assets/imageAsset";
 // import { FaAngleDown } from "react-icons/fa";
-import { FaAngleDown } from "react-icons/fa6";
+import { FaAngleDown, FaArrowLeftLong } from "react-icons/fa6";
 import { LiaAngleDownSolid } from "react-icons/lia";
 import { AppContext } from "../Context/AppContext";
+import { ArrowBigLeft, ArrowLeft, Backpack } from "lucide-react";
+import { HiArrowLongLeft } from "react-icons/hi2";
 
 
 const TopBar = ({ toggleSidebar }) => {
@@ -123,19 +125,25 @@ const TopBar = ({ toggleSidebar }) => {
     navigate('/login');
   };
 
-  const location = window.location.pathname;
+  const location = useLocation()
 
   useEffect(() => {
-    if (location === "/dashboard") {
+    if (location.pathname === "/dashboard") {
       setPageName("Welcome back, Admin");
+    } else if (location.pathname.includes("user-profile")) {
+      setPageName(location.state.userName + "'s Profile");
     } else {
-      setPageName(formatPath(location));
+      setPageName(formatPath(location.pathname));
     }
   }, [location, formatPath]);
 
   return (
     <div className="fixed top-0 z-50 bg-white w-full">
       <div className="fixed top-0 z-10 bg-white flex justify-between border-b border-b-gray-200 left-0 right-0 h-16 lg:pl-12 pl-5 pr-5 items-center lg:ml-[200px] ">
+
+        <Link to="/dashboard" className="lg:hidden block z-50">
+          <img src={imageAsset.logo_dashboard} alt="logo" className="w-24" />
+        </Link>
 
         <div className="fixed lg:hidden top-5 right-5">
           <p
@@ -147,7 +155,10 @@ const TopBar = ({ toggleSidebar }) => {
         </div>
 
         <div className="lg:flex justify-between items-center gap-8 hidden w-full">
-          <h1 className="text-xl font-bold">{pageName}</h1>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            {location.pathname.includes("user-profile") && <FaArrowLeftLong onClick={() => navigate(-1)} className="cursor-pointer" />}
+            {pageName}
+          </h1>
 
           <div className="flex gap-4">
             <div className="flex items-center gap-1 rounded-lg border p-1">

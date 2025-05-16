@@ -114,6 +114,26 @@ const ContextProvider = (props) => {
     return `${day}${suffix} ${month} ${year}`;
   }
 
+  function formateDateTime(dateString) {
+    const date = new Date(dateString);
+
+    if (isNaN(date)) {
+      return 'Invalid Date';
+    }
+
+    const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
+    const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+
+    const readableDate = date.toLocaleDateString(undefined, optionsDate);
+    const readableTime = date.toLocaleTimeString(undefined, optionsTime);
+
+    // return {
+    //   date: readableDate,
+    //   time: readableTime
+    // };
+    return readableDate + " " + readableTime;
+  }
+
   function formatTimeTo12Hour(timeString) {
     const date = new Date(`1970-01-01T${timeString}Z`); // Use a dummy date to parse the time
 
@@ -248,6 +268,7 @@ const ContextProvider = (props) => {
     formatTimeTo12Hour,
     getTimeAgo,
     formatTimeRange,
+    formateDateTime,
 
     // Validation
     isValidEmail,

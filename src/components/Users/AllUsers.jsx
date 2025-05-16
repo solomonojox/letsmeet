@@ -4,60 +4,19 @@ import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Fi
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { AppContext } from '../../Context/AppContext';
-import { useGetAllUsersQuery } from '../../Services/API/api';
+import { api, useGetAllUsersQuery } from '../../Services/API/api';
+import { useDispatch } from 'react-redux';
 
 const AllUsers = () => {
-    const { formatDate, showOverlay, hideOverlay} = useContext(AppContext);
-    const { data: userss, isLoading } = useGetAllUsersQuery([]);
-    // console.log(isLoading)
+    const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
+    const { data: users, isLoading } = useGetAllUsersQuery([]);
 
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: 'Brooklyn Simmons',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '4/21/12',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 2,
-            name: 'Kathryn Murphy',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '9/18/16',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        },
-        {
-            id: 3,
-            name: 'Floyd Miles',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '12/4/17',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 4,
-            name: 'Guy Hawkins',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '8/21/15',
-            plan: 'Basic',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'In review'
-        },
-        {
-            id: 5,
-            name: 'Esther Howard',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '1/15/12',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        }
-    ]);
+    // Subscription plan mapping
+    const planMapping = {
+        1: 'Free',
+        2: 'Gold',
+        3: 'Platinum'
+    };
 
     const navigate = useNavigate();
 
@@ -83,8 +42,8 @@ const AllUsers = () => {
         plan: {
             All: true,
             Free: false,
-            Basic: false,
-            Premium: false
+            Gold: false,
+            Platinum: false
         }
     });
 
@@ -133,7 +92,7 @@ const AllUsers = () => {
     }, [openModal, showFilterModal]);
 
     useEffect(() => {
-        if (isLoading){
+        if (isLoading) {
             showOverlay()
         } else {
             hideOverlay(false)
@@ -261,22 +220,25 @@ const AllUsers = () => {
             plan: {
                 All: true,
                 Free: false,
-                Basic: false,
-                Premium: false
+                Gold: false,
+                Platinum: false
             }
         });
     };
 
+    // Get subscription plan name from plan ID
+    const getPlanName = (planId) => {
+        return planMapping[planId] || 'Unknown';
+    };
+
     // Filter users based on search term and selected filters
-    const filteredUsers = userss?.filter(user => {
+    const filteredUsers = users?.filter(user => {
         // Search filter
         const matchesSearch =
             user?.firstName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
             user?.lastName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-            // user.subscriptionPlan.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user?.state?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-            // user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user?.createdAt?.includes(searchTerm)
+            user?.createdAt?.includes(searchTerm);
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -284,7 +246,8 @@ const AllUsers = () => {
 
         // Plan filter
         const planFilterApplied = !filters.plan.All;
-        const matchesPlanFilter = planFilterApplied ? filters.plan[user.plan] : true;
+        const userPlanName = getPlanName(user.subscriptionPlan);
+        const matchesPlanFilter = planFilterApplied ? filters.plan[userPlanName] : true;
 
         return matchesSearch && matchesStatusFilter && matchesPlanFilter;
     });
@@ -322,6 +285,12 @@ const AllUsers = () => {
 
     for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
+    }
+
+    const dispatch = useDispatch();
+    const handleNavigateToDetailsPage = (id, name) => {
+        dispatch(api.endpoints.getUserById.initiate(id));
+        navigate(`/user-profile/${id}`, { state: { userId: id, userName: name } });
     }
 
     return (
@@ -425,15 +394,15 @@ const AllUsers = () => {
                 />
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full">
+            <div className="w-full overflow-x-auto">
+                <table className="min-w-[800px] w-full">
                     <thead>
                         <tr className="border-b border-gray-200">
                             <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created(D/M/Y)</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
@@ -454,18 +423,18 @@ const AllUsers = () => {
                                     <div className="flex items-center">
                                         <img
                                             src={imageAsset.avatar}
-                                            alt={user.name}
+                                            alt={`${user?.firstName} ${user?.lastName}`}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
                                         <span className="font-medium">{user?.firstName} {user?.lastName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500">{formatDate(user?.createdAt)}</td>
+                                <td className="py-4 text-gray-500 pr-4">{formatDate(user?.createdAt)}</td>
                                 <td className="py-4 text-gray-500">
-                                    {user?.subscriptionPlan === 1 ? "Free" : user?.subscriptionPlan === 2 ? "Gold" : "Platinum"}
+                                    {getPlanName(user.subscriptionPlan)}
                                 </td>
-                                <td className="py-4 text-gray-500">{user.state}, {user?.country}</td>
-                                <td className="py-4">
+                                <td className="py-4 text-gray-500 pr-4">{user.state}, {user?.country}</td>
+                                <td className="py-4 pr-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                                         {user.status}
                                     </span>
@@ -478,7 +447,7 @@ const AllUsers = () => {
                                             ref={el => buttonRef.current[user.userId] = el}
                                         >
                                             <Settings className="w-5 h-5 mr-1" />
-                                            {openModal === user.id ?
+                                            {openModal === user.userId ?
                                                 <ChevronUp className="w-4 h-4" /> :
                                                 <ChevronDown className="w-4 h-4" />
                                             }
@@ -492,7 +461,7 @@ const AllUsers = () => {
                                             className={`absolute ${modalPositions[user.userId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
                                             <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.userId}`, { state: { userId: user.userId } })}>View profile</a>
+                                                <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.userId, user.firstName)}>View profile</button>
                                             </div>
                                             <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
