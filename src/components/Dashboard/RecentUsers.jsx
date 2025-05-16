@@ -2,9 +2,10 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft } from 'lucide-react';
 import imageAsset from '../../assets/imageAsset';
-import { useGetAllUsersQuery } from '../../Services/API/api';
+import { api, useGetAllUsersQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 
 const RecentUsers = () => {
   const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
@@ -192,6 +193,13 @@ const RecentUsers = () => {
     pageNumbers.push(i);
   }
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleNavigateToDetailsPage = (id, name) => {
+    dispatch(api.endpoints.getUserById.initiate(id));
+    navigate(`/user-profile/${id}`, { state: { userId: id, userName: name } });
+  }
+
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
@@ -292,9 +300,7 @@ const RecentUsers = () => {
                         } right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                     >
                       <div className="py-3 px-4 border-b border-gray-200">
-                        <a href="#" className="text-gray-600 block text-left text-md">
-                          View profile
-                        </a>
+                        <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.userId, user.firstName)}>View profile</button>
                       </div>
                       <div className="p-4">
                         <div className="text-gray-400 mb-2 text-md">Decisions:</div>
