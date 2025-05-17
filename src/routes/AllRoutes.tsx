@@ -10,6 +10,7 @@ import UserDetails from '../components/Users/UserDetails';
 import Requests from "../pages/Requests";
 import Subscription from '../pages/Subscription';
 import Reports from '../pages/Reports';
+import Settings from '../pages/Settings';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('letsmeetUserId');
@@ -32,6 +33,7 @@ const AllRoutes = () => {
       <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
       <Route path="/subscriptions" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     </Routes>
   )
 }
