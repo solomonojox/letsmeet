@@ -10,6 +10,8 @@ import {
   AreaChart,
 } from 'recharts';
 import { useGetAllUsersQuery } from '../../Services/API/api';
+import * as XLSX from 'xlsx';
+import saveAs from 'file-saver';
 
 const UsageAnalytics = () => {
   const { data: users } = useGetAllUsersQuery([]);
@@ -28,9 +30,28 @@ const UsageAnalytics = () => {
     value: monthlyCounts[index],
   }));
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usage Analytics');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, 'UsageAnalytics.xlsx');
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 w-full max-w-3xl">
-      <h2 className="text-sm font-semibold text-gray-700 mb-4">Usage analytics</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-sm font-semibold text-gray-700">Usage analytics</h2>
+        <button
+          onClick={exportToExcel}
+          className="bg-primary hover:bg-primary/80 text-white text-xs px-4 py-2 rounded-md"
+        >
+          Export to Excel
+        </button>
+      </div>
+
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data}>
           <defs>
@@ -43,8 +64,8 @@ const UsageAnalytics = () => {
           <YAxis stroke="#888888" fontSize={12} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} />
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <Tooltip
-            contentStyle={{ backgroundColor: '#000', borderRadius: '4px', color: '#fff' }}
-            labelStyle={{ color: '#fff' }}
+            contentStyle={{ backgroundColor: '#cecece', borderRadius: '4px', color: '#000' }}
+            labelStyle={{ color: '#000' }}
             formatter={(value) => [`${value}`, '']}
           />
           <Area

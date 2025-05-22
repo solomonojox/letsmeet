@@ -13,49 +13,29 @@ export const api = createApi({
         getUserById: builder.query({
             query: (userId) => `/api/User/GetUserById/${userId}`,
         }),
-        getDashboardSummary: builder.query({
+        getAllReports: builder.query({
             query: () => ({
-                url: `/api/User/dashboard/summary`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/ReportUser/GetAllReports`,
             }),
         }),
-        getDashboardSales: builder.query({
+        getActiveUsersPerMonth: builder.query({
             query: () => ({
-                url: `/api/User/sales/yearly-insights`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/User/ActiveUsersPerMonth/12`,
             }),
         }),
-        getDashboardEventCreatedStat: builder.query({
+        getTotalRevenue: builder.query({
             query: () => ({
-                url: `/api/User/event/createdStat`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/Subscription/TotalRevenue`,
             }),
         }),
-        getDashboardSummaryAttendee: builder.query({
+        getTotalSubscribers: builder.query({
             query: () => ({
-                url: `/api/User/attendee/dashboard/summary`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/Subscription/TotalSubscriptions`,
             }),
         }),
-        getDashboardEventAttendedStat: builder.query({
+        getSubscribers: builder.query({
             query: () => ({
-                url: `/api/User/event/attendedStat`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/Subscription/GetAllSubscribers`,
             }),
         }),
         getPurchasedTicketByEventIdAndUserId: builder.query({
@@ -70,4 +50,12 @@ export const api = createApi({
     }),
 });
 
-export const { useGetAllUsersQuery, useGetUserByIdQuery } = api
+export const {
+    useGetAllUsersQuery,
+    useGetUserByIdQuery,
+    useGetAllReportsQuery,
+    useGetActiveUsersPerMonthQuery,
+    useGetTotalRevenueQuery,
+    useGetTotalSubscribersQuery,
+    useGetSubscribersQuery,
+} = api

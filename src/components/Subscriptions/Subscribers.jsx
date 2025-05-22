@@ -3,8 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { useGetSubscribersQuery } from '../../Services/API/api';
 
 const Subscribers = () => {
+    const { data } = useGetSubscribersQuery([])
+    // console.log(data)
+
     const [senders, setSenders] = useState([
         {
             id: 1,
