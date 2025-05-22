@@ -3,14 +3,16 @@ import Cards from '../components/Dashboard/Cards';
 import RecentUsers from '../components/Dashboard/RecentUsers';
 import TopState from '../components/Dashboard/TopState';
 import UsageAnalytics from '../components/Dashboard/UsageAnalytics';
+import MonthlyUsers from '../components/Dashboard/MonthlyUsers';
 
 const Dashboard = () => {
   return (
     <div className="space-y-10 mb-10">
       <Cards />
 
-      <div className="flex flex-col md:flex-row justify-center gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6">
         <UsageAnalytics />
+        <MonthlyUsers data={{ /* TODO: provide MonthlyData object here */ }} />
         <TopState />
       </div>
       <RecentUsers />

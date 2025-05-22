@@ -1,13 +1,15 @@
 import React, { useContext } from 'react';
 import { FaUsers, FaUserPlus, FaUserCheck, FaFlag } from 'react-icons/fa';
 import { HiUsers } from "react-icons/hi2";
-import { useGetAllUsersQuery } from '../../Services/API/api';
+import { useGetAllUsersQuery, useGetAllReportsQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 
 
 const Cards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
     const { data: users } = useGetAllUsersQuery([]);
+    const { data: reports } = useGetAllReportsQuery([]);
+    console.log(reports?.data)
     interface User {
         isAvailable: boolean;
         [key: string]: any;
@@ -76,7 +78,7 @@ const Cards = () => {
         },
         {
             title: 'Total Reports',
-            value: '10',
+            value: formatNumberWithCommas(reports?.data?.length || 0),
             icon: <FaFlag className="text-[#EF4444]" />,
             change: '-6.5%',
             changeText: 'since yesterday',
