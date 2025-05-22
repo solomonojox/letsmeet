@@ -3,13 +3,18 @@ import { FaUsers, FaUserPlus, FaUserCheck, FaFlag } from 'react-icons/fa';
 import { HiUsers } from "react-icons/hi2";
 import { useGetAllUsersQuery, useGetAllReportsQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
+import CardSkeletonLoader from '../../ui/CardSkeletonLoader';
 
 
 const Cards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
-    const { data: users } = useGetAllUsersQuery([]);
+    const { data: users, isLoading } = useGetAllUsersQuery([]);
     const { data: reports } = useGetAllReportsQuery([]);
-    console.log(reports?.data)
+
+    if (isLoading) {
+        return <CardSkeletonLoader num={4} />;
+      }
+
     interface User {
         isAvailable: boolean;
         [key: string]: any;
@@ -35,6 +40,9 @@ const Cards = () => {
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(now.getDate() - 7);
 
+    const oneDayAgo = new Date(now);
+    oneDayAgo.setDate(now.getDate() - 1);
+
     // Count users created in the last 7 days
     interface RecentUser {
         createdAt: string;
@@ -42,15 +50,20 @@ const Cards = () => {
     }
     const recentUserCount: number = (users as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;
 
+    const yesterdayUserCount: number = (users as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= oneDayAgo).length;
+    console.log('Yesterday User Count:', (yesterdayUserCount/usersTyped.length)*100);
+    // console.log('Yesterday User Count:', usersTyped.length);
+
     const cardsData = [
         {
             title: 'Total users',
             value: formatNumberWithCommas(users?.length || 0),
             icon: <HiUsers className="text-primary" />,
-            change: '+6.5%',
+            change: `
+                ${(yesterdayUserCount/usersTyped.length)*100 > 0 ? '+' : (yesterdayUserCount/usersTyped.length)*100 > 0 ? '-' : ''} ${(yesterdayUserCount/usersTyped.length)*100}%`,
             changeText: 'since yesterday',
             color: 'bg-primary',
-            textColor: 'text-green-500',
+            textColor: `${(yesterdayUserCount/usersTyped.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
             border: 'border-l-3 border-primary',
             iconBg: 'bg-[#E6E6F399]',
         },

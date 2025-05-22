@@ -12,7 +12,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6">
         <UsageAnalytics />
-        <MonthlyUsers data={{ /* TODO: provide MonthlyData object here */ }} />
+        <MonthlyUsers />
         <TopState />
       </div>
       <RecentUsers />

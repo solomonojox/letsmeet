@@ -33,13 +33,9 @@ export const api = createApi({
                 url: `/api/Subscription/TotalSubscriptions`,
             }),
         }),
-        getDashboardEventAttendedStat: builder.query({
+        getSubscribers: builder.query({
             query: () => ({
-                url: `/api/User/event/attendedStat`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                url: `/api/Subscription/GetAllSubscribers`,
             }),
         }),
         getPurchasedTicketByEventIdAndUserId: builder.query({
@@ -61,4 +57,5 @@ export const {
     useGetActiveUsersPerMonthQuery,
     useGetTotalRevenueQuery,
     useGetTotalSubscribersQuery,
+    useGetSubscribersQuery,
 } = api
