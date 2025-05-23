@@ -1,40 +1,51 @@
 import React, { useContext } from 'react';
-import { FaUsers, FaUserPlus, FaUserCheck, FaFlag } from 'react-icons/fa';
-import { HiUsers } from "react-icons/hi2";
-import { HiOutlineMailOpen } from "react-icons/hi";
 import { FaCrown } from "react-icons/fa";
-import { useGetTotalRevenueQuery, useGetTotalSubscribersQuery } from '../../Services/API/api';
+import { useGetTotalRevenueQuery, useGetTotalSubscribersQuery, useGetSubscribersQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import CardSkeletonLoader from '../../ui/CardSkeletonLoader';
 
 const SubscriptionCards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
-    const { data, isLoading } = useGetTotalRevenueQuery(0);
-    const {data: subscribers} = useGetTotalSubscribersQuery(0);
+    const { data: totalRevenue, isLoading } = useGetTotalRevenueQuery(0);
+    const {data: totalSubscribers} = useGetTotalSubscribersQuery(0);
+    const {data: subscribers} = useGetSubscribersQuery([]);
+    // console.log('amount', subscribers?.data);
 
     if (isLoading) {
         return <CardSkeletonLoader num={2} />;
     }
+
+    const filterByDate = (subscribers?.data || []).filter((user: any) => new Date(user.startDate) >= new Date(new Date().setDate(new Date().getDate() - 1)));
+    
+    
+    // % subscribers change since yesterday
+    const totalSubscribersCount = filterByDate.length;
+    const percentageChange = (totalSubscribersCount / totalSubscribers?.data) * 100;
+    
+    // % revenue change since yesterday
+    const totalAmount = filterByDate?.reduce((sum: number, am: any) => sum + am.amount, 0);
+    const percentageRevenueChange = (totalAmount / totalRevenue?.data) * 100;
+
     const cardsData = [
         {
             title: "Total Subscriptions Amount",
-            value: `NGN ${formatNumberWithCommas(data?.data)}`,
+            value: `NGN ${formatNumberWithCommas(totalRevenue?.data)}`,
             icon: <FaCrown className="text-primary text-2xl" />,
-            change: "+6.5%",
+            change: `${percentageRevenueChange > 0 ? "+" : percentageRevenueChange < 0 ? "-" : ""}${percentageRevenueChange}%`,
             changeText: "since yesterday",
             color: "bg-primary",
-            textColor: "text-green-500",
+            textColor: `${percentageRevenueChange > 0 ? "text-green-500" : "text-red-500"}`,
             border: "border-l-3 border-primary",
             iconBg: "bg-[#E6E6F399]",
         },
         {
             title: "Total Subscribers",
-            value: formatNumberWithCommas(subscribers?.data),
+            value: formatNumberWithCommas(totalSubscribers?.data),
             icon: <FaCrown className="text-[#22C55E] text-2xl" />,
-            change: "-6.5%",
+            change: `${percentageChange > 0 ? "+" : percentageChange < 0 ? "-" : ""}${percentageChange}%`,
             changeText: "since yesterday",
             color: "bg-green-100",
-            textColor: "text-red-500",
+            textColor: `${percentageChange > 0 ? "text-green-500" : "text-red-500"}`,
             border: "border-l-3 border-[#22C55E]",
             iconBg: "bg-[#E9F9EF]",
         },

@@ -1,68 +1,66 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { useGetSubscribersQuery } from '../../Services/API/api';
+import axios from 'axios';
+import { AppContext } from '../../Context/AppContext';
+import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const Subscribers = () => {
-    const { data } = useGetSubscribersQuery([])
-    // console.log(data)
+    const { formatDate } = useContext(AppContext);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const { data, isLoading } = useGetSubscribersQuery([])
+    const subscribers = data?.data || [];
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    // console.log(tableData)
 
-    const [senders, setSenders] = useState([
-        {
-            id: 1,
-            name: 'Brooklyn Simmons',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '4/21/12',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 2,
-            name: 'Kathryn Murphy',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '9/18/16',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        },
-        {
-            id: 3,
-            name: 'Floyd Miles',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '12/4/17',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 4,
-            name: 'Guy Hawkins',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '8/21/15',
-            plan: 'Basic',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'In review'
-        },
-        {
-            id: 5,
-            name: 'Esther Howard',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '1/15/12',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
+    const fetchUserById = async (id) => {
+        return await axios.get(`${baseUrl}/api/User/GetUserById/${id}`).then(res => res.data);
+    };
+
+    const mergedSubscribers = async () => {
+        setLoading(true);
+        try {
+            const subscribersWithUserDetails = await Promise.all(
+                subscribers.map(async (subscriber) => {
+                    const user = await fetchUserById(subscriber.userId);
+                    return {
+                        name: user?.data?.firstName + ' ' + user?.data?.lastName,
+                        plan: subscriber.plan === 1 ? 'Free' : subscriber.plan === 2 ? 'Gold' : 'Platinum',
+                        startDate: subscriber.startDate,
+                        endDate: subscriber.nextRenewalDate,
+                        userId: user?.data?.userId,
+                        status: subscriber.isActive ? 'Active' : 'Expired',
+                        userImage: user?.data?.profilePictureUrl,
+                    };
+                })
+            )
+
+            console.log('Result', subscribersWithUserDetails);
+            setTableData(subscribersWithUserDetails)
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    }
+
+    useEffect(() => {
+        if (subscribers.length > 0) {
+          mergedSubscribers();
+        }
+    }, [subscribers])
 
     const navigate = useNavigate();
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -75,14 +73,13 @@ const Subscribers = () => {
         status: {
             All: true,
             Active: false,
-            Deactivated: false,
-            'In review': false
+            Expired: false
         },
         plan: {
             All: true,
             Free: false,
-            Basic: false,
-            Premium: false
+            Gold: false,
+            Platinum: false
         }
     });
 
@@ -149,10 +146,8 @@ const Subscribers = () => {
         switch (status) {
             case 'Active':
                 return 'bg-green-100 text-green-600';
-            case 'Deactivated':
+            case 'Expired':
                 return 'bg-red-100 text-red-600';
-            case 'In review':
-                return 'bg-yellow-100 text-yellow-600';
             default:
                 return 'bg-gray-100 text-gray-600';
         }
@@ -162,10 +157,8 @@ const Subscribers = () => {
         switch (status) {
             case 'Active':
                 return 'text-green-500';
-            case 'Deactivated':
+            case 'Expired':
                 return 'text-red-500';
-            case 'In review':
-                return 'text-yellow-500';
             default:
                 return 'text-gray-500';
         }
@@ -245,27 +238,24 @@ const Subscribers = () => {
             status: {
                 All: true,
                 Active: false,
-                Deactivated: false,
-                'In review': false
+                Expired: false,
             },
             plan: {
                 All: true,
                 Free: false,
-                Basic: false,
-                Premium: false
+                Gold: false,
+                Platinum: false
             }
         });
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = senders.filter(user => {
+    const filteredSubscribers = tableData?.filter(user => {
         // Search filter
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.dateCreated.includes(searchTerm);
+            user.startDate.includes(searchTerm);
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -275,16 +265,16 @@ const Subscribers = () => {
         const planFilterApplied = !filters.plan.All;
         const matchesPlanFilter = planFilterApplied ? filters.plan[user.plan] : true;
 
-        return matchesSearch && matchesStatusFilter && matchesPlanFilter;
+        return matchesSearch && matchesPlanFilter && matchesStatusFilter;
     });
 
     // Get current items for pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const currentUsers = filteredSubscribers.slice(indexOfFirstItem, indexOfLastItem);
 
     // Calculate total pages
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -311,6 +301,10 @@ const Subscribers = () => {
 
     for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
+    }
+
+    if(isLoading || loading){
+        return <TableSkeletonLoader headers={["Name", "Plan", "Start Date", "End Date", "Actions"]}/>
     }
 
     return (
@@ -408,23 +402,23 @@ const Subscribers = () => {
                 <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search for users"
+                    placeholder="Search for subscribers"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
             <div className="overflow-x-auto">
-                <table className="min-w-full">
+                <table className="min-w-[800px] w-full">
                     <thead>
                         <tr className="border-b border-gray-200">
-                            <th className="w-12 py-3 pl-4">
+                            <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Start Date(M/D/Y)</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Start Date</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">End Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
@@ -433,37 +427,38 @@ const Subscribers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.map((user) => (
-                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        {currentUsers.length > 0 ?  (currentUsers.map((user) => (
+                            <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
-                                <td className="py-4">
+                                <td className="py-4 pr-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={imageAsset.avatar}
+                                            src={user.userImage ||imageAsset.avatar}
                                             alt={user.name}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
                                         <span className="font-medium">{user.name}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500">{user.dateCreated}</td>
-                                <td className="py-4 text-gray-500">{user.plan}</td>
-                                <td className="py-4">
+                                <td className="py-4 text-gray-500 pr-4">{user.plan}</td>
+                                <td className="py-4 text-gray-500 pr-4">{formatDate(user.startDate)}</td>
+                                <td className="py-4 text-gray-500 pr-4">{formatDate(user.endDate)}</td>
+                                {/* <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                                         {user.status}
                                     </span>
-                                </td>
+                                </td> */}
                                 <td className="py-4 pr-4 text-right relative">
-                                    <div className="flex items-center justify-end">
+                                    <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
-                                            onClick={() => toggleModal(user.id)}
-                                            ref={el => buttonRef.current[user.id] = el}
+                                            onClick={() => toggleModal(user.userId)}
+                                            ref={el => buttonRef.current[user.userId] = el}
                                         >
                                             <Settings className="w-5 h-5 mr-1" />
-                                            {openModal === user.id ?
+                                            {openModal === user.userId ?
                                                 <ChevronUp className="w-4 h-4" /> :
                                                 <ChevronDown className="w-4 h-4" />
                                             }
@@ -471,13 +466,13 @@ const Subscribers = () => {
                                     </div>
 
                                     {/* Modal for actions */}
-                                    {openModal === user.id && (
+                                    {openModal === user.userId && (
                                         <div
-                                            ref={el => modalRef.current[user.id] = el}
-                                            className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                                            ref={el => modalRef.current[user.userId] = el}
+                                            className={`absolute ${modalPositions[user.userId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
                                             <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.id}`, { state: { userId: user.id } })}>View profile</a>
+                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.userId}`, { state: { userId: user.userId } })}>View profile</a>
                                             </div>
                                             <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
@@ -501,7 +496,13 @@ const Subscribers = () => {
                                     )}
                                 </td>
                             </tr>
-                        ))}
+                        ))) : (
+                            <tr>
+                                <td colSpan="6" className="py-4 text-center text-gray-500">
+                                    No subscribers found
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
