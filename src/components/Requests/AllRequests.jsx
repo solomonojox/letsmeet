@@ -1,64 +1,22 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { AppContext } from '../../Context/AppContext';
+import { useGetAllFriendRequestsQuery } from '../../Services/API/api';
+import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllRequests = () => {
-    const [senders, setSenders] = useState([
-        {
-            id: 1,
-            name: 'Brooklyn Simmons',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '4/21/12',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 2,
-            name: 'Kathryn Murphy',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '9/18/16',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        },
-        {
-            id: 3,
-            name: 'Floyd Miles',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '12/4/17',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 4,
-            name: 'Guy Hawkins',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '8/21/15',
-            plan: 'Basic',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'In review'
-        },
-        {
-            id: 5,
-            name: 'Esther Howard',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '1/15/12',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        }
-    ]);
-
-    const navigate = useNavigate();
+    const { formatDate } = useContext(AppContext);
+    const { data, isLoading } = useGetAllFriendRequestsQuery();
+    const requestData = data?.data || [];
+    // console.log(requestData);
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -143,11 +101,11 @@ const AllRequests = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Active':
+            case 1:
                 return 'bg-green-100 text-green-600';
-            case 'Deactivated':
+            case 2:
                 return 'bg-red-100 text-red-600';
-            case 'In review':
+            case 0:
                 return 'bg-yellow-100 text-yellow-600';
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -254,14 +212,13 @@ const AllRequests = () => {
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = senders.filter(user => {
+    const filteredUsers = requestData?.filter(user => {
         // Search filter
         const matchesSearch =
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.dateCreated.includes(searchTerm);
+            user.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.recieverFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.recieverLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.createdAt.includes(searchTerm);
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -309,21 +266,26 @@ const AllRequests = () => {
         pageNumbers.push(i);
     }
 
+    if (isLoading) {
+        return <TableSkeletonLoader headers={['Sender', 'Receiver', 'Status', 'Date sent']} />;
+    
+    }
+
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium text-gray-700">All users</h2>
+                <h2 className="text-lg font-medium text-gray-700">All Requests</h2>
                 <div className="relative">
-                    <button
+                    {/* <button
                         ref={filterButtonRef}
                         className="flex items-center px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         onClick={toggleFilterModal}
                     >
                         <Filter className="w-4 h-4 mr-2" />
                         Filter
-                    </button>
+                    </button> */}
 
-                    {showFilterModal && (
+                    {/* {showFilterModal && (
                         <div
                             ref={filterModalRef}
                             className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-50"
@@ -331,7 +293,6 @@ const AllRequests = () => {
                             <div className="p-4">
                                 <div className="text-sm text-gray-500 mb-2">Filter by:</div>
 
-                                {/* Status Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Status</span>
@@ -355,7 +316,6 @@ const AllRequests = () => {
                                     </div>
                                 </div>
 
-                                {/* Plan Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Plan</span>
@@ -392,7 +352,7 @@ const AllRequests = () => {
                                 </button>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
 
@@ -410,50 +370,57 @@ const AllRequests = () => {
                 />
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full">
+            <div className="w-full overflow-x-auto">
+                <table className="min-w-[800px] w-full">
                     <thead>
                         <tr className="border-b border-gray-200">
-                            <th className="w-12 py-3 pl-4">
+                            <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Senders</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created(M/D/Y)</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Sender</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Receiver</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date sent</th>
+                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
                                 </div>
-                            </th>
+                            </th> */}
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.map((user) => (
-                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        {currentUsers.length > 0 ? (currentUsers.map((user) => (
+                            <tr key={user.requestId} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={imageAsset.avatar}
+                                            src={user?.senderProfilePicture || imageAsset.avatar}
                                             alt={user.name}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user.name}</span>
+                                        <span className="font-medium">{user?.senderName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500">{user.dateCreated}</td>
-                                <td className="py-4 text-gray-500">{user.plan}</td>
-                                <td className="py-4 text-gray-500">{user.location}</td>
+                                <td className="py-4">
+                                    <div className="flex items-center">
+                                        <img
+                                            src={user?.receiverProfilePictureUrl || imageAsset.avatar}
+                                            alt={user.name}
+                                            className="w-8 h-8 rounded-full mr-3"
+                                        />
+                                        <span className="font-medium">{user?.recieverFirstName + ' ' + user?.recieverLastName}</span>
+                                    </div>
+                                </td>
                                 <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                                        {user.status}
+                                        {user.status === 1 ? 'Accepted' : user.status === 0 ? 'Pending' : 'Rejected'}
                                     </span>
                                 </td>
-                                <td className="py-4 pr-4 text-right relative">
+                                <td className="py-4 text-gray-500 ">{formatDate(user.createdAt)}</td>
+                                {/* <td className="py-4 pr-4 text-right relative">
                                     <div className="flex items-center justify-end">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
@@ -468,14 +435,13 @@ const AllRequests = () => {
                                         </button>
                                     </div>
 
-                                    {/* Modal for actions */}
-                                    {openModal === user.id && (
+                                    {openModal === user.requestId && (
                                         <div
-                                            ref={el => modalRef.current[user.id] = el}
-                                            className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                                            ref={el => modalRef.current[user.requestId] = el}
+                                            className={`absolute ${modalPositions[user.requestId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
                                             <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.id}`, { state: { userId: user.id } })}>View profile</a>
+                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.requestId}`, { state: { userId: user.id } })}>View profile</a>
                                             </div>
                                             <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
@@ -497,22 +463,28 @@ const AllRequests = () => {
                                             </div>
                                         </div>
                                     )}
+                                </td> */}
+                            </tr>
+                        ))) : (
+                            <tr>
+                                <td colSpan="6" className="text-center py-4 text-gray-500">
+                                    No requests found.
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 px-2">
+            <div className="flex items-center justify-between mt-4 w-full">
                 <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
                     className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
                     <ChevronLeft className="w-4 h-4 mr-1" />
-                    Previous
+                    Prev
                 </button>
 
                 <div className="flex space-x-1">

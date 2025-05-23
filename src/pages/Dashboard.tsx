@@ -10,9 +10,11 @@ const Dashboard = () => {
     <div className="space-y-10 mb-10">
       <Cards />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6">
-        <UsageAnalytics />
-        <MonthlyUsers />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6">
+          <UsageAnalytics />
+          <MonthlyUsers />
+        </div>
         <TopState />
       </div>
       <RecentUsers />

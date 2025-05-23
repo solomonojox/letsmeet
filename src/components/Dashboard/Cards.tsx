@@ -13,7 +13,7 @@ const Cards = () => {
 
     if (isLoading) {
         return <CardSkeletonLoader num={4} />;
-      }
+    }
 
     interface User {
         isAvailable: boolean;
@@ -51,8 +51,8 @@ const Cards = () => {
     const recentUserCount: number = (users as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;
 
     const yesterdayUserCount: number = (users as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= oneDayAgo).length;
-    console.log('Yesterday User Count:', (yesterdayUserCount/usersTyped.length)*100);
-    // console.log('Yesterday User Count:', usersTyped.length);
+
+    const yesterdayReportCount: number = (reports?.data as RecentUser[])?.filter((report: RecentUser) => new Date(report.createdAt) >= oneDayAgo).length;
 
     const cardsData = [
         {
@@ -60,10 +60,10 @@ const Cards = () => {
             value: formatNumberWithCommas(users?.length || 0),
             icon: <HiUsers className="text-primary" />,
             change: `
-                ${(yesterdayUserCount/usersTyped.length)*100 > 0 ? '+' : (yesterdayUserCount/usersTyped.length)*100 > 0 ? '-' : ''} ${(yesterdayUserCount/usersTyped.length)*100}%`,
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / usersTyped.length) * 100}%`,
             changeText: 'since yesterday',
             color: 'bg-primary',
-            textColor: `${(yesterdayUserCount/usersTyped.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
+            textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
             border: 'border-l-3 border-primary',
             iconBg: 'bg-[#E6E6F399]',
         },
@@ -71,8 +71,8 @@ const Cards = () => {
             title: 'Active users',
             value: formatNumberWithCommas(availableUserCount || 0),
             icon: <HiUsers className="text-[#22C55E]" />,
-            change: '-6.5%',
-            changeText: 'since yesterday',
+            // change: '-6.5%',
+            // changeText: 'since yesterday',
             color: 'bg-green-100',
             textColor: 'text-red-500',
             border: 'border-l-3 border-[#22C55E]',
@@ -82,10 +82,11 @@ const Cards = () => {
             title: 'New users',
             value: formatNumberWithCommas(recentUserCount || 0),
             icon: <HiUsers className="text-[#F4B8DC]" />,
-            change: '+6.5%',
+            change: `
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / usersTyped.length) * 100}%`,
             changeText: 'since yesterday',
             color: 'bg-pink-100',
-            textColor: 'text-green-500',
+            textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
             border: 'border-l-3 border-pink-300',
             iconBg: 'bg-[#FEF8FC]',
         },
@@ -93,10 +94,11 @@ const Cards = () => {
             title: 'Total Reports',
             value: formatNumberWithCommas(reports?.data?.length || 0),
             icon: <FaFlag className="text-[#EF4444]" />,
-            change: '-6.5%',
+            change: `
+                ${(yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '+' : (yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '-' : ''} ${(yesterdayReportCount / reports?.data?.length) * 100}%`,
             changeText: 'since yesterday',
             color: 'bg-red-100',
-            textColor: 'text-red-500',
+            textColor: `${(yesterdayReportCount / reports?.data?.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
             border: 'border-l-3 border-red-400',
             iconBg: 'bg-[#FDECEC]',
         },

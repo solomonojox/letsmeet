@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-const token = localStorage.getItem("letsmeetUserId");
+// const token = localStorage.getItem("letsmeetUserId");
 
 export const api = createApi({
     reducerPath: "api",
@@ -38,13 +38,14 @@ export const api = createApi({
                 url: `/api/Subscription/GetAllSubscribers`,
             }),
         }),
-        getPurchasedTicketByEventIdAndUserId: builder.query({
-            query: (eventId) => ({
-                url: `/api/purchasedTicket/getPurchasedTicketByEventAndUserId/${eventId}`,
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+        getFriendRequestStat: builder.query({
+            query: () => ({
+                url: `/api/FriendRequest/FriendRequestStats`,
+            }),
+        }),
+        getAllFriendRequests: builder.query({
+            query: () => ({
+                url: `/api/FriendRequest/GetAllRequest`,
             }),
         }),
     }),
@@ -58,4 +59,6 @@ export const {
     useGetTotalRevenueQuery,
     useGetTotalSubscribersQuery,
     useGetSubscribersQuery,
+    useGetFriendRequestStatQuery,
+    useGetAllFriendRequestsQuery,
 } = api

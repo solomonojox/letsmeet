@@ -1,34 +1,57 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { FaFlag } from 'react-icons/fa';
 import { HiUsers } from "react-icons/hi2";
 import { useGetAllReportsQuery } from '../../Services/API/api';
 import CardSkeletonLoader from '../../ui/CardSkeletonLoader';
+import { AppContext } from '../../Context/AppContext';
 
 
 const ReportCards = () => {
+  const { formatNumberWithCommas } = useContext(AppContext);
   const { data, isLoading } = useGetAllReportsQuery([]);
   const reports = data?.data || [];
   // console.log(reports);
 
-  if (isLoading) {
-    return <CardSkeletonLoader num={4} />;
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  const oneDayAgo = new Date(now);
+  oneDayAgo.setDate(now.getDate() - 1);
+
+  interface RecentUser {
+    createdAt: string;
+    [key: string]: any;
   }
+
+  // count for solved and pending reports
+  const pendingStatusCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 0).length;
+  const solvedStatusCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 1).length;
+
+  // 
+  const yesterdayUserCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= oneDayAgo).length;
+  // console.log('solvedStatusCount:', yesterdayUserCount);
+
+  // Count reports created in the last 7 days
+  const recentReportCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;
+
 
   const cardsData = [
     {
       title: 'Total Reports',
-      value: reports.length,
+      value: formatNumberWithCommas(reports.length),
       icon: <FaFlag className="text-[#EF4444] text-xl" />,
-      change: '-6.5%',
+      change: `
+          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / reports.length) * 100}%`,
       changeText: 'since yesterday',
       color: 'bg-red-100',
-      textColor: 'text-red-500',
+      textColor: `${(yesterdayUserCount/reports.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
       border: 'border-l-3 border-red-400',
       iconBg: 'bg-[#FDECEC]',
     },
     {
       title: 'Solved Reports',
-      value: '5,000',
+      value: formatNumberWithCommas(solvedStatusCount),
       icon: <FaFlag className="text-[#22C55E] text-xl" />,
       change: '-6.5%',
       changeText: 'since yesterday',
@@ -39,27 +62,32 @@ const ReportCards = () => {
     },
     {
       title: 'Pending Reports',
-      value: '10,000',
+      value: formatNumberWithCommas(pendingStatusCount),
       icon: <FaFlag className="text-[#DD900D] text-xl" />,
       change: '+6.5%',
       changeText: 'since yesterday',
       color: 'bg-[#DD900D]',
-      textColor: 'text-green-500',
+      textColor: `${(yesterdayUserCount/reports.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
       border: 'border-l-3 border-[#DD900D]',
       iconBg: 'bg-[#E6E6F399]',
     },
     {
       title: 'New Reports',
-      value: '10',
+      value: formatNumberWithCommas(recentReportCount),
       icon: <HiUsers className="text-[#F4B8DC] text-xl" />,
-      change: '+6.5%',
+      change: `
+          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / reports.length) * 100}%`,
       changeText: 'since yesterday',
       color: 'bg-pink-300',
-      textColor: 'text-green-500',
+      textColor: `${(yesterdayUserCount/reports.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
       border: 'border-l-3 border-pink-300',
       iconBg: 'bg-[#FEF8FC]',
     },
   ];
+
+  if (isLoading) {
+    return <CardSkeletonLoader num={4} />;
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">

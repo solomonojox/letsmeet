@@ -99,14 +99,6 @@ const RecentUsers = () => {
     };
   }, [openModal]);
 
-  // useEffect(() => {
-  //   if (isLoading) {
-  //     showOverlay()
-  //   } else {
-  //     hideOverlay(false)
-  //   }
-  // })
-
   // Function to calculate if modal should be positioned above
   const calculateModalPosition = (userId) => {
     if (!buttonRef.current[userId]) return;

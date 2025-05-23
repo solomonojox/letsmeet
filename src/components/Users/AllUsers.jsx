@@ -6,6 +6,7 @@ import imageAsset from '../../assets/imageAsset';
 import { AppContext } from '../../Context/AppContext';
 import { api, useGetAllUsersQuery } from '../../Services/API/api';
 import { useDispatch } from 'react-redux';
+import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllUsers = () => {
     const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
@@ -90,14 +91,6 @@ const AllUsers = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [openModal, showFilterModal]);
-
-    useEffect(() => {
-        if (isLoading) {
-            showOverlay()
-        } else {
-            hideOverlay(false)
-        }
-    })
 
     // Function to calculate if modal should be positioned above
     const calculateModalPosition = (userId) => {
@@ -293,6 +286,8 @@ const AllUsers = () => {
         navigate(`/user-profile/${id}`, { state: { userId: id, userName: name } });
     }
 
+    if (isLoading) return <TableSkeletonLoader rows={5} headers={['Name', 'Date created', 'Plan', 'Location', 'Status', 'Action']} />
+
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-4">
@@ -414,7 +409,7 @@ const AllUsers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers?.map((user) => (
+                        {currentUsers.length > 0 ? (currentUsers?.map((user) => (
                             <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
@@ -485,7 +480,13 @@ const AllUsers = () => {
                                     )}
                                 </td>
                             </tr>
-                        ))}
+                        ))) : (
+                            <tr>
+                                <td colSpan="7" className="text-center py-4 text-gray-500">
+                                    No users found
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

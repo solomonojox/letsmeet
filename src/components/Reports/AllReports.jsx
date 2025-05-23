@@ -1,64 +1,76 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import axios from 'axios';
+import { useGetAllReportsQuery } from '../../Services/API/api';
+import { AppContext } from '../../Context/AppContext';
+import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllReports = () => {
-    const [senders, setSenders] = useState([
-        {
-            id: 1,
-            name: 'Brooklyn Simmons',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '4/21/12',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 2,
-            name: 'Kathryn Murphy',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '9/18/16',
-            plan: 'Free',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
-        },
-        {
-            id: 3,
-            name: 'Floyd Miles',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '12/4/17',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Active'
-        },
-        {
-            id: 4,
-            name: 'Guy Hawkins',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '8/21/15',
-            plan: 'Basic',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'In review'
-        },
-        {
-            id: 5,
-            name: 'Esther Howard',
-            avatar: '/api/placeholder/50/50',
-            dateCreated: '1/15/12',
-            plan: 'Premium',
-            location: 'Ikorodu, Lagos, Nigeria',
-            status: 'Deactivated'
+    const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+    const { data, isLoading, isError } = useGetAllReportsQuery([]);
+    const reports = data?.data || [];
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const fetchUserById = async (id) => {
+        return await axios.get(`${baseUrl}/api/User/GetUserById/${id}`).then(res => res.data);
+    };
+
+    const getMergedReports = async () => {
+        setLoading(true);
+        try {
+            const mergedReports = await Promise.all(
+                reports.map(async (report) => {
+                    const [reporterData, reportedData] = await Promise.all([
+                        fetchUserById(report.reporterUserId),
+                        fetchUserById(report.reportedUserId)
+                    ]);
+
+                    return {
+                        reporter: `${reporterData.data.firstName} ${reporterData.data.lastName}`,
+                        reporterId: report.reporterUserId,
+                        reported: `${reportedData.data.firstName} ${reportedData.data.lastName}`,
+                        reportedId: report.reportedUserId,
+                        reason: report.reason,
+                        details: report.details,
+                        date: report.createdAt,
+                        reportId: report.reportId,
+                        reportStatus: report.reportStatus === 1 ? 'Pending' : report.reportStatus === 2 ? 'Resolved' : 'Closed',
+                        reporterImage: reporterData.data.profilePictureUrl,
+                        reportedImage: reportedData.data.profilePictureUrl,
+                    };
+                })
+            );
+
+            console.log(mergedReports);
+            setTableData(mergedReports)
+            return mergedReports;
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
+
+    useEffect(() => {
+        if (reports.length > 0) {
+            getMergedReports();
+        }
+    }, [reports])
+
 
     const navigate = useNavigate();
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(10);
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -70,15 +82,9 @@ const AllReports = () => {
     const [filters, setFilters] = useState({
         status: {
             All: true,
-            Active: false,
-            Deactivated: false,
-            'In review': false
-        },
-        plan: {
-            All: true,
-            Free: false,
-            Basic: false,
-            Premium: false
+            Resolved: false,
+            Closed: false,
+            Pending: false,
         }
     });
 
@@ -143,11 +149,11 @@ const AllReports = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Active':
+            case 'Resolved':
                 return 'bg-green-100 text-green-600';
-            case 'Deactivated':
+            case 'Closed':
                 return 'bg-red-100 text-red-600';
-            case 'In review':
+            case 'Pending':
                 return 'bg-yellow-100 text-yellow-600';
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -156,11 +162,11 @@ const AllReports = () => {
 
     const getStatusTextColor = (status) => {
         switch (status) {
-            case 'Active':
+            case 'Resolved':
                 return 'text-green-500';
-            case 'Deactivated':
+            case 'Closed':
                 return 'text-red-500';
-            case 'In review':
+            case 'Pending':
                 return 'text-yellow-500';
             default:
                 return 'text-gray-500';
@@ -240,47 +246,35 @@ const AllReports = () => {
         setFilters({
             status: {
                 All: true,
-                Active: false,
-                Deactivated: false,
-                'In review': false
+                Solved: false,
+                Removed: false,
+                Pending: false
             },
-            plan: {
-                All: true,
-                Free: false,
-                Basic: false,
-                Premium: false
-            }
         });
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = senders.filter(user => {
+    const filteredReports = tableData?.filter(report => {
         // Search filter
         const matchesSearch =
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.dateCreated.includes(searchTerm);
+            report.reporter.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.reported.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.date.includes(searchTerm);
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
-        const matchesStatusFilter = statusFilterApplied ? filters.status[user.status] : true;
+        const matchesStatusFilter = statusFilterApplied ? filters.status[report.reportStatus] : true;
 
-        // Plan filter
-        const planFilterApplied = !filters.plan.All;
-        const matchesPlanFilter = planFilterApplied ? filters.plan[user.plan] : true;
-
-        return matchesSearch && matchesStatusFilter && matchesPlanFilter;
+        return matchesSearch && matchesStatusFilter;
     });
 
     // Get current items for pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const currentUsers = filteredReports.slice(indexOfFirstItem, indexOfLastItem);
 
     // Calculate total pages
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -307,6 +301,31 @@ const AllReports = () => {
 
     for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
+    }
+
+    const updateReportStatus = async (reportId, status) => {
+        console.log('Updating report status:', reportId, status);
+        showOverlay();
+        try {
+            const response = await axios.put(`${baseUrl}/api/ReportUser/UpdateReportStatus`, {
+                reportId,
+                reportStatus: status,
+            });
+            console.log('Report status updated:', response.data);
+            // if (response.status === 200) {
+            //     console.log('Report status updated successfully');
+            //     // Optionally, refresh the data or update the state
+            // }
+        } catch (error) {
+            console.error('Error updating report status:', error);
+        } finally {
+            hideOverlay();
+            setOpenModal(null);
+        }
+    }
+
+    if (isLoading || loading) {
+        return <TableSkeletonLoader rows={5} headers={['Reporter', 'Reported User', 'Issue', 'Status', 'Date', 'Action']} />;
     }
 
     return (
@@ -355,28 +374,6 @@ const AllReports = () => {
                                     </div>
                                 </div>
 
-                                {/* Plan Filter */}
-                                <div className="mb-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium">Plan</span>
-                                        <ChevronUp className="w-4 h-4 text-gray-500" />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        {Object.keys(filters.plan).map(plan => (
-                                            <div key={plan} className="flex items-center justify-between">
-                                                <span className="text-sm text-gray-700">{plan}</span>
-                                                <div
-                                                    className={`w-5 h-5 flex items-center justify-center rounded ${filters.plan[plan] ? 'bg-blue-600' : 'border border-gray-300'}`}
-                                                    onClick={() => handleFilterChange('plan', plan)}
-                                                >
-                                                    {filters.plan[plan] && <Check className="w-4 h-4 text-white" />}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 <button
                                     className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
                                     onClick={applyFilter}
@@ -411,17 +408,17 @@ const AllReports = () => {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="min-w-full">
+                <table className="min-w-[800px] w-full mb-18">
                     <thead>
                         <tr className="border-b border-gray-200">
-                            <th className="w-12 py-3 pl-4">
+                            <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reporter</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reported User</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Issue</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Start Date(M/D/Y)</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
@@ -430,37 +427,47 @@ const AllReports = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.map((user) => (
-                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        {currentUsers.length > 0 ? currentUsers.map((report) => (
+                            <tr key={report.reportId} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={imageAsset.avatar}
-                                            alt={user.name}
+                                            src={report.reporterImage || imageAsset.avatar}
+                                            alt={report.reporter}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user.name}</span>
+                                        <span className="text-gray-500 font-medium">{report.reporter}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500">{user.dateCreated}</td>
-                                <td className="py-4 text-gray-500">{user.plan}</td>
                                 <td className="py-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                                        {user.status}
+                                    <div className="flex items-center">
+                                        <img
+                                            src={report.reportedImage || imageAsset.avatar}
+                                            alt={report.reported}
+                                            className="w-8 h-8 rounded-full mr-3"
+                                        />
+                                        <span className="text-gray-500 font-medium">{report.reported}</span>
+                                    </div>
+                                </td>
+                                <td className="py-4 text-gray-500">{report.reason}</td>
+                                <td className="py-4">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.reportStatus)}`}>
+                                        {report.reportStatus}
                                     </span>
                                 </td>
+                                <td className="py-4 text-gray-500">{formatDate(report.date)}</td>
                                 <td className="py-4 pr-4 text-right relative">
-                                    <div className="flex items-center justify-end">
+                                    <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
-                                            onClick={() => toggleModal(user.id)}
-                                            ref={el => buttonRef.current[user.id] = el}
+                                            onClick={() => toggleModal(report.reportId)}
+                                            ref={el => buttonRef.current[report.reportId] = el}
                                         >
                                             <Settings className="w-5 h-5 mr-1" />
-                                            {openModal === user.id ?
+                                            {openModal === report.reportId ?
                                                 <ChevronUp className="w-4 h-4" /> :
                                                 <ChevronDown className="w-4 h-4" />
                                             }
@@ -468,37 +475,33 @@ const AllReports = () => {
                                     </div>
 
                                     {/* Modal for actions */}
-                                    {openModal === user.id && (
+                                    {openModal === report.reportId && (
                                         <div
-                                            ref={el => modalRef.current[user.id] = el}
-                                            className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                                            ref={el => modalRef.current[report.reportId] = el}
+                                            className={`absolute ${modalPositions[report.reportId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50 `}
                                         >
-                                            <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.id}`, { state: { userId: user.id } })}>View profile</a>
-                                            </div>
-                                            <div className="p-4">
+                                            <div className="p-2 text-start">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
 
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-green-500 text-md">Activate account</span>
-                                                    <input type="checkbox" className="h-4 w-4" />
+                                                <div className="flex items-center mb-3">
+                                                    <button className="text-green-500 text-md" onClick={() => updateReportStatus(report.reportId, report.reportStatus === 'Pending' ? 1 : report.reportStatus === 'Resolved' ? 2 : 3)}>Resolve</button>
                                                 </div>
 
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-red-500 text-md">Deactivate account</span>
-                                                    <input type="checkbox" className="h-4 w-4" />
-                                                </div>
-
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-yellow-500 text-md">Review account</span>
-                                                    <input type="checkbox" className="h-4 w-4" />
+                                                <div className="flex mb-2">
+                                                    <button className="text-red-500 text-md" onClick={() => updateReportStatus(report.reportId, report.reportStatus === 'Pending' ? 1 : report.reportStatus === 'Resolved' ? 2 : 3)}>Close</button>
                                                 </div>
                                             </div>
                                         </div>
                                     )}
                                 </td>
                             </tr>
-                        ))}
+                        )) : (
+                            <tr>
+                                <td colSpan="7" className="py-4 text-center text-gray-500">
+                                    No reports found
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
