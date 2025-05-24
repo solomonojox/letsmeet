@@ -10,10 +10,10 @@ import { AppContext } from '../../Context/AppContext';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllReports = () => {
-    const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
+    const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    const { data, isLoading, isError } = useGetAllReportsQuery([]);
+    const { data, isLoading, isError, refetch } = useGetAllReportsQuery([]);
     const reports = data?.data || [];
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -312,12 +312,15 @@ const AllReports = () => {
                 reportStatus: status,
             });
             console.log('Report status updated:', response.data);
+            notifySuccess('Report status updated successfully', 'success');
+            refetch();
             // if (response.status === 200) {
             //     console.log('Report status updated successfully');
             //     // Optionally, refresh the data or update the state
             // }
         } catch (error) {
             console.error('Error updating report status:', error);
+            notifyError('Error updating report status', 'error');
         } finally {
             hideOverlay();
             setOpenModal(null);
