@@ -1,11 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Cards from '../components/Dashboard/Cards';
 import RecentUsers from '../components/Dashboard/RecentUsers';
 import TopState from '../components/Dashboard/TopState';
 import UsageAnalytics from '../components/Dashboard/UsageAnalytics';
 import MonthlyUsers from '../components/Dashboard/MonthlyUsers';
+import { useDispatch } from 'react-redux';
+import { api } from '../Services/API/api';
 
 const Dashboard = () => {
+  const dispatch = useDispatch<any>();
+  useEffect(() => {
+    dispatch(api.endpoints.getActiveUsersPerMonth.initiate(undefined));
+    dispatch(api.endpoints.getAllFriendRequests.initiate([]));
+    dispatch(api.endpoints.getAllReports.initiate([]));
+    dispatch(api.endpoints.getAllUsers.initiate([]));
+    dispatch(api.endpoints.getSubscribers.initiate([]));
+  })
   return (
     <div className="space-y-10 mb-10">
       <Cards />

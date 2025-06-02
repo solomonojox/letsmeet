@@ -40,7 +40,7 @@ const Subscribers = () => {
                 })
             )
 
-            console.log('Result', subscribersWithUserDetails);
+            // console.log('Result', subscribersWithUserDetails);
             setTableData(subscribersWithUserDetails)
         } catch (err) {
             console.error(err);
