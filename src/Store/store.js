@@ -7,6 +7,7 @@ const store = configureStore({
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(api.middleware),
+    AppDispatch: (store) => store.dispatch,
 });
 
 export default store

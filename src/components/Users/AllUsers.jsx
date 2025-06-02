@@ -11,6 +11,7 @@ import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 const AllUsers = () => {
     const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
     const { data: users, isLoading } = useGetAllUsersQuery([]);
+    // console.log(users);
 
     // Subscription plan mapping
     const planMapping = {
@@ -417,7 +418,7 @@ const AllUsers = () => {
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={imageAsset.avatar}
+                                            src={user?.profilePictureUrl || imageAsset.avatar}
                                             alt={`${user?.firstName} ${user?.lastName}`}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />

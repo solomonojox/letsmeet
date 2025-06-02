@@ -30,7 +30,7 @@ const ReportCards = () => {
 
   // 
   const yesterdayUserCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= oneDayAgo).length;
-  // console.log('solvedStatusCount:', yesterdayUserCount);
+  // console.log('solvedStatusCount:', yesterdayUserCount / reports.length);
 
   // Count reports created in the last 7 days
   const recentReportCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;
@@ -42,7 +42,7 @@ const ReportCards = () => {
       value: formatNumberWithCommas(reports.length),
       icon: <FaFlag className="text-[#EF4444] text-xl" />,
       change: `
-          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / reports.length) * 100}%`,
+          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / reports.length) * 100) || 0}%`,
       changeText: 'since yesterday',
       color: 'bg-red-100',
       textColor: `${(yesterdayUserCount/reports.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,
@@ -76,7 +76,7 @@ const ReportCards = () => {
       value: formatNumberWithCommas(recentReportCount),
       icon: <HiUsers className="text-[#F4B8DC] text-xl" />,
       change: `
-          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / reports.length) * 100}%`,
+          ${(yesterdayUserCount / reports.length) * 100 > 0 ? '+' : (yesterdayUserCount / reports.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / reports.length) * 100) || 0}%`,
       changeText: 'since yesterday',
       color: 'bg-pink-300',
       textColor: `${(yesterdayUserCount/reports.length)*100 > 0 ? 'text-green-500' : 'text-red-500'}`,

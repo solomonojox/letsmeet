@@ -69,7 +69,7 @@ const UserDetails = () => {
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <img
-                    src={usersData?.data?.avatar || imageAsset.avatar}
+                    src={usersData?.data?.profilePictureUrl || imageAsset.avatar}
                     alt="Profile"
                     className="w-24 h-24 rounded-full object-cover border-4 border-white"
                   />

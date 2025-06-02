@@ -236,14 +236,14 @@ const RecentUsers = () => {
           </thead>
           <tbody>
             {currentUsers?.map((user) => (
-              <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={user?.userId} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
                 </td>
                 <td className="py-4">
                   <div className="flex items-center">
                     <img
-                      src={imageAsset.avatar}
+                      src={user?.profilePictureUrl || imageAsset.avatar}
                       alt={user?.firstName}
                       className="w-8 h-8 rounded-full mr-3"
                     />
