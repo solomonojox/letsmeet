@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { useGetSubscribersQuery } from '../../Services/API/api';
 import axios from 'axios';
@@ -471,9 +471,9 @@ const Subscribers = () => {
                                             ref={el => modalRef.current[user.userId] = el}
                                             className={`absolute ${modalPositions[user.userId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
-                                            <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.userId}`, { state: { userId: user.userId } })}>View profile</a>
-                                            </div>
+                                            {/* <div className="py-3 px-4 border-b border-gray-200">
+                                                <Link to={`/user/${user.userId}`} className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.userId}`, { state: { userId: user.userId } })}>View profile</Link>
+                                            </div> */}
                                             <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
 
