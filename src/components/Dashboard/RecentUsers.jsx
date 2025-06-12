@@ -294,7 +294,7 @@ const RecentUsers = () => {
                       <div className="py-3 px-4 border-b border-gray-200">
                         <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.userId, user.firstName)}>View profile</button>
                       </div>
-                      <div className="p-4">
+                      {/* <div className="p-4">
                         <div className="text-gray-400 mb-2 text-md">Decisions:</div>
 
                         <div className="flex justify-between items-center mb-3">
@@ -311,7 +311,7 @@ const RecentUsers = () => {
                           <span className="text-yellow-500 text-md">Review account</span>
                           <input type="checkbox" className="h-4 w-4" />
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </td>

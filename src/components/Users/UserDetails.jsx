@@ -4,6 +4,7 @@ import imageAsset from '../../assets/imageAsset';
 import { useParams } from 'react-router-dom';
 import { useGetUserByIdQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
+import axios from 'axios';
 
 const UserSkeleton = () => (
   <div className="animate-pulse p-6">
@@ -34,8 +35,9 @@ const UserSkeleton = () => (
 
 
 const UserDetails = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const params = useParams();
-  const { formatDate, formateDateTime } = useContext(AppContext);
+  const { formatDate, formateDateTime, notifySuccess, notifyError } = useContext(AppContext);
   const { data: usersData, isLoading } = useGetUserByIdQuery(params.id);
 
   const [showSettings, setShowSettings] = useState(false);
@@ -58,6 +60,29 @@ const UserDetails = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const [openModal, setOpenModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post(`${baseUrl}/api/User/ResetPassword?MemberId=${params.id}&NewPassword=${passwordData.newPassword}&ConfirmNewPassword=${passwordData.confirmPassword}`)
+
+      notifySuccess(res.data.responseMessage, 'success');
+      setOpenModal(false);
+    } catch (err) {
+      console.log(err)
+      notifyError(err.response.data.responseMessage, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="mx-auto font-sans">
@@ -108,6 +133,10 @@ const UserDetails = () => {
                       className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10"
                     >
                       <div className="p-4">
+                        <div className='mb-4'>
+                          <span className="text-gray-600 font-semibold cursor-pointer underline-offset-4 hover:underline hover:text-primary" onClick={() => setOpenModal(true)}>Change Password</span>
+                        </div>
+
                         <h4 className="text-sm text-gray-500 mb-2">Decisions:</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
@@ -126,6 +155,73 @@ const UserDetails = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Password Modal */}
+                  {openModal && <div className='bg-[#00000088] w-full h-screen fixed top-0 left-0 z-50 flex justify-center items-center '>
+                    <div className='bg-white w-3xl h-96 rounded-md flex flex-col justify-center items-center p-6 lg:p-20'>
+                      <h1 className='text-2xl font-semibold mb-4'>Change user's password</h1>
+                      <form action="submit" onSubmit={changePassword} className='w-full space-y-6'>
+                        <div>
+                          <label htmlFor="newPassword">New Password</label>
+                          <input
+                            type="text"
+                            name="newPassword"
+                            id='newPassword'
+                            className='border focus:border-primary outline-none rounded-md p-4 w-full'
+                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="confirmPassword">Confirm New Password</label>
+                          <input
+                            type="text"
+                            name="confirmPassword"
+                            id='confirmPassword'
+                            className='border focus:border-primary outline-none rounded-md p-4 w-full'
+                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          />
+                        </div>
+
+                        <div className='space-x-4'>
+                          <span className="py-4 px-10 bg-gray-400 hover:bg-gray-500 cursor-pointer rounded-md text-white" onClick={() => setOpenModal(false)}>Cancel</span>
+                          <button
+                            type='submit'
+                            disabled={loading}
+                            className="py-4 px-10 bg-primary hover:bg-primary/80 rounded-md text-white"
+                          >
+                            {loading ? (
+                              // Loading spinner
+                              <div className="flex items-center gap-4">
+                                <svg
+                                  className="animate-spin h-5 w-5 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Changing...
+                              </div>
+                            ) :
+                              'Change Password'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>}
                 </div>
               </div>
 
