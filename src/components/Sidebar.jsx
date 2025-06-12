@@ -17,8 +17,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // console.log(userInfo)
 
   const isLinkActive = (link) => {
-    return location.pathname === link ? location.pathname === link : false
-    // || localStorage.getItem("currentRegSidebarPath") === link;
+    return location.pathname === link ? location.pathname === link : sessionStorage.getItem("currentRegSidebarPath") === link;
   };
 
   const icons = {
@@ -84,16 +83,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   }
 
   const handleNavLinkClick = (link) => {
-    // dispatch(api.endpoints.getCompany.initiate());
-    // dispatch(api.endpoints.getNormalDematList.initiate());
-    // dispatch(api.endpoints.getDualListingDemart.initiate());
-
     if (isSidebarOpen) {
       toggleSidebar();
     }
 
-    localStorage.setItem("currentRegSidebarPath", link);
+    sessionStorage.setItem("currentRegSidebarPath", link);
   };
+
+  console.log(sessionStorage.getItem("currentRegSidebarPath"));
 
   const sidebarData = [
     { id: 1, title: "Dashboard", link: "/dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive },
