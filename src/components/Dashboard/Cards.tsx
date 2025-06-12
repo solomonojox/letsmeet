@@ -60,7 +60,7 @@ const Cards = () => {
             value: formatNumberWithCommas(users?.length || 0),
             icon: <HiUsers className="text-primary" />,
             change: `
-                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / usersTyped.length) * 100}%`,
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100) || 0}%`,
             changeText: 'since yesterday',
             color: 'bg-primary',
             textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
@@ -83,7 +83,7 @@ const Cards = () => {
             value: formatNumberWithCommas(recentUserCount || 0),
             icon: <HiUsers className="text-[#F4B8DC]" />,
             change: `
-                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${(yesterdayUserCount / usersTyped.length) * 100}%`,
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100) || 0}%`,
             changeText: 'since yesterday',
             color: 'bg-pink-100',
             textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
@@ -95,7 +95,7 @@ const Cards = () => {
             value: formatNumberWithCommas(reports?.data?.length || 0),
             icon: <FaFlag className="text-[#EF4444]" />,
             change: `
-                ${(yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '+' : (yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '-' : ''} ${(yesterdayReportCount / reports?.data?.length) * 100}%`,
+                ${(yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '+' : (yesterdayReportCount / reports?.data?.length) * 100 > 0 ? '-' : ''} ${((yesterdayReportCount / reports?.data?.length) * 100) || 0}%`,
             changeText: 'since yesterday',
             color: 'bg-red-100',
             textColor: `${(yesterdayReportCount / reports?.data?.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
