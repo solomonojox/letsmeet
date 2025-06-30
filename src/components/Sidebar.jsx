@@ -77,6 +77,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       <path d="M4 15.5H18" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
     </svg>,
 
+    feedbackActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 4.16667C2.5 3.24619 3.24619 2.5 4.16667 2.5H15.8333C16.7538 2.5 17.5 3.24619 17.5 4.16667V12.5C17.5 13.4205 16.7538 14.1667 15.8333 14.1667H6.66667L3.33333 17.5V4.16667Z" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
+    feedbackNotActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 4.16667C2.5 3.24619 3.24619 2.5 4.16667 2.5H15.8333C16.7538 2.5 17.5 3.24619 17.5 4.16667V12.5C17.5 13.4205 16.7538 14.1667 15.8333 14.1667H6.66667L3.33333 17.5V4.16667Z" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>,
+
     logout: <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M8.8125 5.75V2.9375C8.8125 2.48995 8.63471 2.06072 8.31824 1.74426C8.00177 1.42779 7.57255 1.25 7.125 1.25H2.625C2.17745 1.25 1.74823 1.42779 1.43176 1.74426C1.11529 2.06072 0.9375 2.48995 0.9375 2.9375V13.0625C0.9375 13.5101 1.11529 13.9393 1.43176 14.2557C1.74823 14.5722 2.17745 14.75 2.625 14.75H7.125C7.57255 14.75 8.00177 14.5722 8.31824 14.2557C8.63471 13.9393 8.8125 13.5101 8.8125 13.0625V10.25M6 5.75L3.75 8M3.75 8L6 10.25M3.75 8H13.3125" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -90,7 +98,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     sessionStorage.setItem("currentRegSidebarPath", link);
   };
 
-  console.log(sessionStorage.getItem("currentRegSidebarPath"));
+  // console.log(sessionStorage.getItem("currentRegSidebarPath"));
 
   const sidebarData = [
     { id: 1, title: "Dashboard", link: "/dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive },
@@ -98,7 +106,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive },
     { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive },
     { id: 5, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive },
-    { id: 6, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive },
+    { id: 6, title: "Feedback", link: "/feedback", icon: icons.feedbackActive, notActiveIcon: icons.feedbackNotActive },
+    { id: 7, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive },
   ];
 
   const logOut = () => {
@@ -108,7 +117,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
   return (
     <div className="pb-24 font-lato">
-      
+
       {/* Mobile overlay */}
       <div
         className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-all duration-1000"

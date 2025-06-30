@@ -48,6 +48,11 @@ export const api = createApi({
                 url: `/api/FriendRequest/GetAllRequest`,
             }),
         }),
+        getAllFeedbacks: builder.query({
+            query: () => ({
+                url: `/api/Feedback/all`,
+            }),
+        }),
     }),
 });
 
@@ -61,4 +66,5 @@ export const {
     useGetSubscribersQuery,
     useGetFriendRequestStatQuery,
     useGetAllFriendRequestsQuery,
-} = api
+    useGetAllFeedbacksQuery,
+} = api;
