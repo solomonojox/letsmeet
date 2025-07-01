@@ -4,6 +4,29 @@ import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 import { useState } from "react";
 
+// Define all valid routes in your app
+const validRoutes = [
+  "/",
+  "about",
+  "/contact",
+  "/faq",
+  "/privacy-policy",
+  "/terms",
+  "/cookies",
+  "/login",
+  "/forgot-password",
+  "/otp",
+  "/reset-password",
+  "/dashboard",
+  "/users",
+  "/user-profile/:id",
+  "/requests",
+  "/subscriptions",
+  "/reports",
+  "/settings",
+  "/feedback",
+];
+
 // Wrapper component to use hooks outside BrowserRouter
 const AppWrapper = () => (
   <BrowserRouter>
@@ -16,13 +39,20 @@ function App() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const location = useLocation();
-  const noLayoutRoutes = ["/login", "/forgot-password", "/otp", "/reset-password"];
+  const noLayoutRoutes = ["/", "/contact", "/about", "/faq", "/privacy-policy", "/terms", "/cookies", "/login", "/forgot-password", "/otp", "/reset-password"];
   const isAuthRoute = noLayoutRoutes.includes(location.pathname);
+  const isValidRoute = validRoutes.includes(location.pathname);
+
+  const shouldShowLayout = !isAuthRoute && isValidRoute;
 
   return (
     <>
-      {!isAuthRoute && <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />}
-      {!isAuthRoute && <TopBar toggleSidebar={toggleSidebar} />}
+      {shouldShowLayout && (
+        <>
+          <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+          <TopBar toggleSidebar={toggleSidebar} />
+        </>
+      )}
       <div className={!isAuthRoute ? "lg:ml-[200px] px-6" : ""}>
         <AllRoutes />
       </div>
