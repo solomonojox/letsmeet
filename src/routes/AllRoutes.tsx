@@ -31,12 +31,12 @@ const AllRoutes = () => {
       <Route path="/otp" element={<Otp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/faq" element={<Faq />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndCondition />} />
-      <Route path="/cookies" element={<CookiePolicy />} /> */}
-      <Route path="/" element={<Navigate to='/dashboard' replace />} />
+      <Route path="/cookies" element={<CookiePolicy />} />
+      {/* <Route path="/" element={<Navigate to='/dashboard' replace />} /> */}
       <Route
         path="/dashboard"
         element={
