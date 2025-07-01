@@ -3,7 +3,7 @@ import React from 'react';
 const About = () => {
     return (
         <div id='about' className='pt-16'>
-            <div className="bg-[#F0F1F2] p-8 lg:p-0 " >
+            <div className="bg-[#F0F1F2] p-4 lg:p-0 " >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen">
                     {/* Image Section */}
                     <div className="relative h-full">
