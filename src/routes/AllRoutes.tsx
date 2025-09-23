@@ -12,6 +12,12 @@ import Subscription from '../pages/Subscription';
 import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
 import Feedback from '../pages/Feedback';
+import Landing from '../pages/Landing';
+import Faq from '../components/Landing/Faq';
+import PrivacyPolicy from '../components/Landing/PrivacyPolicy';
+import TermsAndCondition from '../components/Landing/TermsAndCondition';
+import CookiePolicy from '../components/Landing/CookiePolicy';
+import UnderConstructionPage from '../pages/UnderConstructionPage';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('letsmeetUserId');
@@ -26,18 +32,26 @@ const AllRoutes = () => {
       <Route path="/otp" element={<Otp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
+      {/* <Route path="/" element={<Landing />} /> */}
+      <Route path="/faq" element={<Faq />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsAndCondition />} />
+      <Route path="/cookies" element={<CookiePolicy />} />
       <Route path="/" element={<Navigate to='/dashboard' replace />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/user-profile/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
 
-      <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
-      <Route path="/subscriptions" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-      <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+      <Route path="/requests" element={<ProtectedRoute> <Requests /></ProtectedRoute>} />
+      <Route path="/subscriptions" element={<ProtectedRoute> <Subscription /> </ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute> <Reports /> </ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute>  <Settings />  </ProtectedRoute>} />
+      <Route path="/feedback" element={<ProtectedRoute> <Feedback /> </ProtectedRoute>} />
+
+      <Route path="/construction" element={<UnderConstructionPage />} />
+      {/* <Route path="/resources" element={<Navigate to='/construction' replace />} /> */}
     </Routes>
-  )
+  );
 }
 
 export default AllRoutes
