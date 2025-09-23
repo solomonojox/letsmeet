@@ -25,6 +25,7 @@ const validRoutes = [
   "/reports",
   "/settings",
   "/feedback",
+  "/construction"
 ];
 
 // Wrapper component to use hooks outside BrowserRouter
@@ -39,7 +40,7 @@ function App() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const location = useLocation();
-  const noLayoutRoutes = ["/", "/contact", "/about", "/faq", "/privacy-policy", "/terms", "/cookies", "/login", "/forgot-password", "/otp", "/reset-password"];
+  const noLayoutRoutes = ["/", "/contact", "/about", "/faq", "/privacy-policy", "/terms", "/cookies", "/login", "/forgot-password", "/otp", "/reset-password", "/construction"];
   const isAuthRoute = noLayoutRoutes.includes(location.pathname);
   const isValidRoute = validRoutes.includes(location.pathname);
 

@@ -5,6 +5,7 @@ import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { jwtDecode } from 'jwt-decode';
 
 interface FormData {
   email: string;
@@ -68,13 +69,23 @@ const Login = () => {
     try {
       const response = await axios.post(`${baseUrl}/api/Admin/AdminLogin`, formData);
 
-      // console.log(response.data.data);
+      const decoded = jwtDecode<any>(response.data);
+      const adminId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+      const letsmeetUser = {
+        email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+        role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        firstname: 'Akpa',
+        lastname: 'solomon',
+        imageUrl: 'https://res.cloudinary.com/dpyezce56/image/upload/v1758282498/jenksbuy_files/IMG_20200423_154748_733%7E2_transcpr.jpg',
+        token: response.data
+      }
       setLoginError('');
       setSuccess(true);
-      localStorage.setItem('letsmeetUser', JSON.stringify(response.data.data));
-      localStorage.setItem('letsmeetUserId', response.data.data.adminId);
+      localStorage.setItem('letsmeetUser', JSON.stringify(letsmeetUser));
+      localStorage.setItem('letsmeetUserId', adminId);
+      localStorage.setItem('letsmeetToken', response.data);
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       const axiosError = error as AxiosError;
       console.log(axiosError);
       if (axiosError.response?.status === 401) {
@@ -82,6 +93,7 @@ const Login = () => {
       } else if (error.response?.data.responseMessage){
         setLoginError(error.response?.data.responseMessage);
       } else {
+        console.log(axiosError);
         setLoginError('Server error. Please try again.');
       }
     } finally {

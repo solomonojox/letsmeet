@@ -160,7 +160,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           <p className="text-xs">Profile</p>
 
           <div className="flex items-center gap-1">
-            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 h-8 rounded-full shrink-0 object-cover" />
             <div>
               <h1 className="font-semibold text-xs">{userInfo?.firstname} {userInfo?.lastname}</h1>
               <p className="text-[10px]">{userInfo?.email}</p>
@@ -202,7 +202,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           <p className="text-xs">Profile</p>
 
           <div className="flex items-center gap-1">
-            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 rounded-full" />
+            <img src={userInfo?.imageUrl || imageAsset.avatar} alt="user" className="w-8 h-8 rounded-full object-cover shrink-0" />
             <div>
               <h1 className="font-semibold text-xs">{userInfo?.firstname} {userInfo?.lastname}</h1>
               <p className="text-[10px]">{userInfo?.email}</p>
