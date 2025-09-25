@@ -1,43 +1,38 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosError } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
-import { jwtDecode } from 'jwt-decode';
+import { AppContext } from '../../Context/AppContext';
+import { jwtDecode } from 'jwt-decode'; 
 
 interface FormData {
-  email: string;
-  password: string;
+  reference: string;
+  key: string;
 }
-
 interface FormErrors {
-  email?: string;
-  password?: string;
+  reference?: string;
+  key?: string;
 }
 
 const Login = () => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: ''
-  });
-
+  const [formData, setFormData] = useState<FormData>({ reference: '', key: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string>('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showkey, setShowkey] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [token, setToken] = useState(['', '', '', '']); // 4 digits
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useContext(AppContext);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear errors when user types
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -46,13 +41,13 @@ const Login = () => {
 
   const validate = (): FormErrors => {
     const newErrors: FormErrors = {};
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    if (!formData.reference) {
+      newErrors.reference = 'reference is required';
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.reference)) {
+      newErrors.reference = 'reference is invalid';
     }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
+    if (!formData.key) {
+      newErrors.key = 'key is required';
     }
     return newErrors;
   };
@@ -67,33 +62,18 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${baseUrl}/api/Admin/AdminLogin`, formData);
-
-      const decoded = jwtDecode<any>(response.data);
-      const adminId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-      const letsmeetUser = {
-        email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-        role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-        firstname: 'Akpa',
-        lastname: 'solomon',
-        imageUrl: 'https://res.cloudinary.com/dpyezce56/image/upload/v1758282498/jenksbuy_files/IMG_20200423_154748_733%7E2_transcpr.jpg',
-        token: response.data
-      }
+      const response = await axios.post(`${baseUrl}/api/User/Authenticate`, formData);
+      // handle token from response if needed
       setLoginError('');
       setSuccess(true);
-      localStorage.setItem('letsmeetUser', JSON.stringify(letsmeetUser));
-      localStorage.setItem('letsmeetUserId', adminId);
-      localStorage.setItem('letsmeetToken', response.data);
-      navigate('/dashboard');
+      setShowTokenModal(true); // show modal after login
     } catch (error: any) {
       const axiosError = error as AxiosError;
-      console.log(axiosError);
       if (axiosError.response?.status === 401) {
         setLoginError('Invalid credentials. Please try again.');
-      } else if (error.response?.data.responseMessage){
+      } else if (error.response?.data.responseMessage) {
         setLoginError(error.response?.data.responseMessage);
       } else {
-        console.log(axiosError);
         setLoginError('Server error. Please try again.');
       }
     } finally {
@@ -101,10 +81,57 @@ const Login = () => {
     }
   };
 
-  const validation = !formData.email || !formData.password;
+  const validation = !formData.reference || !formData.key;
+
+  // handle token input
+  const handleTokenChange = (index: number, value: string) => {
+    if (/^\d?$/.test(value)) {
+      const newToken = [...token];
+      newToken[index] = value;
+      setToken(newToken);
+      // focus next input automatically
+      if (value && index < 3) {
+        const nextInput = document.getElementById(`token-${index + 1}`);
+        nextInput?.focus();
+      }
+    }
+  };
+
+  // console.log(formData.reference, token.join(''));
+
+  const [isLoading, setIsLoading] = useState(false);
+  const verifyToken = async () => {
+    setIsLoading(true);
+    const enteredToken = token.join('');
+    try {
+      const response = await axios.post(`${baseUrl}/api/User/ValidateLoginOtp`, { key: enteredToken, reference: formData.reference });
+      // console.log(response);
+      const token = response.data.data.token;
+      localStorage.setItem('letsmeetToken', token);
+
+      const decoded = jwtDecode<any>(token);
+      const user = {
+        id: decoded.UserId,
+        name: decoded.name,
+        email: decoded.EmailAddress,
+        subject: decoded.Subject,
+        username: decoded.UserName
+      }
+      localStorage.setItem('letsmeetUser', JSON.stringify(user));
+      setShowTokenModal(false);
+      notifySuccess('Login successful', 'success');
+      navigate('/dashboard');
+    } catch (error: any) {
+      // const axiosError = error as AxiosError;
+      notifyError(error.response?.data.responseMessage, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center">
+      {/* MAIN LOGIN SECTION */}
       <div className="md:w-1/2 h-[100dvh] grid place-items-center bg-white overflow-y-auto p-12">
         <div className="w-full max-w-lg">
           <div className="text-center mb-8 flex flex-col items-center">
@@ -116,7 +143,6 @@ const Login = () => {
           {loginError && (
             <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">{loginError}</div>
           )}
-
           {success && (
             <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center">
               <FaCheck className="mr-2" />
@@ -132,16 +158,15 @@ const Login = () => {
                   <FaEnvelope className="text-gray-400" />
                 </div>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="reference"
+                  name="reference"
+                  value={formData.reference}
                   onChange={handleChange}
-                  className={`pl-10 w-full rounded-lg border ${errors.email ? "border-red-500" : "border-gray-200"
-                    } outline-none focus:border-primary py-2 px-4`}
+                  className={`pl-10 w-full rounded-lg border ${errors.reference ? "border-red-500" : "border-gray-200"} outline-none focus:border-primary py-2 px-4`}
                   placeholder="your@email.com"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+              {errors.reference && <p className="mt-1 text-sm text-red-600">{errors.reference}</p>}
             </div>
 
             <div>
@@ -151,30 +176,28 @@ const Login = () => {
                   <FaLock className="text-gray-400" />
                 </div>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
+                  type={showkey ? "text" : "password"}
+                  name="key"
+                  value={formData.key}
                   onChange={handleChange}
-                  className={`pl-10 w-full rounded-lg border ${errors.password ? "border-red-500" : "border-gray-200"
-                    } outline-none focus:border-primary py-2 px-4`}
+                  className={`pl-10 w-full rounded-lg border ${errors.key ? "border-red-500" : "border-gray-200"} outline-none focus:border-primary py-2 px-4`}
                   placeholder="••••••••"
                 />
-                {showPassword && (
+                {showkey ? (
                   <EyeIcon
                     size={18}
                     className="cursor-pointer absolute top-3 right-4"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowkey(!showkey)}
                   />
-                )}
-                {!showPassword && (
+                ) : (
                   <EyeOffIcon
                     size={18}
                     className="cursor-pointer absolute top-3 right-4"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowkey(!showkey)}
                   />
                 )}
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              {errors.key && <p className="mt-1 text-sm text-red-600">{errors.key}</p>}
             </div>
 
             <div className="flex items-center justify-between">
@@ -189,10 +212,9 @@ const Login = () => {
                   Remember me
                 </label>
               </div>
-
               <div className="text-sm">
-                <Link to="/forgot-password" className="text-primary hover:text-primary/80">
-                  Forgot password? 
+                <Link to="/forgot-key" className="text-primary hover:text-primary/80">
+                  Forgot key?
                 </Link>
               </div>
             </div>
@@ -200,9 +222,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={validation || isSubmitting}
-              className={`w-full flex items-center justify-center ${validation ? "bg-gray-300" : "bg-primary hover:bg-primary/80"
-                } text-white font-medium py-2 px-4 rounded-lg transition duration-200 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+              className={`w-full flex items-center justify-center ${validation ? "bg-gray-300" : "bg-primary hover:bg-primary/80"} text-white font-medium py-2 px-4 rounded-lg transition duration-200 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
             >
               {isSubmitting ? (
                 <>
@@ -215,21 +235,67 @@ const Login = () => {
               ) : 'Sign-in'}
             </button>
           </form>
-
-          {/* <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary font-medium hover:text-primary/80">
-                Sign up
-              </Link>
-            </p>
-          </div> */}
         </div>
       </div>
 
       <div className="w-1/2 h-screen bg-primary hidden md:block">
         <img src={imageAsset.loginImage} alt="loginImg" className="w-full h-full " />
       </div>
+
+      {/* FULL SCREEN MODAL */}
+      {showTokenModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md px-6 py-10 relative">
+            <h2 className="text-xl font-semibold text-center mb-4">Verify Your Token</h2>
+            <p className="text-gray-600 text-center mb-6">Enter the 4-digit code sent to you</p>
+
+            <div className="flex justify-center gap-3 mb-10">
+              {token.map((digit, idx) => (
+                <input
+                  key={idx}
+                  id={`token-${idx}`}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleTokenChange(idx, e.target.value)}
+                  className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                />
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 hover:bg-primary hover:text-white rounded-lg text-gray-700"
+                onClick={() => {
+                  setShowTokenModal(false);
+                  setSuccess(false); // optionally reset success
+                }}
+              >
+                Back to login
+              </button>
+
+              <button
+                className="px-4 py-2 bg-primary hover:bg-primary/75 text-white rounded-lg"
+                onClick={() => {
+                  verifyToken();
+                }}
+              >
+                {isLoading ? (
+                  <div className='flex items-center'>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Verifying...
+                  </div>
+                ) : (
+                  "Verify token"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

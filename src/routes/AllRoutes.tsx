@@ -19,8 +19,8 @@ import TermsAndCondition from '../components/Landing/TermsAndCondition';
 import CookiePolicy from '../components/Landing/CookiePolicy';
 import UnderConstructionPage from '../pages/UnderConstructionPage';
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('letsmeetUserId');
+const ProtectedRoute = ({ children }: any) => {
+  const token = localStorage.getItem('letsmeetToken');
   return token ? children : <Navigate to="/login" />;
 };
 
