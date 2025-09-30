@@ -11,7 +11,7 @@ const AllFeedbacks = () => {
     const { formatDate } = useContext(AppContext);
     const { data, isLoading } = useGetAllFeedbacksQuery();
     const requestData = data?.data || [];
-    console.log(requestData);
+    // console.log(requestData);
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
@@ -215,9 +215,9 @@ const AllFeedbacks = () => {
     const filteredUsers = requestData?.filter(user => {
         // Search filter
         const matchesSearch =
-            user.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.dateCreated.toLowerCase().includes(searchTerm.toLowerCase())
+            user.createdAt.toLowerCase().includes(searchTerm.toLowerCase())
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -376,7 +376,7 @@ const AllFeedbacks = () => {
                             <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Title</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">From</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Message</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date sent</th>
                             {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
@@ -388,13 +388,13 @@ const AllFeedbacks = () => {
                     </thead>
                     <tbody>
                         {currentUsers.length > 0 ? (currentUsers.map((user) => (
-                            <tr key={user.feedbackId} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
-                                <td className="py-4 text-gray-500 ">{user.title}</td>
+                                <td className="py-4 text-gray-500 ">{user.email}</td>
                                 <td className="py-4 text-gray-500 pr-6 max-w-[400px]">{user.message}</td>
-                                <td className="py-4 text-gray-500  ">{formatDate(user.dateCreated)}</td>
+                                <td className="py-4 text-gray-500  ">{formatDate(user.createdAt)}</td>
                                 {/* <td className="py-4 pr-4 text-right relative">
                                     <div className="flex items-center justify-end">
                                         <button

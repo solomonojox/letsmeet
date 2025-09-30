@@ -8,8 +8,10 @@ import CardSkeletonLoader from '../../ui/CardSkeletonLoader';
 
 const Cards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
-    const { data: users, isLoading } = useGetAllUsersQuery([]);
+    const { data: userData, isLoading } = useGetAllUsersQuery([]);
     const { data: reports } = useGetAllReportsQuery([]);
+    const users = userData?.data || [];
+    // console.log(users)
 
     if (isLoading) {
         return <CardSkeletonLoader num={4} />;
@@ -33,7 +35,7 @@ const Cards = () => {
     }
 
     const usersTyped: User[] = users as User[] || [];
-    const availableUserCount: number = usersTyped?.filter((user: User) => user.isAvailable === true).length;
+    const availableUserCount: number = usersTyped?.filter((user: User) => user.status === "ACTIVE").length;
 
     // Get current date and date 7 days ago
     const now = new Date();

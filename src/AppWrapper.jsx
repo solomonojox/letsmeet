@@ -1,4 +1,4 @@
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { BrowserRouter, useLocation, matchPath } from "react-router-dom";
 import AllRoutes from "./routes/AllRoutes";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -25,7 +25,8 @@ const validRoutes = [
   "/reports",
   "/settings",
   "/feedback",
-  "/construction"
+  "/construction",
+  "/user-profile/:id",
 ];
 
 // Wrapper component to use hooks outside BrowserRouter
@@ -40,9 +41,12 @@ function App() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const location = useLocation();
+  const path = location.pathname;
   const noLayoutRoutes = ["/", "/contact", "/about", "/faq", "/privacy-policy", "/terms", "/cookies", "/login", "/forgot-password", "/otp", "/reset-password", "/construction"];
   const isAuthRoute = noLayoutRoutes.includes(location.pathname);
-  const isValidRoute = validRoutes.includes(location.pathname);
+  const isValidRoute = validRoutes.some((route) =>
+    matchPath({ path: route, end: true }, path)
+  );
 
   const shouldShowLayout = !isAuthRoute && isValidRoute;
 

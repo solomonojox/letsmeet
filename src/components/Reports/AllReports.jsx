@@ -15,11 +15,17 @@ const AllReports = () => {
 
     const { data, isLoading, isError, refetch } = useGetAllReportsQuery([]);
     const reports = data?.data || [];
+    // console.log(reports)
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const fetchUserById = async (id) => {
-        return await axios.get(`${baseUrl}/api/User/GetUserById/${id}`).then(res => res.data);
+        return await axios.get(`${baseUrl}/api/User/Get/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+            },
+        }).then(res => res.data);
     };
 
     const getMergedReports = async () => {
@@ -272,6 +278,7 @@ const AllReports = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentUsers = filteredReports.slice(indexOfFirstItem, indexOfLastItem);
+    // console.log(currentUsers)
 
     // Calculate total pages
     const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
@@ -420,7 +427,7 @@ const AllReports = () => {
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reporter</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reported User</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Issue</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th> */}
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
@@ -431,7 +438,7 @@ const AllReports = () => {
                     </thead>
                     <tbody>
                         {currentUsers.length > 0 ? currentUsers.map((report) => (
-                            <tr key={report.reportId} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={report.reporterId} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
@@ -442,7 +449,7 @@ const AllReports = () => {
                                             alt={report.reporter}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="text-gray-500 font-medium">{report.reporter}</span>
+                                        <span className="text-gray-500">{report.reporter}</span>
                                     </div>
                                 </td>
                                 <td className="py-4">
@@ -452,15 +459,15 @@ const AllReports = () => {
                                             alt={report.reported}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="text-gray-500 font-medium">{report.reported}</span>
+                                        <span className="text-gray-500">{report.reported}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500">{report.reason}</td>
-                                <td className="py-4">
+                                <td className="py-4 text-gray-500">{report.details}</td>
+                                {/* <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.reportStatus)}`}>
                                         {report.reportStatus}
                                     </span>
-                                </td>
+                                </td> */}
                                 <td className="py-4 text-gray-500">{formatDate(report.date)}</td>
                                 <td className="py-4 pr-4 text-right relative">
                                     <div className="flex items-center justify-start">

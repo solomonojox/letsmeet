@@ -20,19 +20,19 @@ export const api = createApi({
   keepUnusedDataFor: 60000,
   endpoints: (builder) => ({
     getAllUsers: builder.query({
-      query: () => "/api/User/GetAllUser",
+      query: () => "/api/User/Query",
     }),
     getUserById: builder.query({
-      query: (userId) => `/api/User/GetUserById/${userId}`,
+      query: (userId) => `/api/User/Get/${userId}`,
     }),
     getAllReports: builder.query({
       query: () => ({
-        url: `/api/ReportUser/GetAllReports`,
+        url: `/api/Report/Query`,
       }),
     }),
     getActiveUsersPerMonth: builder.query({
       query: () => ({
-        url: `/api/User/ActiveUsersPerMonth/12`,
+        url: `/api/admin/UserAnalytics/registrations?groupBy=day`,
       }),
     }),
     getTotalRevenue: builder.query({
@@ -40,16 +40,26 @@ export const api = createApi({
         url: `/api/Subscription/TotalRevenue`,
       }),
     }),
-    getTotalSubscribers: builder.query({
-      query: () => ({
-        url: `/api/Subscription/TotalSubscriptions`,
-      }),
-    }),
+
+    // getTotalSubscribers: builder.query({
+    //   query: () => ({
+    //     url: `/api/Subscription/TotalSubscriptions`,
+    //   }),
+    // }),
+    
     getSubscribers: builder.query({
       query: () => ({
-        url: `/api/Subscription/GetAllSubscribers`,
+        // url: `/api/SubscriptionAnalytics/subscriptions`,
+        url: `/api/SubscriptionAnalytics/status-breakdown`,
       }),
     }),
+
+    getSubscriptionStat: builder.query({
+      query: () => ({
+        url: `/api/SubscriptionAnalytics/overview`,
+      }),
+    }),
+
     getFriendRequestStat: builder.query({
       query: () => ({
         url: `/api/FriendRequest/FriendRequestStats`,
@@ -57,12 +67,12 @@ export const api = createApi({
     }),
     getAllFriendRequests: builder.query({
       query: () => ({
-        url: `/api/FriendRequest/GetAllRequest`,
+        url: `/api/v1/chat/friend-requests/received`,
       }),
     }),
     getAllFeedbacks: builder.query({
       query: () => ({
-        url: `/api/Feedback/all`,
+        url: `/api/Feedback/Query`,
       }),
     }),
   }),
@@ -74,8 +84,9 @@ export const {
   useGetAllReportsQuery,
   useGetActiveUsersPerMonthQuery,
   useGetTotalRevenueQuery,
-  useGetTotalSubscribersQuery,
+  // useGetTotalSubscribersQuery,
   useGetSubscribersQuery,
+  useGetSubscriptionStatQuery,
   useGetFriendRequestStatQuery,
   useGetAllFriendRequestsQuery,
   useGetAllFeedbacksQuery,

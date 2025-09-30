@@ -9,56 +9,56 @@ import { useDispatch } from 'react-redux';
 
 const RecentUsers = () => {
   const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
-  const { data: usersr, isLoading } = useGetAllUsersQuery([]);
-  // console.log(usersr);
+  const { data, isLoading } = useGetAllUsersQuery([]);
+  const users = data?.data
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'Brooklyn Simmons',
-      avatar: imageAsset.avatar,
-      dateCreated: '4/21/12',
-      plan: 'Free',
-      location: 'Ikorodu, Lagos, Nigeria',
-      status: 'Active'
-    },
-    {
-      id: 2,
-      name: 'Kathryn Murphy',
-      avatar: imageAsset.avatar,
-      dateCreated: '9/18/16',
-      plan: 'Free',
-      location: 'Ikorodu, Lagos, Nigeria',
-      status: 'Deactivated'
-    },
-    {
-      id: 3,
-      name: 'Floyd Miles',
-      avatar: imageAsset.avatar,
-      dateCreated: '12/4/17',
-      plan: 'Premium ~ Monthly',
-      location: 'Ikorodu, Lagos, Nigeria',
-      status: 'Active'
-    },
-    {
-      id: 4,
-      name: 'Guy Hawkins',
-      avatar: imageAsset.avatar,
-      dateCreated: '8/21/15',
-      plan: 'Basic ~ Yearly',
-      location: 'Ikorodu, Lagos, Nigeria',
-      status: 'In Review'
-    },
-    {
-      id: 5,
-      name: 'Esther Howard',
-      avatar: imageAsset.avatar,
-      dateCreated: '1/15/12',
-      plan: 'Premium ~ Yearly',
-      location: 'Ikorodu, Lagos, Nigeria',
-      status: 'Deactivated'
-    }
-  ]);
+  // const [users, setUsers] = useState([
+  //   {
+  //     id: 1,
+  //     name: 'Brooklyn Simmons',
+  //     avatar: imageAsset.avatar,
+  //     dateCreated: '4/21/12',
+  //     plan: 'Free',
+  //     location: 'Ikorodu, Lagos, Nigeria',
+  //     status: 'Active'
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Kathryn Murphy',
+  //     avatar: imageAsset.avatar,
+  //     dateCreated: '9/18/16',
+  //     plan: 'Free',
+  //     location: 'Ikorodu, Lagos, Nigeria',
+  //     status: 'Deactivated'
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Floyd Miles',
+  //     avatar: imageAsset.avatar,
+  //     dateCreated: '12/4/17',
+  //     plan: 'Premium ~ Monthly',
+  //     location: 'Ikorodu, Lagos, Nigeria',
+  //     status: 'Active'
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Guy Hawkins',
+  //     avatar: imageAsset.avatar,
+  //     dateCreated: '8/21/15',
+  //     plan: 'Basic ~ Yearly',
+  //     location: 'Ikorodu, Lagos, Nigeria',
+  //     status: 'In Review'
+  //   },
+  //   {
+  //     id: 5,
+  //     name: 'Esther Howard',
+  //     avatar: imageAsset.avatar,
+  //     dateCreated: '1/15/12',
+  //     plan: 'Premium ~ Yearly',
+  //     location: 'Ikorodu, Lagos, Nigeria',
+  //     status: 'Deactivated'
+  //   }
+  // ]);
 
   // State for search and pagination
 
@@ -100,17 +100,17 @@ const RecentUsers = () => {
   }, [openModal]);
 
   // Function to calculate if modal should be positioned above
-  const calculateModalPosition = (userId) => {
-    if (!buttonRef.current[userId]) return;
+  const calculateModalPosition = (id) => {
+    if (!buttonRef.current[id]) return;
 
-    const buttonRect = buttonRef.current[userId].getBoundingClientRect();
+    const buttonRect = buttonRef.current[id].getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const bottomSpace = viewportHeight - buttonRect.bottom;
 
     // If there's less than 250px below the button, position the modal above
     setModalPositions(prev => ({
       ...prev,
-      [userId]: bottomSpace < 250
+      [id]: bottomSpace < 250
     }));
   };
 
@@ -127,19 +127,19 @@ const RecentUsers = () => {
     }
   };
 
-  const toggleModal = (userId) => {
+  const toggleModal = (id) => {
     // Calculate position whenever modal is opened
-    calculateModalPosition(userId);
+    calculateModalPosition(id);
 
-    if (openModal === userId) {
+    if (openModal === id) {
       setOpenModal(null);
     } else {
-      setOpenModal(userId);
+      setOpenModal(id);
     }
   };
 
   // Filter users based on search term
-  const filteredUsers = usersr?.filter(user =>
+  const filteredUsers = users?.filter(user =>
     user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     // user.subscriptionPlan.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -189,7 +189,7 @@ const RecentUsers = () => {
   const navigate = useNavigate();
   const handleNavigateToDetailsPage = (id, name) => {
     dispatch(api.endpoints.getUserById.initiate(id));
-    navigate(`/user-profile/${id}`, { state: { userId: id, userName: name } });
+    navigate(`/user-profile/${id}`, { state: { id: id, userName: name } });
   }
 
   return (
@@ -236,7 +236,7 @@ const RecentUsers = () => {
           </thead>
           <tbody>
             {currentUsers?.map((user) => (
-              <tr key={user?.userId} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={user?.id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
                 </td>
@@ -272,11 +272,11 @@ const RecentUsers = () => {
                   <div className="flex items-center justify-start">
                     <button
                       className="text-gray-500 hover:text-gray-700 flex items-center"
-                      onClick={() => toggleModal(user.userId)}
-                      ref={(el) => (buttonRef.current[user.userId] = el)}
+                      onClick={() => toggleModal(user.id)}
+                      ref={(el) => (buttonRef.current[user.id] = el)}
                     >
                       <Settings className="w-5 h-5 mr-1" />
-                      {openModal === user.userId ? (
+                      {openModal === user.id ? (
                         <ChevronUp className="w-4 h-4" />
                       ) : (
                         <ChevronDown className="w-4 h-4" />
@@ -285,14 +285,14 @@ const RecentUsers = () => {
                   </div>
 
                   {/* Modal for actions */}
-                  {openModal === user.userId && (
+                  {openModal === user.id && (
                     <div
-                      ref={(el) => (modalRef.current[user.userId] = el)}
-                      className={`absolute ${modalPositions[user.userId] ? "bottom-full mb-2" : "mt-2"
+                      ref={(el) => (modalRef.current[user.id] = el)}
+                      className={`absolute ${modalPositions[user.id] ? "bottom-full mb-2" : "mt-2"
                         } right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                     >
                       <div className="py-3 px-4 border-b border-gray-200">
-                        <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.userId, user.firstName)}>View profile</button>
+                        <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.id, user.firstName)}>View profile</button>
                       </div>
                       {/* <div className="p-4">
                         <div className="text-gray-400 mb-2 text-md">Decisions:</div>

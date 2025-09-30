@@ -21,6 +21,7 @@ import UnderConstructionPage from '../pages/UnderConstructionPage';
 
 const ProtectedRoute = ({ children }: any) => {
   const token = localStorage.getItem('letsmeetToken');
+  // console.log(token)
   return token ? children : <Navigate to="/login" />;
 };
 
@@ -37,6 +38,7 @@ const AllRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndCondition />} />
       <Route path="/cookies" element={<CookiePolicy />} />
+
       <Route path="/" element={<Navigate to='/dashboard' replace />} />
       <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />

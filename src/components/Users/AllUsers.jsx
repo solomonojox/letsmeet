@@ -10,7 +10,8 @@ import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllUsers = () => {
     const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
-    const { data: users, isLoading } = useGetAllUsersQuery([]);
+    const { data, isLoading } = useGetAllUsersQuery([]);
+    const users= data?.data
     // console.log(users);
 
     // Subscription plan mapping
@@ -411,7 +412,7 @@ const AllUsers = () => {
                     </thead>
                     <tbody>
                         {currentUsers?.length > 0 ? (currentUsers?.map((user) => (
-                            <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
@@ -439,11 +440,11 @@ const AllUsers = () => {
                                     <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
-                                            onClick={() => toggleModal(user.userId)}
-                                            ref={el => buttonRef.current[user.userId] = el}
+                                            onClick={() => toggleModal(user.id)}
+                                            ref={el => buttonRef.current[user.id] = el}
                                         >
                                             <Settings className="w-5 h-5 mr-1" />
-                                            {openModal === user.userId ?
+                                            {openModal === user.id ?
                                                 <ChevronUp className="w-4 h-4" /> :
                                                 <ChevronDown className="w-4 h-4" />
                                             }
@@ -451,13 +452,13 @@ const AllUsers = () => {
                                     </div>
 
                                     {/* Modal for actions */}
-                                    {openModal === user.userId && (
+                                    {openModal === user.id && (
                                         <div
-                                            ref={el => modalRef.current[user.userId] = el}
-                                            className={`absolute ${modalPositions[user.userId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                                            ref={el => modalRef.current[user.id] = el}
+                                            className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
                                             <div className="py-3 px-4 border-b border-gray-200">
-                                                <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.userId, user.firstName)}>View profile</button>
+                                                <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.id, user.firstName)}>View profile</button>
                                             </div>
                                             {/* <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>

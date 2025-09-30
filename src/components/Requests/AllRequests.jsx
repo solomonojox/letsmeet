@@ -105,7 +105,7 @@ const AllRequests = () => {
                 return 'bg-green-100 text-green-600';
             case 2:
                 return 'bg-red-100 text-red-600';
-            case 0:
+            case "PENDING":
                 return 'bg-yellow-100 text-yellow-600';
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -215,9 +215,10 @@ const AllRequests = () => {
     const filteredUsers = requestData?.filter(user => {
         // Search filter
         const matchesSearch =
-            user.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.recieverFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.recieverLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.sender.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.sender.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.receiver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.receiver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.createdAt.includes(searchTerm);
 
         // Status filter
@@ -390,33 +391,33 @@ const AllRequests = () => {
                     </thead>
                     <tbody>
                         {currentUsers.length > 0 ? (currentUsers.map((user) => (
-                            <tr key={user.requestId} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={user.senderId} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={user?.senderProfilePicture || imageAsset.avatar}
-                                            alt={user.name}
+                                            src={user?.sender.profilePictureUrl || imageAsset.avatar}
+                                            alt={user.sender.firstName}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user?.senderName}</span>
+                                        <span className="font-medium">{user?.sender.firstName} {user?.sender.lastName}</span>
                                     </div>
                                 </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={user?.receiverProfilePictureUrl || imageAsset.avatar}
-                                            alt={user.name}
+                                            src={user?.receiver.profilePictureUrl || imageAsset.avatar}
+                                            alt={user.receiver?.firstName}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user?.recieverFirstName + ' ' + user?.recieverLastName}</span>
+                                        <span className="font-medium">{user?.receiver?.firstName + ' ' + user?.receiver?.lastName}</span>
                                     </div>
                                 </td>
                                 <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                                        {user.status === 1 ? 'Accepted' : user.status === 0 ? 'Pending' : 'Rejected'}
+                                        {user.status}
                                     </span>
                                 </td>
                                 <td className="py-4 text-gray-500 ">{formatDate(user.createdAt)}</td>
