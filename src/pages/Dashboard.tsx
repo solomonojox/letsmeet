@@ -10,10 +10,10 @@ import { api } from '../Services/API/api';
 const Dashboard = () => {
   const dispatch = useDispatch<any>();
   useEffect(() => {
+    dispatch(api.endpoints.getAllUsers.initiate([]));
+    dispatch(api.endpoints.getAllReports.initiate([]));
     dispatch(api.endpoints.getActiveUsersPerMonth.initiate(undefined));
     dispatch(api.endpoints.getAllFriendRequests.initiate([]));
-    dispatch(api.endpoints.getAllReports.initiate([]));
-    dispatch(api.endpoints.getAllUsers.initiate([]));
     dispatch(api.endpoints.getSubscribers.initiate([]));
   })
   return (

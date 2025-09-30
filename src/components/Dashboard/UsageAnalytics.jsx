@@ -14,7 +14,8 @@ import * as XLSX from 'xlsx';
 import saveAs from 'file-saver';
 
 const UsageAnalytics = () => {
-  const { data: users } = useGetAllUsersQuery([]);
+  const { data: userData } = useGetAllUsersQuery([]);
+  const users = userData?.data || [];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const monthlyCounts = Array(12).fill(0);
 

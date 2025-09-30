@@ -155,7 +155,7 @@ const TopBar = ({ toggleSidebar }) => {
         </div>
 
         <div className="lg:flex justify-between items-center gap-8 hidden w-full">
-          <h1 className="text-xl font-bold flex items-center gap-2">
+          <h1 className="text-lg font-medium flex items-center gap-2">
             {location.pathname.includes("user-profile") && <FaArrowLeftLong onClick={() => navigate(-1)} className="cursor-pointer" />}
             {pageName}
           </h1>

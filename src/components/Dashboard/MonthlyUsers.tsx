@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import saveAs from "file-saver";
 import { useGetActiveUsersPerMonthQuery } from "../../Services/API/api";
 
 type MonthlyData = {
@@ -18,6 +18,7 @@ type MonthlyData = {
 
 const MonthlyUsers: React.FC = () => {
   const { data, isLoading, isError } = useGetActiveUsersPerMonthQuery({});
+  // console.log(data)
 
   // Fallback to empty object if data is undefined or null
   const monthlyData: MonthlyData = data?.data ?? {};

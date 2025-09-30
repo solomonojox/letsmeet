@@ -2,7 +2,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { useGetAllUsersQuery } from '../../Services/API/api';
 
 const TopState = () => {
-  const { data: users, isLoading, error } = useGetAllUsersQuery([]);
+  const { data, isLoading, error } = useGetAllUsersQuery([]);
+  const users = data?.data || [];
 
   // Ensure we always work with an array
   const userList = users || [];
