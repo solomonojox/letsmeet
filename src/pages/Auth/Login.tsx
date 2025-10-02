@@ -83,7 +83,7 @@ const Login = () => {
     }
   };
 
-  const validation = !formData.reference || !formData.key;
+  const validation = !formData.reference || !formData.key; 
 
   // handle token input
   const handleTokenChange = (index: number, value: string) => {
