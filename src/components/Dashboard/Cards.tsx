@@ -62,7 +62,7 @@ const Cards = () => {
             value: formatNumberWithCommas(users?.length || 0),
             icon: <HiUsers className="text-primary" />,
             change: `
-                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100) || 0}%`,
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100)?.toFixed(2) || 0}%`,
             changeText: 'since yesterday',
             color: 'bg-primary',
             textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
@@ -85,7 +85,7 @@ const Cards = () => {
             value: formatNumberWithCommas(recentUserCount || 0),
             icon: <HiUsers className="text-[#F4B8DC]" />,
             change: `
-                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100) || 0}%`,
+                ${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? '+' : (yesterdayUserCount / usersTyped.length) * 100 > 0 ? '-' : ''} ${((yesterdayUserCount / usersTyped.length) * 100)?.toFixed(2) || 0}%`,
             changeText: 'since yesterday',
             color: 'bg-pink-100',
             textColor: `${(yesterdayUserCount / usersTyped.length) * 100 > 0 ? 'text-green-500' : 'text-red-500'}`,
