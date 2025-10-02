@@ -4,19 +4,29 @@ import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Fi
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { AppContext } from '../../Context/AppContext';
-import { useGetAllFeedbacksQuery } from '../../Services/API/api';
+import { api, useGetAllUsersQuery } from '../../Services/API/api';
+import { useDispatch } from 'react-redux';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
-const AllFeedbacks = () => {
-    const { formatDate } = useContext(AppContext);
-    const { data, isLoading } = useGetAllFeedbacksQuery();
-    const requestData = data?.data || [];
-    // console.log(requestData);
+const AllUsers = () => {
+    const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
+    const { data, isLoading } = useGetAllUsersQuery([]);
+    const users = data?.data
+    // console.log(users);
+
+    // Subscription plan mapping
+    const planMapping = {
+        1: 'Free',
+        2: 'Gold',
+        3: 'Platinum'
+    };
+
+    const navigate = useNavigate();
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(20);
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -35,8 +45,8 @@ const AllFeedbacks = () => {
         plan: {
             All: true,
             Free: false,
-            Basic: false,
-            Premium: false
+            Gold: false,
+            Platinum: false
         }
     });
 
@@ -84,11 +94,6 @@ const AllFeedbacks = () => {
         };
     }, [openModal, showFilterModal]);
 
-    // Reset to page 1 when search term changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
     // Function to calculate if modal should be positioned above
     const calculateModalPosition = (userId) => {
         if (!buttonRef.current[userId]) return;
@@ -106,11 +111,11 @@ const AllFeedbacks = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 1:
+            case 'ACTIVE':
                 return 'bg-green-100 text-green-600';
-            case 2:
+            case 'DEACTIVATED':
                 return 'bg-red-100 text-red-600';
-            case 0:
+            case 'IN REVIEW':
                 return 'bg-yellow-100 text-yellow-600';
             default:
                 return 'bg-gray-100 text-gray-600';
@@ -146,42 +151,52 @@ const AllFeedbacks = () => {
     };
 
     const handleFilterChange = (filterType, value) => {
-        let newFilterState;
         if (value === 'All') {
             // If 'All' is selected, uncheck all other options and check 'All'
-            newFilterState = {
-                ...filters[filterType],
-                ...Object.keys(filters[filterType]).reduce((acc, key) => {
-                    acc[key] = key === 'All';
-                    return acc;
-                }, {})
-            };
+            setFilters(prev => ({
+                ...prev,
+                [filterType]: {
+                    ...Object.keys(prev[filterType]).reduce((acc, key) => {
+                        acc[key] = key === 'All';
+                        return acc;
+                    }, {})
+                }
+            }));
         } else {
-            // If a specific value is selected, uncheck 'All' and toggle the value
-            const toggledValue = !filters[filterType][value];
-            newFilterState = {
-                ...filters[filterType],
-                [value]: toggledValue,
-                'All': false
-            };
+            // If a specific value is selected, uncheck 'All'
+            setFilters(prev => ({
+                ...prev,
+                [filterType]: {
+                    ...prev[filterType],
+                    [value]: !prev[filterType][value],
+                    'All': false
+                }
+            }));
 
             // If all specific options are unchecked, check 'All'
-            const allUnchecked = Object.entries(newFilterState)
+            const updatedFilters = {
+                ...filters,
+                [filterType]: {
+                    ...filters[filterType],
+                    [value]: !filters[filterType][value],
+                    'All': false
+                }
+            };
+
+            const allUnchecked = Object.entries(updatedFilters[filterType])
                 .filter(([key]) => key !== 'All')
                 .every(([_, checked]) => !checked);
 
             if (allUnchecked) {
-                newFilterState = {
-                    ...newFilterState,
-                    'All': true
-                };
+                setFilters(prev => ({
+                    ...prev,
+                    [filterType]: {
+                        ...prev[filterType],
+                        'All': true
+                    }
+                }));
             }
         }
-
-        setFilters(prev => ({
-            ...prev,
-            [filterType]: newFilterState
-        }));
     };
 
     const applyFilter = () => {
@@ -200,20 +215,25 @@ const AllFeedbacks = () => {
             plan: {
                 All: true,
                 Free: false,
-                Basic: false,
-                Premium: false
+                Gold: false,
+                Platinum: false
             }
         });
-        setCurrentPage(1);
+    };
+
+    // Get subscription plan name from plan ID
+    const getPlanName = (planId) => {
+        return planMapping[planId] || 'Unknown';
     };
 
     // Filter users based on search term and selected filters
-    const filteredUsers = requestData?.filter(user => {
+    const filteredUsers = users?.filter(user => {
         // Search filter
         const matchesSearch =
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.createdAt.toLowerCase().includes(searchTerm.toLowerCase());
+            user?.firstName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+            user?.lastName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+            user?.state?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+            user?.createdAt?.includes(searchTerm);
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -221,7 +241,8 @@ const AllFeedbacks = () => {
 
         // Plan filter
         const planFilterApplied = !filters.plan.All;
-        const matchesPlanFilter = planFilterApplied ? filters.plan[user.plan] : true;
+        const userPlanName = getPlanName(user.subscriptionPlan);
+        const matchesPlanFilter = planFilterApplied ? filters.plan[userPlanName] : true;
 
         return matchesSearch && matchesStatusFilter && matchesPlanFilter;
     });
@@ -229,10 +250,10 @@ const AllFeedbacks = () => {
     // Get current items for pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const currentUsers = filteredUsers?.slice(indexOfFirstItem, indexOfLastItem);
 
     // Calculate total pages
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -261,26 +282,29 @@ const AllFeedbacks = () => {
         pageNumbers.push(i);
     }
 
-    if (isLoading) {
-        return <TableSkeletonLoader headers={['Title', 'Message', 'Date sent']} />;
-    
+    const dispatch = useDispatch();
+    const handleNavigateToDetailsPage = (id, name) => {
+        dispatch(api.endpoints.getUserById.initiate(id));
+        navigate(`/user-profile/${id}`, { state: { userId: id, userName: name } });
     }
+
+    if (isLoading) return <TableSkeletonLoader rows={5} headers={['Name', 'Date created', 'Plan', 'Location', 'Status', 'Action']} />
 
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium text-gray-700">All Feedbacks</h2>
+                <h2 className="text-lg font-medium text-gray-700">All users</h2>
                 <div className="relative">
-                    {/* <button
+                    <button
                         ref={filterButtonRef}
                         className="flex items-center px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         onClick={toggleFilterModal}
                     >
                         <Filter className="w-4 h-4 mr-2" />
                         Filter
-                    </button> */}
+                    </button>
 
-                    {/* {showFilterModal && (
+                    {showFilterModal && (
                         <div
                             ref={filterModalRef}
                             className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-50"
@@ -288,6 +312,7 @@ const AllFeedbacks = () => {
                             <div className="p-4">
                                 <div className="text-sm text-gray-500 mb-2">Filter by:</div>
 
+                                {/* Status Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Status</span>
@@ -311,6 +336,7 @@ const AllFeedbacks = () => {
                                     </div>
                                 </div>
 
+                                {/* Plan Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Plan</span>
@@ -347,7 +373,7 @@ const AllFeedbacks = () => {
                                 </button>
                             </div>
                         </div>
-                    )} */}
+                    )}
                 </div>
             </div>
 
@@ -359,7 +385,7 @@ const AllFeedbacks = () => {
                 <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search for feedbacks"
+                    placeholder="Search for users"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -372,27 +398,46 @@ const AllFeedbacks = () => {
                             <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">From</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Message</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date sent</th>
-                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Created</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Location</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
                                 </div>
-                            </th> */}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.length > 0 ? (currentUsers.map((user) => (
+                        {currentUsers?.length > 0 ? (currentUsers?.map((user) => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
-                                <td className="py-4 text-gray-500 ">{user.email}</td>
-                                <td className="py-4 text-gray-500 pr-6 max-w-[400px]">{user.message}</td>
-                                <td className="py-4 text-gray-500  ">{formatDate(user.createdAt)}</td>
-                                {/* <td className="py-4 pr-4 text-right relative">
-                                    <div className="flex items-center justify-end">
+                                <td className="py-4">
+                                    <div className="flex items-center">
+                                        <img
+                                            src={user?.profilePictureUrl || imageAsset.avatar}
+                                            alt={`${user?.firstName} ${user?.lastName}`}
+                                            className="w-8 h-8 rounded-full mr-3"
+                                        />
+                                        <span className="font-medium">{user?.firstName} {user?.lastName}</span>
+                                    </div>
+                                </td>
+                                <td className="py-4 text-gray-500 min-w-34">{formatDate(user?.createdAt)}</td>
+                                <td className="py-4 pr-4 text-gray-500">
+                                    {getPlanName(user.subscriptionPlan)}
+                                </td>
+                                <td className="py-4 text-gray-500 ">{user.state}, {user?.country}</td>
+                                <td className="py-4 pr-4">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                                        {user.status}
+                                    </span>
+                                </td>
+                                <td className="py-4 pr-4 text-right relative">
+                                    <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
                                             onClick={() => toggleModal(user.id)}
@@ -406,15 +451,16 @@ const AllFeedbacks = () => {
                                         </button>
                                     </div>
 
-                                    {openModal === user.requestId && (
+                                    {/* Modal for actions */}
+                                    {openModal === user.id && (
                                         <div
-                                            ref={el => modalRef.current[user.requestId] = el}
-                                            className={`absolute ${modalPositions[user.requestId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
+                                            ref={el => modalRef.current[user.id] = el}
+                                            className={`absolute ${modalPositions[user.id] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
                                             <div className="py-3 px-4 border-b border-gray-200">
-                                                <a href="#" className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.requestId}`, { state: { userId: user.id } })}>View profile</a>
+                                                <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.id, user.firstName)}>View profile</button>
                                             </div>
-                                            <div className="p-4">
+                                            {/* <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
 
                                                 <div className="flex justify-between items-center mb-3">
@@ -431,15 +477,15 @@ const AllFeedbacks = () => {
                                                     <span className="text-yellow-500 text-md">Review account</span>
                                                     <input type="checkbox" className="h-4 w-4" />
                                                 </div>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     )}
-                                </td> */}
+                                </td>
                             </tr>
                         ))) : (
                             <tr>
-                                <td colSpan="4" className="text-center py-4 text-gray-500">
-                                    No feedbacks found.
+                                <td colSpan="7" className="text-center py-4 text-gray-500">
+                                    No users found
                                 </td>
                             </tr>
                         )}
@@ -447,70 +493,68 @@ const AllFeedbacks = () => {
                 </table>
             </div>
 
-            {/* Pagination - only render if there are users to paginate */}
-            {filteredUsers.length > 0 && (
-                <div className="flex items-center justify-between mt-4 w-full">
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" />
-                        Prev
-                    </button>
+            {/* Pagination */}
+            <div className="flex items-center justify-between mt-4 px-2">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+                >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Previous
+                </button>
 
-                    <div className="flex space-x-1">
-                        {totalPages > maxPageButtons && currentPage > middlePoint && (
-                            <>
-                                <button
-                                    onClick={() => setCurrentPage(1)}
-                                    className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
-                                >
-                                    1
-                                </button>
-                                {startPage > 2 && (
-                                    <span className="px-2 py-1 text-gray-500">...</span>
-                                )}
-                            </>
-                        )}
-
-                        {pageNumbers.map(number => (
+                <div className="flex space-x-1">
+                    {totalPages > maxPageButtons && currentPage > middlePoint && (
+                        <>
                             <button
-                                key={number}
-                                onClick={() => setCurrentPage(number)}
-                                className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                                onClick={() => setCurrentPage(1)}
+                                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
-                                {number}
+                                1
                             </button>
-                        ))}
+                            {startPage > 2 && (
+                                <span className="px-2 py-1 text-gray-500">...</span>
+                            )}
+                        </>
+                    )}
 
-                        {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
-                            <>
-                                {endPage < totalPages - 1 && (
-                                    <span className="px-2 py-1 text-gray-500">...</span>
-                                )}
-                                <button
-                                    onClick={() => setCurrentPage(totalPages)}
-                                    className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
-                                >
-                                    {totalPages}
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    {pageNumbers.map(number => (
+                        <button
+                            key={number}
+                            onClick={() => setCurrentPage(number)}
+                            className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            {number}
+                        </button>
+                    ))}
 
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        Next
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                    </button>
+                    {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
+                        <>
+                            {endPage < totalPages - 1 && (
+                                <span className="px-2 py-1 text-gray-500">...</span>
+                            )}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                            >
+                                {totalPages}
+                            </button>
+                        </>
+                    )}
                 </div>
-            )}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
+                >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
+            </div>
         </div>
     );
 };
 
-export default AllFeedbacks;
+export default AllUsers;
