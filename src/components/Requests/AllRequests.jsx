@@ -11,7 +11,6 @@ const AllRequests = () => {
     const { formatDate } = useContext(AppContext);
     const { data, isLoading } = useGetAllFriendRequestsQuery();
     const requestData = data?.data || [];
-    // console.log(requestData);
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
@@ -84,6 +83,11 @@ const AllRequests = () => {
         };
     }, [openModal, showFilterModal]);
 
+    // Reset to page 1 when search term changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     // Function to calculate if modal should be positioned above
     const calculateModalPosition = (userId) => {
         if (!buttonRef.current[userId]) return;
@@ -141,52 +145,42 @@ const AllRequests = () => {
     };
 
     const handleFilterChange = (filterType, value) => {
+        let newFilterState;
         if (value === 'All') {
             // If 'All' is selected, uncheck all other options and check 'All'
-            setFilters(prev => ({
-                ...prev,
-                [filterType]: {
-                    ...Object.keys(prev[filterType]).reduce((acc, key) => {
-                        acc[key] = key === 'All';
-                        return acc;
-                    }, {})
-                }
-            }));
+            newFilterState = {
+                ...filters[filterType],
+                ...Object.keys(filters[filterType]).reduce((acc, key) => {
+                    acc[key] = key === 'All';
+                    return acc;
+                }, {})
+            };
         } else {
-            // If a specific value is selected, uncheck 'All'
-            setFilters(prev => ({
-                ...prev,
-                [filterType]: {
-                    ...prev[filterType],
-                    [value]: !prev[filterType][value],
-                    'All': false
-                }
-            }));
-
-            // If all specific options are unchecked, check 'All'
-            const updatedFilters = {
-                ...filters,
-                [filterType]: {
-                    ...filters[filterType],
-                    [value]: !filters[filterType][value],
-                    'All': false
-                }
+            // If a specific value is selected, uncheck 'All' and toggle the value
+            const toggledValue = !filters[filterType][value];
+            newFilterState = {
+                ...filters[filterType],
+                [value]: toggledValue,
+                'All': false
             };
 
-            const allUnchecked = Object.entries(updatedFilters[filterType])
+            // If all specific options are unchecked, check 'All'
+            const allUnchecked = Object.entries(newFilterState)
                 .filter(([key]) => key !== 'All')
                 .every(([_, checked]) => !checked);
 
             if (allUnchecked) {
-                setFilters(prev => ({
-                    ...prev,
-                    [filterType]: {
-                        ...prev[filterType],
-                        'All': true
-                    }
-                }));
+                newFilterState = {
+                    ...newFilterState,
+                    'All': true
+                };
             }
         }
+
+        setFilters(prev => ({
+            ...prev,
+            [filterType]: newFilterState
+        }));
     };
 
     const applyFilter = () => {
@@ -209,6 +203,7 @@ const AllRequests = () => {
                 Premium: false
             }
         });
+        setCurrentPage(1);
     };
 
     // Filter users based on search term and selected filters
@@ -219,7 +214,7 @@ const AllRequests = () => {
             user.sender.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.receiver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.receiver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.createdAt.includes(searchTerm);
+            user.createdAt.toLowerCase().includes(searchTerm.toLowerCase());
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -269,7 +264,6 @@ const AllRequests = () => {
 
     if (isLoading) {
         return <TableSkeletonLoader headers={['Sender', 'Receiver', 'Status', 'Date sent']} />;
-    
     }
 
     return (
@@ -468,7 +462,7 @@ const AllRequests = () => {
                             </tr>
                         ))) : (
                             <tr>
-                                <td colSpan="6" className="text-center py-4 text-gray-500">
+                                <td colSpan="5" className="text-center py-4 text-gray-500">
                                     No requests found.
                                 </td>
                             </tr>
@@ -477,66 +471,68 @@ const AllRequests = () => {
                 </table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 w-full">
-                <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Prev
-                </button>
+            {/* Pagination - only render if there are users to paginate */}
+            {filteredUsers.length > 0 && (
+                <div className="flex items-center justify-between mt-4 w-full">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <ChevronLeft className="w-4 h-4 mr-1" />
+                        Prev
+                    </button>
 
-                <div className="flex space-x-1">
-                    {totalPages > maxPageButtons && currentPage > middlePoint && (
-                        <>
+                    <div className="flex space-x-1">
+                        {totalPages > maxPageButtons && currentPage > middlePoint && (
+                            <>
+                                <button
+                                    onClick={() => setCurrentPage(1)}
+                                    className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                                >
+                                    1
+                                </button>
+                                {startPage > 2 && (
+                                    <span className="px-2 py-1 text-gray-500">...</span>
+                                )}
+                            </>
+                        )}
+
+                        {pageNumbers.map(number => (
                             <button
-                                onClick={() => setCurrentPage(1)}
-                                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                                key={number}
+                                onClick={() => setCurrentPage(number)}
+                                className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
                             >
-                                1
+                                {number}
                             </button>
-                            {startPage > 2 && (
-                                <span className="px-2 py-1 text-gray-500">...</span>
-                            )}
-                        </>
-                    )}
+                        ))}
 
-                    {pageNumbers.map(number => (
-                        <button
-                            key={number}
-                            onClick={() => setCurrentPage(number)}
-                            className={`px-3 py-1 rounded-md text-sm ${number === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
-                        >
-                            {number}
-                        </button>
-                    ))}
+                        {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
+                            <>
+                                {endPage < totalPages - 1 && (
+                                    <span className="px-2 py-1 text-gray-500">...</span>
+                                )}
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+                                >
+                                    {totalPages}
+                                </button>
+                            </>
+                        )}
+                    </div>
 
-                    {totalPages > maxPageButtons && currentPage < (totalPages - middlePoint) && (
-                        <>
-                            {endPage < totalPages - 1 && (
-                                <span className="px-2 py-1 text-gray-500">...</span>
-                            )}
-                            <button
-                                onClick={() => setCurrentPage(totalPages)}
-                                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
-                            >
-                                {totalPages}
-                            </button>
-                        </>
-                    )}
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
                 </div>
-
-                <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
-            </div>
+            )}
         </div>
     );
 };

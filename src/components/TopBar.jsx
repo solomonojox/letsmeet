@@ -161,13 +161,13 @@ const TopBar = ({ toggleSidebar }) => {
           </h1>
 
           <div className="flex gap-4">
-            <div className="flex items-center gap-1 rounded-lg border p-1">
+            {/* <div className="flex items-center gap-1 rounded-lg border p-1">
               {icons.date}
               <div className="flex gap-1 items-center">
                 <p className="text-xs">Today</p>
                 {icons.dropDown}
               </div>
-            </div>
+            </div> */}
 
             <div
               className="flex cursor-pointer items-center"

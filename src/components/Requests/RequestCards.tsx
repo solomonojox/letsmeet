@@ -11,54 +11,65 @@ const RequestCards = () => {
     const { data: requestStats, isLoading } = useGetFriendRequestStatQuery([]);
     const { data: allRequests } = useGetAllFriendRequestsQuery([]);
 
-    // Total Requests since yesterday
-    const totalRequestSinceYesterday = (allRequests?.data || []).filter((user: any) => new Date(user.createdAt) >= new Date(new Date().setDate(new Date().getDate() - 1)));
-    const percentageChange = (totalRequestSinceYesterday.length / allRequests?.data?.length) * 100;
+    const totalRequests = allRequests?.data?.length || 0;
 
     // Total Requests since yesterday
-    const totalRequestAcceptedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= new Date(new Date().setDate(new Date().getDate() - 1)) && user.status === 1));
-    const percentageChangeAcceptedSinceYesterday = (totalRequestAcceptedSinceYesterday.length / allRequests?.data?.length) * 100;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const totalRequestSinceYesterday = (allRequests?.data || []).filter((user: any) => new Date(user.createdAt) >= yesterday);
+    const percentageChange = totalRequests > 0 ? ((totalRequestSinceYesterday.length / totalRequests) * 100) : 0;
 
-    // Total Requests since yesterday
-    const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= new Date(new Date().setDate(new Date().getDate() - 1)) && user.status === 2));
-    const percentageChangeRejectedSinceYesterday = (totalRequestRejectedSinceYesterday.length / allRequests?.data?.length) * 100;
+    // Total Requests accepted since yesterday
+    const totalRequestAcceptedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 1));
+    const totalAccepted = requestStats?.data?.accepted || 0;
+    const percentageChangeAcceptedSinceYesterday = totalRequests > 0 ? ((totalRequestAcceptedSinceYesterday.length / totalRequests) * 100) : 0;
+
+    // Total Requests rejected since yesterday
+    const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 2));
+    const totalRejected = requestStats?.data?.rejected || 0;
+    const percentageChangeRejectedSinceYesterday = totalRequests > 0 ? ((totalRequestRejectedSinceYesterday.length / totalRequests) * 100) : 0;
 
 
     if (isLoading) {
         return <CardSkeletonLoader num={3} />;
     }
 
+    const getChangeDisplay = (percentage: number) => {
+        const sign = percentage > 0 ? "+" : percentage < 0 ? "-" : "";
+        return `${sign}${Math.abs(percentage).toFixed(2)}%`;
+    };
+
     const cardsData = [
         {
             title: "Total Requests Sent",
-            value: formatNumberWithCommas(allRequests?.data?.length || "0"),
+            value: formatNumberWithCommas(totalRequests),
             icon: <HiOutlineMailOpen className="text-primary text-2xl" />,
-            change: `${percentageChange > 0 ? "+" : percentageChange < 0 ? "-" : ""}${percentageChange.toFixed(2)}%`,
+            change: getChangeDisplay(percentageChange),
             changeText: "since yesterday",
             color: "bg-primary",
-            textColor: `${percentageChange > 0 ? "text-green-500" : "text-red-500"}`,
+            textColor: percentageChange > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-primary",
             iconBg: "bg-[#E6E6F399]",
         },
         {
             title: "Total Requests Accepted",
-            value: formatNumberWithCommas(requestStats?.data?.accepted || "0"),
+            value: formatNumberWithCommas(totalAccepted),
             icon: <HiOutlineMailOpen className="text-[#22C55E] text-2xl" />,
-            change: `${percentageChangeAcceptedSinceYesterday > 0 ? "+" : percentageChangeAcceptedSinceYesterday < 0 ? "-" : ""}${percentageChangeAcceptedSinceYesterday.toFixed(2)}%`,
+            change: getChangeDisplay(percentageChangeAcceptedSinceYesterday),
             changeText: "since yesterday",
             color: "bg-green-100",
-            textColor: `${percentageChangeAcceptedSinceYesterday > 0 ? "text-green-500" : "text-red-500"}`,
+            textColor: percentageChangeAcceptedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-[#22C55E]",
             iconBg: "bg-[#E9F9EF]",
         },
         {
             title: "Total Requests Rejected",
-            value: formatNumberWithCommas(requestStats?.data?.rejected || "0"),
+            value: formatNumberWithCommas(totalRejected),
             icon: <HiOutlineMailOpen className="text-[#EF4444] text-2xl" />,
-            change: `${percentageChangeRejectedSinceYesterday > 0 ? "+" : percentageChangeRejectedSinceYesterday < 0 ? "-" : ""}${percentageChangeRejectedSinceYesterday.toFixed(2)}%`,
+            change: getChangeDisplay(percentageChangeRejectedSinceYesterday),
             changeText: "since yesterday",
             color: "bg-red-100",
-            textColor: `${percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500"}`,
+            textColor: percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-red-400",
             iconBg: "bg-[#FDECEC]",
         },

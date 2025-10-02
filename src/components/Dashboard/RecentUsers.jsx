@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useRef, useContext } from 'react';
-import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft } from 'lucide-react';
+import { ChevronRight, Search, ChevronLeft, Filter, Check, ChevronUp, MoreVertical, CircleUser } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import imageAsset from '../../assets/imageAsset';
 import { api, useGetAllUsersQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
@@ -12,81 +13,48 @@ const RecentUsers = () => {
   const { data, isLoading } = useGetAllUsersQuery([]);
   const users = data?.data
 
-  // const [users, setUsers] = useState([
-  //   {
-  //     id: 1,
-  //     name: 'Brooklyn Simmons',
-  //     avatar: imageAsset.avatar,
-  //     dateCreated: '4/21/12',
-  //     plan: 'Free',
-  //     location: 'Ikorodu, Lagos, Nigeria',
-  //     status: 'Active'
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Kathryn Murphy',
-  //     avatar: imageAsset.avatar,
-  //     dateCreated: '9/18/16',
-  //     plan: 'Free',
-  //     location: 'Ikorodu, Lagos, Nigeria',
-  //     status: 'Deactivated'
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Floyd Miles',
-  //     avatar: imageAsset.avatar,
-  //     dateCreated: '12/4/17',
-  //     plan: 'Premium ~ Monthly',
-  //     location: 'Ikorodu, Lagos, Nigeria',
-  //     status: 'Active'
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'Guy Hawkins',
-  //     avatar: imageAsset.avatar,
-  //     dateCreated: '8/21/15',
-  //     plan: 'Basic ~ Yearly',
-  //     location: 'Ikorodu, Lagos, Nigeria',
-  //     status: 'In Review'
-  //   },
-  //   {
-  //     id: 5,
-  //     name: 'Esther Howard',
-  //     avatar: imageAsset.avatar,
-  //     dateCreated: '1/15/12',
-  //     plan: 'Premium ~ Yearly',
-  //     location: 'Ikorodu, Lagos, Nigeria',
-  //     status: 'Deactivated'
-  //   }
-  // ]);
-
   // State for search and pagination
-
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
-  // State to track which row's modal is open
-  const [openModal, setOpenModal] = useState(null);
-  // State to track if the modal should be positioned above
-  const [modalPositions, setModalPositions] = useState({});
+  // State for row action menu
+  const [menuAnchor, setMenuAnchor] = useState(null);
+
+  // Filter state
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState({
+      status: {
+          All: true,
+          ACTIVE: false,
+          DEACTIVATED: false,
+          'IN REVIEW': false
+      },
+      plan: {
+          All: true,
+          Free: false,
+          Gold: false,
+          Platinum: false
+      }
+  });
 
   // References for outside click detection
-  const modalRef = useRef({});
-  const buttonRef = useRef({});
+  const filterModalRef = useRef(null);
+  const filterButtonRef = useRef(null);
 
   useEffect(() => {
-    // Handle clicks outside the modal
+    // Handle clicks outside the filter modal
     function handleClickOutside(event) {
-      if (openModal !== null) {
-        const modalElement = modalRef.current[openModal];
-        const buttonElement = buttonRef.current[openModal];
+      // Filter modal
+      if (showFilterModal) {
+        const filterModal = filterModalRef.current;
+        const filterButton = filterButtonRef.current;
 
-        if (modalElement &&
-          !modalElement.contains(event.target) &&
-          buttonElement &&
-          !buttonElement.contains(event.target)) {
-          setOpenModal(null);
+        if (filterModal &&
+          !filterModal.contains(event.target) &&
+          filterButton &&
+          !filterButton.contains(event.target)) {
+          setShowFilterModal(false);
         }
       }
     }
@@ -97,55 +65,111 @@ const RecentUsers = () => {
       // Clean up
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [openModal]);
+  }, [showFilterModal]);
 
-  // Function to calculate if modal should be positioned above
-  const calculateModalPosition = (id) => {
-    if (!buttonRef.current[id]) return;
-
-    const buttonRect = buttonRef.current[id].getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const bottomSpace = viewportHeight - buttonRect.bottom;
-
-    // If there's less than 250px below the button, position the modal above
-    setModalPositions(prev => ({
-      ...prev,
-      [id]: bottomSpace < 250
-    }));
-  };
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Active':
+      case 'ACTIVE':
         return 'bg-green-100 text-green-600';
-      case 'Deactivated':
+      case 'DEACTIVATED':
         return 'bg-red-100 text-red-600';
-      case 'In Review':
+      case 'IN REVIEW':
         return 'bg-yellow-100 text-yellow-600';
       default:
         return 'bg-gray-100 text-gray-600';
     }
   };
 
-  const toggleModal = (id) => {
-    // Calculate position whenever modal is opened
-    calculateModalPosition(id);
-
-    if (openModal === id) {
-      setOpenModal(null);
-    } else {
-      setOpenModal(id);
+  const getStatusTextColor = (status) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'text-green-500';
+      case 'DEACTIVATED':
+        return 'text-red-500';
+      case 'IN REVIEW':
+        return 'text-yellow-500';
+      default:
+        return 'text-gray-500';
     }
+  };
+
+  const toggleFilterModal = () => {
+    setShowFilterModal(!showFilterModal);
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    let newFilterState;
+    if (value === 'All') {
+      // If 'All' is selected, uncheck all other options and check 'All'
+      newFilterState = {
+        ...filters[filterType],
+        ...Object.keys(filters[filterType]).reduce((acc, key) => {
+          acc[key] = key === 'All';
+          return acc;
+        }, {})
+      };
+    } else {
+      // If a specific value is selected, uncheck 'All' and toggle the value
+      const toggledValue = !filters[filterType][value];
+      newFilterState = {
+        ...filters[filterType],
+        [value]: toggledValue,
+        'All': false
+      };
+
+      // If all specific options are unchecked, check 'All'
+      const allUnchecked = Object.entries(newFilterState)
+        .filter(([key]) => key !== 'All')
+        .every(([_, checked]) => !checked);
+
+      if (allUnchecked) {
+        newFilterState = {
+          ...newFilterState,
+          'All': true
+        };
+      }
+    }
+
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: newFilterState
+    }));
+  };
+
+  const applyFilter = () => {
+    setShowFilterModal(false);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      status: {
+        All: true,
+        ACTIVE: false,
+        DEACTIVATED: false,
+        'IN REVIEW': false
+      },
+      plan: {
+        All: true,
+        Free: false,
+        Gold: false,
+        Platinum: false
+      }
+    });
+    setCurrentPage(1);
   };
 
   // Filter users based on search term
   const filteredUsers = users?.filter(user =>
     user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    // user.subscriptionPlan.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    // user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.createdAt.includes(searchTerm)
+    user.createdAt.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Get current items for pagination
@@ -191,6 +215,49 @@ const RecentUsers = () => {
     dispatch(api.endpoints.getUserById.initiate(id));
     navigate(`/user-profile/${id}`, { state: { id: id, userName: name } });
   }
+
+  const RowActionMenu = ({ anchorRect, user, onClose }) => {
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (menuRef.current && !menuRef.current.contains(e.target)) {
+          onClose();
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [onClose]);
+
+    const style = {
+      position: "absolute",
+      top: anchorRect.bottom + window.scrollY + 4,
+      left: anchorRect.right - 160 + window.scrollX,
+      width: "160px",
+      zIndex: 1000,
+    };
+
+    return createPortal(
+      <div
+        ref={menuRef}
+        style={style}
+        className="bg-white shadow-lg rounded-md border"
+      >
+        <button
+          className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-t-md"
+          onClick={() => {
+            handleNavigateToDetailsPage(user.id, `${user.firstName} ${user.lastName}`);
+            onClose();
+          }}
+        >
+          <CircleUser className="w-4 h-4 mr-2" /> View Profile
+        </button>
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <div className="w-full">
@@ -268,52 +335,18 @@ const RecentUsers = () => {
                     {user.status}
                   </span>
                 </td>
-                <td className="py-4 pr-4 text-right relative">
-                  <div className="flex items-center justify-start">
+                <td className="py-4 pr-4 text-right">
+                  <div className="flex items-center justify-end">
                     <button
                       className="text-gray-500 hover:text-gray-700 flex items-center"
-                      onClick={() => toggleModal(user.id)}
-                      ref={(el) => (buttonRef.current[user.id] = el)}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuAnchor({ rect, user });
+                      }}
                     >
-                      <Settings className="w-5 h-5 mr-1" />
-                      {openModal === user.id ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
-
-                  {/* Modal for actions */}
-                  {openModal === user.id && (
-                    <div
-                      ref={(el) => (modalRef.current[user.id] = el)}
-                      className={`absolute ${modalPositions[user.id] ? "bottom-full mb-2" : "mt-2"
-                        } right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
-                    >
-                      <div className="py-3 px-4 border-b border-gray-200">
-                        <button className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => handleNavigateToDetailsPage(user.id, user.firstName)}>View profile</button>
-                      </div>
-                      {/* <div className="p-4">
-                        <div className="text-gray-400 mb-2 text-md">Decisions:</div>
-
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-green-500 text-md">Activate account</span>
-                          <input type="checkbox" className="h-4 w-4" />
-                        </div>
-
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-red-500 text-md">Deactivate account</span>
-                          <input type="checkbox" className="h-4 w-4" />
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-yellow-500 text-md">Review account</span>
-                          <input type="checkbox" className="h-4 w-4" />
-                        </div>
-                      </div> */}
-                    </div>
-                  )}
                 </td>
               </tr>
             ))}
@@ -321,73 +354,14 @@ const RecentUsers = () => {
         </table>
       </div>
 
-      {/* Pagination */}
-      {/* <div className="flex items-center justify-between mt-4 px-2">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === 1 ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
-            }`}
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Previous
-        </button>
-
-        <div className="flex space-x-1">
-          {totalPages > maxPageButtons && currentPage > middlePoint && (
-            <>
-              <button
-                onClick={() => setCurrentPage(1)}
-                className={`px-3 py-1 rounded-md text-sm ${1 === currentPage
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-                  }`}
-              >
-                1
-              </button>
-              {startPage > 2 && <span className="px-2 py-1 text-gray-500">...</span>}
-            </>
-          )}
-
-          {pageNumbers.map((number) => (
-            <button
-              key={number}
-              onClick={() => setCurrentPage(number)}
-              className={`px-3 py-1 rounded-md text-sm ${number === currentPage
-                ? "bg-blue-100 text-blue-700"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
-            >
-              {number}
-            </button>
-          ))}
-
-          {totalPages > maxPageButtons && currentPage < totalPages - middlePoint && (
-            <>
-              {endPage < totalPages - 1 && <span className="px-2 py-1 text-gray-500">...</span>}
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                className={`px-3 py-1 rounded-md text-sm ${totalPages === currentPage
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-                  }`}
-              >
-                {totalPages}
-              </button>
-            </>
-          )}
-        </div>
-
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? "text-gray-300" : "text-gray-600 hover:bg-gray-100"
-            }`}
-        >
-          Next
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </button>
-      </div> */}
+      {/* Floating menu */}
+      {menuAnchor && (
+        <RowActionMenu
+          anchorRect={menuAnchor.rect}
+          user={menuAnchor.user}
+          onClose={() => setMenuAnchor(null)}
+        />
+      )}
     </div>
   );
 };
