@@ -30,7 +30,7 @@ const AllRoutes = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/otp" element={<Otp />} />
+      <Route path="/verify-otp" element={<Otp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* <Route path="/" element={<Landing />} /> */}

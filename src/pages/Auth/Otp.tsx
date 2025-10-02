@@ -1,9 +1,12 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosError } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { baseUrl } from '../../Services/baseUrl';
+import { jwtDecode } from 'jwt-decode';
+import { AppContext } from '../../Context/AppContext';
 
 interface FormData {
     email: string;
@@ -17,6 +20,10 @@ interface FormErrors {
 
 const Otp = () => {
     // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
+    const location = useLocation();
+    const { notifySuccess, notifyError } = useContext(AppContext);
+    const { reference } = location.state
+    // console.log(reference)
     const [formData, setFormData] = useState<FormData>({
         email: '',
         password: ''
@@ -26,10 +33,10 @@ const Otp = () => {
     const [success, setSuccess] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [loginError, setLoginError] = useState<string>('');
-    const [message, setMessage] = useState('')
+    const [message, setMessage] = useState('');
     const [code, setCode] = useState(new Array(4).fill(""));
-    const [enteredCode, setEnteredCode] = useState('')
-    const [isResending, setIsResending] = useState(false)
+    const [enteredCode, setEnteredCode] = useState('');
+    const [isResending, setIsResending] = useState(false);
 
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState<boolean>(false);
@@ -44,7 +51,7 @@ const Otp = () => {
         }
     }, [countdown]);
 
-    const handleInput = (event, index) => {
+    const handleInput = (event: any, index: number) => {
         const { maxLength, value } = event.target;
         if (/^\d*$/.test(value)) {
             // Only allow numbers
@@ -60,7 +67,7 @@ const Otp = () => {
         }
     };
 
-    const handleKeyDown = (event, index) => {
+    const handleKeyDown = (event: any, index: number) => {
         if (event.key === "Backspace" && code[index] === "") {
             // Move focus to previous input when Backspace is pressed
             if (index > 0) {
@@ -103,19 +110,26 @@ const Otp = () => {
         // setMessage("");
 
         try {
-            const response = await axios.post(`/customer/api/User/VerifyOtp`)
+            const response = await axios.post(`${baseUrl}/api/User/ValidateLoginOtp`, { key: enteredCode, reference: reference });
 
-            console.log(response)
-            setCanResend(false);
-            // nextAction();
-        } catch (err) {
-            const axiosError = err as AxiosError;
-            console.log(axiosError);
-            if (axiosError.response?.status === 401) {
-                setLoginError('Invalid credentials. Please try again.');
-            } else {
-                setLoginError('Server error. Please try again.');
+            const token = response.data.data.token;
+            localStorage.setItem('letsmeetToken', token);
+
+            const decoded = jwtDecode<any>(token);
+            const user = {
+                id: decoded.UserId,
+                name: decoded.name,
+                email: decoded.EmailAddress,
+                subject: decoded.Subject,
+                username: decoded.UserName
             }
+            localStorage.setItem('letsmeetUser', JSON.stringify(user));
+            notifySuccess('Login successful', 'success');
+            navigate('/dashboard');
+        } catch (err: any) {
+            const axiosError = err as any;
+            // console.log(axiosError);
+            setLoginError(axiosError?.response?.data?.responseMessage || 'Server error. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -135,7 +149,7 @@ const Otp = () => {
             } else {
                 setMessage(res.data.message);
             }
-        } catch (err) {
+        } catch (err: any) {
             setMessage(err.response.data.responseMessage);
         } finally {
             setIsResending(false);
@@ -180,7 +194,7 @@ const Otp = () => {
                             ))}
                         </div>
 
-                        <p className='pt-6 text-center text-xs'>
+                        {/* <p className='pt-6 text-center text-xs'>
                             {`Didn't receive the code?`}{" "}
                             <button
                                 disabled={!canResend}
@@ -190,7 +204,7 @@ const Otp = () => {
                             >
                                 {canResend ? "Resend code" : `Resend code in ${countdown}s`}
                             </button>
-                        </p>
+                        </p> */}
 
                         <div className="mt-5">
                             <button
@@ -213,7 +227,7 @@ const Otp = () => {
                             </button>
                         </div>
                     </div>
-                    
+
                     {message && <p className={`${message === 'Verification code resent to your email.' ? 'text-red-600' : 'text-red'} font-semibold text-[12px] mt-2 text-center`}>{message}</p>}
 
                     <div className='flex justify-center mt-2'>

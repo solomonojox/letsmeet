@@ -6,7 +6,8 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { AppContext } from '../../Context/AppContext';
-import { jwtDecode } from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
+import { baseUrl } from '../../Services/baseUrl';
 
 interface FormData {
   reference: string;
@@ -18,7 +19,6 @@ interface FormErrors {
 }
 
 const Login = () => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [formData, setFormData] = useState<FormData>({ reference: '', key: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState<boolean>(false);
@@ -66,7 +66,9 @@ const Login = () => {
       // handle token from response if needed
       setLoginError('');
       setSuccess(true);
-      setShowTokenModal(true); // show modal after login
+      notifySuccess('Otp sent to your email', 'success');
+      // setShowTokenModal(true); // show modal after login
+      navigate('/verify-otp', { state: { reference: formData.reference } });
     } catch (error: any) {
       const axiosError = error as AxiosError;
       if (axiosError.response?.status === 401) {
