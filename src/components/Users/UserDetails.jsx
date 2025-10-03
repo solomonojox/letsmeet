@@ -39,6 +39,7 @@ const UserDetails = () => {
   const params = useParams();
   const { formatDate, formateDateTime, notifySuccess, notifyError } = useContext(AppContext);
   const { data: usersData, isLoading } = useGetUserByIdQuery(params.id);
+  console.log(usersData)
 
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(null);
@@ -256,7 +257,7 @@ const UserDetails = () => {
                   </div>
                   <div className="mb-4">
                     <div className="text-sm text-gray-500">Gender:</div>
-                    <div className="font-medium">{usersData?.data?.gender === 0 ? "Male" : "Female"}</div>
+                    <div className="font-medium">{usersData?.data?.gender}</div>
                   </div>
                   <div className="mb-4">
                     <div className="text-sm text-gray-500">City:</div>
@@ -267,21 +268,27 @@ const UserDetails = () => {
                     <div className="font-medium">{usersData?.data?.country}</div>
                   </div>
                   <div className="mb-4">
-                    <div className="text-sm text-gray-500">Current Plan:</div>
-                    <div className="flex items-center">
-                      <span className="font-medium">{usersData?.data?.subscriptionPlan === 1 ? "Free" : usersData?.data?.subscriptionPlan === 2 ? "Gold" : "Platinium"}</span>
-
-                      <a href="#" className="ml-2 text-sm text-blue-600 hover:underline">
-                        Manage Plan
-                      </a>
-                    </div>
+                    <div className="text-sm text-gray-500">Account type</div>
+                    <div className="font-medium">{usersData?.data?.type}</div>
                   </div>
+                  {usersData?.data?.type !== "SUPER_ADMIN" && (
+                    <div className="">
+                      <div className="text-sm text-gray-500">Current Plan:</div>
+                      <div className="flex items-center">
+                        <span className="font-medium">{usersData?.data?.subscriptionPlan === 1 ? "Free" : usersData?.data?.subscriptionPlan === 2 ? "Gold" : "Platinium"}</span>
+
+                        <a href="#" className="ml-2 text-sm text-blue-600 hover:underline">
+                          Manage Plan
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="mt-4">
                 <div className="text-sm text-gray-500">Current location:</div>
-                <div className="font-medium">{usersData?.data?.lastLocationUpdate}</div>
+                <div className="font-medium">LAT: {usersData?.data?.latitude}, LONG: {usersData?.data?.longitude}</div>
               </div>
             </div>
           </div>
