@@ -62,12 +62,17 @@ export const api = createApi({
 
     getFriendRequestStat: builder.query({
       query: () => ({
-        url: `/api/FriendRequest/FriendRequestStats`,
+        url: `/api/v1/chat/friend-requests/sent`,
       }),
     }),
-    getAllFriendRequests: builder.query({
+    getAllFriendRequestsReceived: builder.query({
       query: () => ({
         url: `/api/v1/chat/friend-requests/received`,
+      }),
+    }),
+    getAllFriendRequestsSent: builder.query({
+      query: () => ({
+        url: `/api/v1/chat/friend-requests/sent`,
       }),
     }),
     getAllFeedbacks: builder.query({
@@ -88,6 +93,7 @@ export const {
   useGetSubscribersQuery,
   useGetSubscriptionStatQuery,
   useGetFriendRequestStatQuery,
-  useGetAllFriendRequestsQuery,
+  useGetAllFriendRequestsReceivedQuery,
+  useGetAllFriendRequestsSentQuery,
   useGetAllFeedbacksQuery,
 } = api;

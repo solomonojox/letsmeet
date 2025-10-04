@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef, useContext } from 'react';
-import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Search, Filter, Check, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import imageAsset from '../../assets/imageAsset';
 import axios from 'axios';
 import { useGetAllReportsQuery } from '../../Services/API/api';
@@ -54,7 +55,7 @@ const AllReports = () => {
                 })
             );
 
-            console.log(mergedReports);
+            // console.log(mergedReports);
             setTableData(mergedReports)
             return mergedReports;
         } catch (error) {
@@ -78,10 +79,8 @@ const AllReports = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
 
-    // State to track which row's modal is open
-    const [openModal, setOpenModal] = useState(null);
-    // State to track if the modal should be positioned above
-    const [modalPositions, setModalPositions] = useState({});
+    // State for row action menu
+    const [menuAnchor, setMenuAnchor] = useState(null);
 
     // Filter state
     const [showFilterModal, setShowFilterModal] = useState(false);
@@ -95,27 +94,12 @@ const AllReports = () => {
     });
 
     // References for outside click detection
-    const modalRef = useRef({});
-    const buttonRef = useRef({});
     const filterModalRef = useRef(null);
     const filterButtonRef = useRef(null);
 
     useEffect(() => {
-        // Handle clicks outside the modal
+        // Handle clicks outside the filter modal
         function handleClickOutside(event) {
-            // Action settings modal
-            if (openModal !== null) {
-                const modalElement = modalRef.current[openModal];
-                const buttonElement = buttonRef.current[openModal];
-
-                if (modalElement &&
-                    !modalElement.contains(event.target) &&
-                    buttonElement &&
-                    !buttonElement.contains(event.target)) {
-                    setOpenModal(null);
-                }
-            }
-
             // Filter modal
             if (showFilterModal) {
                 const filterModal = filterModalRef.current;
@@ -136,27 +120,12 @@ const AllReports = () => {
             // Clean up
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [openModal, showFilterModal]);
+    }, [showFilterModal]);
 
     // Reset to page 1 when search term changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
-
-    // Function to calculate if modal should be positioned above
-    const calculateModalPosition = (userId) => {
-        if (!buttonRef.current[userId]) return;
-
-        const buttonRect = buttonRef.current[userId].getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const bottomSpace = viewportHeight - buttonRect.bottom;
-
-        // If there's less than 250px below the button, position the modal above
-        setModalPositions(prev => ({
-            ...prev,
-            [userId]: bottomSpace < 250
-        }));
-    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -181,17 +150,6 @@ const AllReports = () => {
                 return 'text-yellow-500';
             default:
                 return 'text-gray-500';
-        }
-    };
-
-    const toggleModal = (userId) => {
-        // Calculate position whenever modal is opened
-        calculateModalPosition(userId);
-
-        if (openModal === userId) {
-            setOpenModal(null);
-        } else {
-            setOpenModal(userId);
         }
     };
 
@@ -327,9 +285,63 @@ const AllReports = () => {
             notifyError('Error updating report status', 'error');
         } finally {
             hideOverlay();
-            setOpenModal(null);
         }
     }
+
+    const ReportActionMenu = ({ anchorRect, report, onClose }) => {
+        const menuRef = useRef(null);
+
+        useEffect(() => {
+            const handleClickOutside = (e) => {
+                if (menuRef.current && !menuRef.current.contains(e.target)) {
+                    onClose();
+                }
+            };
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            };
+        }, [onClose]);
+
+        const style = {
+            position: "absolute",
+            top: anchorRect.bottom + window.scrollY + 4,
+            left: anchorRect.right - 160 + window.scrollX,
+            width: "160px",
+            zIndex: 1000,
+        };
+
+        return createPortal(
+            <div
+                ref={menuRef}
+                style={style}
+                className="bg-white shadow-lg rounded-md border"
+            >
+                <div className="p-2">
+                    <div className="text-gray-400 mb-2 text-sm">Decisions:</div>
+                    <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
+                        onClick={() => {
+                            updateReportStatus(report.reportId, 2);
+                            onClose();
+                        }}
+                    >
+                        Resolve
+                    </button>
+                    <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md"
+                        onClick={() => {
+                            updateReportStatus(report.reportId, 3);
+                            onClose();
+                        }}
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>,
+            document.body
+        );
+    };
 
     if (isLoading || loading) {
         return <TableSkeletonLoader rows={5} headers={['Reporter', 'Reported User', 'Issue', 'Status', 'Date', 'Action']} />;
@@ -361,7 +373,7 @@ const AllReports = () => {
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Status</span>
-                                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                                        <ChevronRight className="w-4 h-4 text-gray-500" />
                                     </div>
 
                                     <div className="space-y-2">
@@ -466,40 +478,18 @@ const AllReports = () => {
                                     </span>
                                 </td> */}
                                 <td className="py-4 text-gray-500">{formatDate(report.date)}</td>
-                                <td className="py-4 pr-4 text-right relative">
+                                <td className="py-4 pr-4 text-right">
                                     <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
-                                            onClick={() => toggleModal(report.reportId)}
-                                            ref={el => buttonRef.current[report.reportId] = el}
+                                            onClick={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                setMenuAnchor({ rect, report });
+                                            }}
                                         >
-                                            <Settings className="w-5 h-5 mr-1" />
-                                            {openModal === report.reportId ?
-                                                <ChevronUp className="w-4 h-4" /> :
-                                                <ChevronDown className="w-4 h-4" />
-                                            }
+                                            <MoreVertical className="w-4 h-4" />
                                         </button>
                                     </div>
-
-                                    {/* Modal for actions */}
-                                    {openModal === report.reportId && (
-                                        <div
-                                            ref={el => modalRef.current[report.reportId] = el}
-                                            className={`absolute ${modalPositions[report.reportId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50 `}
-                                        >
-                                            <div className="p-2 text-start">
-                                                <div className="text-gray-400 mb-2 text-md">Decisions:</div>
-
-                                                <div className="flex items-center mb-3">
-                                                    <button className="text-green-500 text-md" onClick={() => updateReportStatus(report.reportId, 2)}>Resolve</button>
-                                                </div>
-
-                                                <div className="flex mb-2">
-                                                    <button className="text-red-500 text-md" onClick={() => updateReportStatus(report.reportId, 3)}>Close</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </td>
                             </tr>
                         )) : (
@@ -574,6 +564,15 @@ const AllReports = () => {
                         <ChevronRight className="w-4 h-4 ml-1" />
                     </button>
                 </div>
+            )}
+
+            {/* Floating menu */}
+            {menuAnchor && (
+                <ReportActionMenu
+                    anchorRect={menuAnchor.rect}
+                    report={menuAnchor.report}
+                    onClose={() => setMenuAnchor(null)}
+                />
             )}
         </div>
     );
