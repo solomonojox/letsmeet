@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { HiOutlineMailOpen } from "react-icons/hi";
-import { useGetFriendRequestStatQuery, useGetAllFriendRequestsQuery } from '../../Services/API/api';
+import { useGetFriendRequestStatQuery, useGetAllFriendRequestsSentQuery, useGetAllFriendRequestsReceivedQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import CardSkeletonLoader from "../../ui/CardSkeletonLoader";
 
@@ -9,9 +9,11 @@ import CardSkeletonLoader from "../../ui/CardSkeletonLoader";
 const RequestCards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
     const { data: requestStats, isLoading } = useGetFriendRequestStatQuery([]);
-    const { data: allRequests } = useGetAllFriendRequestsQuery([]);
+    const { data: requestReceived, isLoading: isLoadingReceived } = useGetAllFriendRequestsReceivedQuery([]);
+    const { data: allRequests } = useGetAllFriendRequestsSentQuery([]);
 
     const totalRequests = allRequests?.data?.length || 0;
+    const totalRequestsReceived = requestReceived?.data?.length || 0;
 
     // Total Requests since yesterday
     const yesterday = new Date();
@@ -20,12 +22,11 @@ const RequestCards = () => {
     const percentageChange = totalRequests > 0 ? ((totalRequestSinceYesterday.length / totalRequests) * 100) : 0;
 
     // Total Requests accepted since yesterday
-    const totalRequestAcceptedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 1));
-    const totalAccepted = requestStats?.data?.accepted || 0;
-    const percentageChangeAcceptedSinceYesterday = totalRequests > 0 ? ((totalRequestAcceptedSinceYesterday.length / totalRequests) * 100) : 0;
+    const totalRequestAcceptedSinceYesterday = (requestReceived?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 1));
+    const percentageChangeAcceptedSinceYesterday = requestReceived > 0 ? ((totalRequestAcceptedSinceYesterday.length / requestReceived) * 100) : 0;
 
     // Total Requests rejected since yesterday
-    const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 2));
+    const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === "REJECTED"));
     const totalRejected = requestStats?.data?.rejected || 0;
     const percentageChangeRejectedSinceYesterday = totalRequests > 0 ? ((totalRequestRejectedSinceYesterday.length / totalRequests) * 100) : 0;
 
@@ -53,7 +54,7 @@ const RequestCards = () => {
         },
         {
             title: "Total Requests Accepted",
-            value: formatNumberWithCommas(totalAccepted),
+            value: formatNumberWithCommas(totalRequestsReceived),
             icon: <HiOutlineMailOpen className="text-[#22C55E] text-2xl" />,
             change: getChangeDisplay(percentageChangeAcceptedSinceYesterday),
             changeText: "since yesterday",

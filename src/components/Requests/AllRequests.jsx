@@ -4,13 +4,14 @@ import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Fi
 import { useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
 import { AppContext } from '../../Context/AppContext';
-import { useGetAllFriendRequestsQuery } from '../../Services/API/api';
+import { useGetAllFriendRequestsSentQuery } from '../../Services/API/api';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllRequests = () => {
     const { formatDate } = useContext(AppContext);
-    const { data, isLoading } = useGetAllFriendRequestsQuery();
+    const { data, isLoading } = useGetAllFriendRequestsSentQuery();
     const requestData = data?.data || [];
+    // console.log('requestData', requestData);
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
