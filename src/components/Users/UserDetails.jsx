@@ -37,9 +37,9 @@ const UserSkeleton = () => (
 const UserDetails = () => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const params = useParams();
-  const { formatDate, formateDateTime, notifySuccess, notifyError } = useContext(AppContext);
-  const { data: usersData, isLoading } = useGetUserByIdQuery(params.id);
-  console.log(usersData)
+  const { formatDate, formateDateTime, notifySuccess, notifyError, showOverlay, hideOverlay } = useContext(AppContext);
+  const { data: usersData, isLoading, refetch } = useGetUserByIdQuery(params.id);
+  // console.log(usersData)
 
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(null);
@@ -82,6 +82,46 @@ const UserDetails = () => {
       notifyError(err.response.data.responseMessage, 'error');
     } finally {
       setLoading(false);
+    }
+  }
+
+  const deactivateAccount = async () => {
+    showOverlay();
+    try {
+      const res = await axios.put(`${baseUrl}/api/admin/UserAnalytics/${params.id}/deactivate`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+        },
+      })
+      refetch();
+      setShowSettings(false);
+      notifySuccess(res.data.responseMessage || 'Account deactivated successfully', 'success');
+    } catch (err) {
+      console.log(err)
+      notifyError(err.response.data.responseMessage || 'Error deactivating account', 'error');
+    } finally {
+      hideOverlay();
+    }
+  }
+
+  const activateAccount = async () => {
+    showOverlay();
+    try {
+      const res = await axios.put(`${baseUrl}/api/admin/UserAnalytics/${params.id}/activate`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+        },
+      })
+      refetch();
+      setShowSettings(false);
+      notifySuccess(res.data.responseMessage || 'Account activated successfully', 'success');
+    } catch (err) {
+      console.log(err)
+      notifyError(err.response.data.responseMessage || 'Error activating account', 'error');
+    } finally {
+      hideOverlay();
     }
   }
 
@@ -134,24 +174,24 @@ const UserDetails = () => {
                       className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10"
                     >
                       <div className="p-4">
-                        <div className='mb-4'>
+                        {/* <div className='mb-4'>
                           <span className="text-gray-600 font-semibold cursor-pointer underline-offset-4 hover:underline hover:text-primary" onClick={() => setOpenModal(true)}>Change Password</span>
-                        </div>
+                        </div> */}
 
                         <h4 className="text-sm text-gray-500 mb-2">Decisions:</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-green-500">Activate account</span>
-                            <input type="checkbox" className="w-4 h-4" />
+                            <button className="text-green-500 hover:underline" onClick={activateAccount}>Activate account</button>
+                            {/* <input type="checkbox" className="w-4 h-4" /> */}
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-red-500">Deactivate account</span>
-                            <input type="checkbox" className="w-4 h-4" />
+                            <button className="text-red-500 hover:underline" onClick={deactivateAccount}>Deactivate account</button>
+                            {/* <input type="checkbox" className="w-4 h-4" /> */}
                           </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-yellow-500">Review account</span>
+                          {/* <div className="flex justify-between items-center">
+                            <button className="text-yellow-500 hover:underline">Review account</button>
                             <input type="checkbox" className="w-4 h-4" />
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
