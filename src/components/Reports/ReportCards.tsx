@@ -21,20 +21,22 @@ const ReportCards = () => {
 
   interface RecentUser {
     createdAt: string;
-    reportStatus: number;
+    reportStatus: string;
     [key: string]: any;
   }
 
   // Counts for total, solved, and pending reports
   const totalReports: number = reports.length;
-  const totalSolved: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 1).length;
-  const totalPending: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 0).length;
+  const totalSolved: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === "Resolved").length;
+  const totalPending: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === "Pending").length;
 
   // Recent reports (created since yesterday)
   const yesterdayStr = new Date(Date.now() - 86400000).toDateString(); // Yesterday's date string
   const recentTotal: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt).toDateString() === yesterdayStr).length;
-  const recentSolved: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 1 && new Date(user.createdAt).toDateString() === yesterdayStr).length;
-  const recentPending: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === 0 && new Date(user.createdAt).toDateString() === yesterdayStr).length;
+
+  const recentSolved: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === "Resolved" && new Date(user.createdAt).toDateString() === yesterdayStr).length;
+
+  const recentPending: number = (reports as RecentUser[])?.filter((user: RecentUser) => user.reportStatus === "Pending" && new Date(user.createdAt).toDateString() === yesterdayStr).length;
 
   // Count reports created in the last 7 days
   const recentReportCount: number = (reports as RecentUser[])?.filter((user: RecentUser) => new Date(user.createdAt) >= sevenDaysAgo).length;

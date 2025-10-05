@@ -47,8 +47,8 @@ const AllReports = () => {
                         reason: report.reason,
                         details: report.details,
                         date: report.createdAt,
-                        reportId: report.reportId,
-                        reportStatus: report.reportStatus === 1 ? 'Pending' : report.reportStatus === 2 ? 'Resolved' : 'Closed',
+                        reportId: report.id,
+                        reportStatus: report.reportStatus,
                         reporterImage: reporterData.data.profilePictureUrl,
                         reportedImage: reportedData.data.profilePictureUrl,
                     };
@@ -266,23 +266,24 @@ const AllReports = () => {
     }
 
     const updateReportStatus = async (reportId, status) => {
-        console.log('Updating report status:', reportId, status);
+        // console.log('Updating report status:', reportId, status);
         showOverlay();
         try {
-            const response = await axios.put(`${baseUrl}/api/ReportUser/UpdateReportStatus`, {
+            const response = await axios.put(`${baseUrl}/api/Report/UpdateReportStatus`, {
                 reportId,
                 reportStatus: status,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+                },
             });
-            console.log('Report status updated:', response.data);
+            // console.log('Report status updated:', response.data);
             notifySuccess('Report status updated successfully', 'success');
             refetch();
-            // if (response.status === 200) {
-            //     console.log('Report status updated successfully');
-            //     // Optionally, refresh the data or update the state
-            // }
         } catch (error) {
             console.error('Error updating report status:', error);
-            notifyError('Error updating report status', 'error');
+            notifyError(error.response.data.responseMessage || 'Error updating report status', 'error');
         } finally {
             hideOverlay();
         }
@@ -320,18 +321,27 @@ const AllReports = () => {
                 <div className="p-2">
                     <div className="text-gray-400 mb-2 text-sm">Decisions:</div>
                     <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-yellow-500 hover:text-white rounded-md mb-1"
                         onClick={() => {
-                            updateReportStatus(report.reportId, 2);
+                            updateReportStatus(report.reportId, "Pending");
+                            onClose();
+                        }}
+                    >
+                        Pending
+                    </button>
+                    <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-green-600 hover:text-white rounded-md mb-1"
+                        onClick={() => {
+                            updateReportStatus(report.reportId, "Resolved");
                             onClose();
                         }}
                     >
                         Resolve
                     </button>
                     <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md"
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-red-600 hover:text-white rounded-md"
                         onClick={() => {
-                            updateReportStatus(report.reportId, 3);
+                            updateReportStatus(report.reportId, "Closed");
                             onClose();
                         }}
                     >
@@ -377,8 +387,8 @@ const AllReports = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        {Object.keys(filters.status).map(status => (
-                                            <div key={status} className="flex items-center justify-between">
+                                        {Object.keys(filters.status).map((status, index) => (
+                                            <div key={index} className="flex items-center justify-between">
                                                 <span className={`text-sm ${status !== 'All' ? getStatusTextColor(status) : 'text-gray-700'}`}>
                                                     {status}
                                                 </span>
@@ -436,7 +446,7 @@ const AllReports = () => {
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reporter</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Reported User</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Issue</th>
-                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th> */}
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
@@ -472,11 +482,11 @@ const AllReports = () => {
                                     </div>
                                 </td>
                                 <td className="py-4 text-gray-500">{report.details}</td>
-                                {/* <td className="py-4">
+                                <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.reportStatus)}`}>
                                         {report.reportStatus}
                                     </span>
-                                </td> */}
+                                </td>
                                 <td className="py-4 text-gray-500">{formatDate(report.date)}</td>
                                 <td className="py-4 pr-4 text-right">
                                     <div className="flex items-center justify-start">

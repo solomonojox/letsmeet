@@ -11,7 +11,7 @@ const AllFeedbacks = () => {
     const { formatDate } = useContext(AppContext);
     const { data, isLoading } = useGetAllFeedbacksQuery();
     const requestData = data?.data || [];
-    console.log(requestData);
+    // console.log(requestData);
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
