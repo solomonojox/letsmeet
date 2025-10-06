@@ -24,18 +24,18 @@ const RecentUsers = () => {
   // Filter state
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState({
-      status: {
-          All: true,
-          ACTIVE: false,
-          DEACTIVATED: false,
-          'IN REVIEW': false
-      },
-      plan: {
-          All: true,
-          Free: false,
-          Gold: false,
-          Platinum: false
-      }
+    status: {
+      All: true,
+      ACTIVE: false,
+      DEACTIVATED: false,
+      'IN REVIEW': false
+    },
+    plan: {
+      All: true,
+      Free: false,
+      Gold: false,
+      Platinum: false
+    }
   });
 
   // References for outside click detection
@@ -303,7 +303,7 @@ const RecentUsers = () => {
           </thead>
           <tbody>
             {currentUsers?.map((user) => (
-              <tr key={user?.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={user?.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
                 </td>
@@ -314,7 +314,7 @@ const RecentUsers = () => {
                       alt={user?.firstName}
                       className="w-8 h-8 rounded-full mr-3"
                     />
-                    <span className="font-medium">
+                    <span>
                       {user?.firstName} {user?.lastName}
                     </span>
                   </div>
@@ -336,9 +336,9 @@ const RecentUsers = () => {
                   </span>
                 </td>
                 <td className="py-4 pr-4 text-right">
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-start">
                     <button
-                      className="text-gray-500 hover:text-gray-700 flex items-center"
+                      className="text-gray-500 hover:text-gray-700 "
                       onClick={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
                         setMenuAnchor({ rect, user });

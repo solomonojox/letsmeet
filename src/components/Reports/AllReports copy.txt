@@ -20,6 +20,57 @@ const AllReports = () => {
     // const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // const fetchUserById = async (id) => {
+    //     return await axios.get(`${baseUrl}/api/User/Get/${id}`, {
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+    //         },
+    //     }).then(res => res.data);
+    // };
+
+    // const getMergedReports = async () => {
+    //     setLoading(true);
+    //     try {
+    //         const mergedReports = await Promise.all(
+    //             reports.map(async (report) => {
+    //                 const [reporterData, reportedData] = await Promise.all([
+    //                     fetchUserById(report.reporterUserId),
+    //                     fetchUserById(report.reportedUserId)
+    //                 ]);
+
+    //                 return {
+    //                     reporter: `${reporterData.data.firstName} ${reporterData.data.lastName}`,
+    //                     reporterId: report.reporterUserId,
+    //                     reported: `${reportedData.data.firstName} ${reportedData.data.lastName}`,
+    //                     reportedId: report.reportedUserId,
+    //                     reason: report.reason,
+    //                     details: report.details,
+    //                     date: report.createdAt,
+    //                     reportId: report.id,
+    //                     reportStatus: report.reportStatus,
+    //                     reporterImage: reporterData.data.profilePictureUrl,
+    //                     reportedImage: reportedData.data.profilePictureUrl,
+    //                 };
+    //             })
+    //         );
+
+    //         // console.log(mergedReports);
+    //         setTableData(mergedReports)
+    //         return mergedReports;
+    //     } catch (error) {
+    //         console.error("Error fetching user data:", error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     if (reports.length > 0) {
+    //         getMergedReports();
+    //     }
+    // }, [reports])
+
 
     const navigate = useNavigate();
 

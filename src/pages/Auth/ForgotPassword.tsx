@@ -4,22 +4,23 @@ import React, { useEffect, useState } from 'react';
 import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { initiateResetPassword } from '../../Services/passwordReset';
 
 interface FormData {
     email: string;
-    password: string;
+    // password: string;
 }
 
 interface FormErrors {
     email?: string;
-    password?: string;
+    // password?: string;
 }
 
 const ForgotPassword = () => {
     // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
     const [formData, setFormData] = useState<FormData>({
         email: '',
-        password: ''
+        // password: ''
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
@@ -54,6 +55,8 @@ const ForgotPassword = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSuccess(false);
+        setLoginError('')
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -62,20 +65,20 @@ const ForgotPassword = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await axios.post(`/api/users/login`, formData);
+            const response = await initiateResetPassword(formData);
 
-            console.log(response);
             setLoginError('');
             setSuccess(true);
-            // localStorage.setItem('authToken', response.data.token);
-            // navigate('/dashboard');
-        } catch (error) {
-            const axiosError = error as AxiosError;
+            setTimeout(() => {
+                navigate('/reset-password', { state: { email: formData.email } });
+            }, 1000);
+        } catch (error: any) {
+            const axiosError = error;
             console.log(axiosError);
             if (axiosError.response?.status === 401) {
-                setLoginError('Invalid credentials. Please try again.');
+                setLoginError('Invalid email. Please try again.');
             } else {
-                setLoginError('Server error. Please try again.');
+                setLoginError(axiosError?.response?.data.responseMessage || 'Server error. Please try again.');
             }
         } finally {
             setIsSubmitting(false);
@@ -101,7 +104,7 @@ const ForgotPassword = () => {
                     {success && (
                         <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center">
                             <FaCheck className="mr-2" />
-                            Logged in successfully!
+                            Password reset email sent!
                         </div>
                     )}
 

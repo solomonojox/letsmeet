@@ -27,7 +27,7 @@ export const api = createApi({
     }),
     getAllReports: builder.query({
       query: () => ({
-        url: `/api/Report/Query`,
+        url: `/api/Report/GetDetailed`,
       }),
     }),
     getActiveUsersPerMonth: builder.query({
@@ -41,11 +41,11 @@ export const api = createApi({
       }),
     }),
 
-    // getTotalSubscribers: builder.query({
-    //   query: () => ({
-    //     url: `/api/Subscription/TotalSubscriptions`,
-    //   }),
-    // }),
+    getTotalSubscribers: builder.query({
+      query: () => ({
+        url: `/api/SubscriptionAnalytics/subscriptions`,
+      }),
+    }),
     
     getSubscribers: builder.query({
       query: () => ({
@@ -89,7 +89,7 @@ export const {
   useGetAllReportsQuery,
   useGetActiveUsersPerMonthQuery,
   useGetTotalRevenueQuery,
-  // useGetTotalSubscribersQuery,
+  useGetTotalSubscribersQuery,
   useGetSubscribersQuery,
   useGetSubscriptionStatQuery,
   useGetFriendRequestStatQuery,

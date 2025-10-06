@@ -128,7 +128,7 @@ const Otp = () => {
             navigate('/dashboard');
         } catch (err: any) {
             const axiosError = err as any;
-            // console.log(axiosError);
+            console.log(axiosError);
             setLoginError(axiosError?.response?.data?.responseMessage || 'Server error. Please try again.');
         } finally {
             setIsSubmitting(false);

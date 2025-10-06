@@ -67,9 +67,9 @@ const SubscriptionCards = () => {
                             {card.icon}
                         </div>
                     </div>
-                    <p className={`text-xs mt-1 ${card.textColor}`}>
+                    {/* <p className={`text-xs mt-1 ${card.textColor}`}>
                         {card.change} <span className="text-gray-500">{card.changeText}</span>
-                    </p>
+                    </p> */}
                 </div>
             ))}
         </div>

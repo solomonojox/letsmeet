@@ -409,7 +409,7 @@ const AllUsers = () => {
                     </thead>
                     <tbody>
                         {currentUsers?.length > 0 ? (currentUsers?.map((user) => (
-                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
@@ -420,7 +420,7 @@ const AllUsers = () => {
                                             alt={`${user?.firstName} ${user?.lastName}`}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user?.firstName} {user?.lastName}</span>
+                                        <span className="">{user?.firstName} {user?.lastName}</span>
                                     </div>
                                 </td>
                                 <td className="py-4 text-gray-500 min-w-34">{formatDate(user?.createdAt)}</td>
@@ -434,7 +434,7 @@ const AllUsers = () => {
                                     </span>
                                 </td>
                                 <td className="py-4 pr-4 text-right">
-                                    <div className="flex items-center justify-end">
+                                    <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
                                             onClick={(e) => {

@@ -2,25 +2,33 @@
 import axios, { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
-import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { Link, useNavigate } from 'react-router-dom';
+import { EyeIcon, EyeOffIcon, Key, Lock } from "lucide-react";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
+import { resetPassword } from '../../Services/passwordReset';
 
 interface FormData {
+  email: string;
   password: string;
   confirmPassword: string;
+  passwordResetToken: string;
 }
 
 interface FormErrors {
   password?: string;
   confirmPassword?: string;
+  passwordResetToken?: string;
 }
 
 const ResetPassword = () => {
   // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
+  const location = useLocation();
+  const { email } = location.state;
   const [formData, setFormData] = useState<FormData>({
+    email,
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    passwordResetToken: ''
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -74,6 +82,9 @@ const ResetPassword = () => {
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
+    if (!formData.passwordResetToken) {
+      newErrors.passwordResetToken = "Token is required";
+    }
     return newErrors;
   };
 
@@ -85,31 +96,33 @@ const ResetPassword = () => {
       return;
     }
 
+    setLoginError('');
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`/api/users/login`, formData);
+      const response = await resetPassword(formData);
 
       console.log(response);
       setLoginError('');
       setSuccess(true);
-      // localStorage.setItem('authToken', response.data.token);
-      // navigate('/dashboard');
-    } catch (error) {
-      const axiosError = error as AxiosError;
+      setTimeout(() => {
+        navigate('/login');
+      }, 1000);
+    } catch (error: any) {
+      const axiosError = error;
       console.log(axiosError);
       if (axiosError.response?.status === 401) {
         setLoginError('Invalid credentials. Please try again.');
       } else {
-        setLoginError('Server error. Please try again.');
+        setLoginError(axiosError?.response?.data.responseMessage || 'Server error. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const validation = !formData.confirmPassword || !formData.password || 
-                      !passwordValidation.length || !passwordValidation.uppercase || 
-                      !passwordValidation.number || !passwordValidation.specialChar;
+  const validation = !formData.confirmPassword || !formData.password ||
+    !passwordValidation.length || !passwordValidation.uppercase ||
+    !passwordValidation.number || !passwordValidation.specialChar;
 
   return (
     <div className="md:flex items-center justify-center">
@@ -133,6 +146,25 @@ const ResetPassword = () => {
           )}
 
           <form onSubmit={handleSubmit} className="md:space-y-2 space-y-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Key className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="passwordResetToken"
+                  name="passwordResetToken"
+                  placeholder="Enter reset token"
+                  value={formData.passwordResetToken}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 pl-10 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-primary text-sm"
+                />
+              </div>
+              {errors.passwordResetToken && <p className="mt-1 text-sm text-red-600">{errors.passwordResetToken}</p>}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -165,7 +197,7 @@ const ResetPassword = () => {
                 </div>
               </div>
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-              
+
               {/* Password validation indicators */}
               <div className="mt-2 text-xs text-gray-600">
                 <p className={passwordValidation.length ? "text-green-500" : "text-gray-500"}>

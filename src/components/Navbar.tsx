@@ -12,7 +12,7 @@ const Navbar = () => {
         { id: 3, href: '#contact', name: 'Contact Us' },
     ];
 
-    const handleClick = (e, href) => {
+    const handleClick = (e: any, href: any) => {
         e.preventDefault();
         setMobileMenuOpen(false);
         const element = document.querySelector(href);

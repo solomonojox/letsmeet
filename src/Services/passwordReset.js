@@ -6,6 +6,7 @@ export const initiateResetPassword = async (data) => {
     return res.data;
 }
 
+
 export const resetPassword = async (data) => {
     const res = await api.post('/api/User/ResetPassword', data);
     // console.log(res);

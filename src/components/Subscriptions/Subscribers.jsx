@@ -1,59 +1,19 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
+// /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef, useContext } from 'react';
 import { ChevronRight, Settings, ChevronDown, ChevronUp, Search, ChevronLeft, Filter, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
-import { useGetSubscribersQuery } from '../../Services/API/api';
+import { useGetSubscribersQuery, useGetTotalSubscribersQuery } from '../../Services/API/api';
 import axios from 'axios';
 import { AppContext } from '../../Context/AppContext';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const Subscribers = () => {
-    const { formatDate } = useContext(AppContext);
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const { data, isLoading } = useGetSubscribersQuery([])
-    const subscribers = data?.data || [];
-    const [tableData, setTableData] = useState([]);
+    const { formatDate, formatCurrency } = useContext(AppContext);
+    const { data, isLoading } = useGetTotalSubscribersQuery([])
+    const tableData = data?.data?.items || [];
     const [loading, setLoading] = useState(false);
-    // console.log(tableData)
-
-    const fetchUserById = async (id) => {
-        return await axios.get(`${baseUrl}/api/User/GetUserById/${id}`).then(res => res.data);
-    };
-
-    const mergedSubscribers = async () => {
-        setLoading(true);
-        try {
-            const subscribersWithUserDetails = await Promise.all(
-                subscribers.map(async (subscriber) => {
-                    const user = await fetchUserById(subscriber.userId);
-                    return {
-                        name: user?.data?.firstName + ' ' + user?.data?.lastName,
-                        plan: subscriber.plan === 1 ? 'Free' : subscriber.plan === 2 ? 'Gold' : 'Platinum',
-                        startDate: subscriber.startDate,
-                        endDate: subscriber.nextRenewalDate,
-                        userId: user?.data?.userId,
-                        status: subscriber.isActive ? 'Active' : 'Expired',
-                        userImage: user?.data?.profilePictureUrl,
-                    };
-                })
-            )
-
-            // console.log('Result', subscribersWithUserDetails);
-            setTableData(subscribersWithUserDetails)
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if (subscribers.length > 0) {
-          mergedSubscribers();
-        }
-    }, [subscribers])
 
     const navigate = useNavigate();
 
@@ -72,13 +32,13 @@ const Subscribers = () => {
     const [filters, setFilters] = useState({
         status: {
             All: true,
-            Active: false,
-            Expired: false
+            ACTIVE: false,
+            EXPIRED: false
         },
         plan: {
             All: true,
             Free: false,
-            Gold: false,
+            "PREMIUM PLAN": false,
             Platinum: false
         }
     });
@@ -149,10 +109,10 @@ const Subscribers = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Active':
-                return 'bg-green-100 text-green-600';
-            case 'Expired':
-                return 'bg-red-100 text-red-600';
+            case 'ACTIVE':
+                return 'bg-green-50 text-green-600';
+            case 'EXPIRED':
+                return 'bg-red-50 text-red-600';
             default:
                 return 'bg-gray-100 text-gray-600';
         }
@@ -160,9 +120,9 @@ const Subscribers = () => {
 
     const getStatusTextColor = (status) => {
         switch (status) {
-            case 'Active':
+            case 'ACTIVE':
                 return 'text-green-500';
-            case 'Expired':
+            case 'EXPIRED':
                 return 'text-red-500';
             default:
                 return 'text-gray-500';
@@ -232,13 +192,13 @@ const Subscribers = () => {
         setFilters({
             status: {
                 All: true,
-                Active: false,
-                Expired: false,
+                ACTIVE: false,
+                EXPIRED: false,
             },
             plan: {
                 All: true,
                 Free: false,
-                Gold: false,
+                "PREMIUM PLAN": false,
                 Platinum: false
             }
         });
@@ -249,8 +209,8 @@ const Subscribers = () => {
     const filteredSubscribers = tableData?.filter(user => {
         // Search filter
         const matchesSearch =
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.startDate.toLowerCase().includes(searchTerm.toLowerCase());
 
         // Status filter
@@ -259,7 +219,7 @@ const Subscribers = () => {
 
         // Plan filter
         const planFilterApplied = !filters.plan.All;
-        const matchesPlanFilter = planFilterApplied ? filters.plan[user.plan] : true;
+        const matchesPlanFilter = planFilterApplied ? filters.plan[user.planName] : true;
 
         return matchesSearch && matchesPlanFilter && matchesStatusFilter;
     });
@@ -413,13 +373,15 @@ const Subscribers = () => {
                             </th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Plan</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Plan Price</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Start Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">End Date</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
                                 </div>
-                            </th>
+                            </th> */}
                         </tr>
                     </thead>
                     <tbody>
@@ -432,21 +394,22 @@ const Subscribers = () => {
                                     <div className="flex items-center">
                                         <img
                                             src={user.userImage ||imageAsset.avatar}
-                                            alt={user.name}
+                                            alt={user.userName}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="font-medium">{user.name}</span>
+                                        <span className="text-sm">{user.userName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500 pr-4">{user.plan}</td>
-                                <td className="py-4 text-gray-500 pr-4">{formatDate(user.startDate)}</td>
-                                <td className="py-4 text-gray-500 pr-4">{formatDate(user.endDate)}</td>
-                                {/* <td className="py-4">
+                                <td className="py-4 text-gray-500 pr-4 text-sm">{user.planName}</td>
+                                <td className="py-4 text-gray-500 pr-4 text-sm">{formatCurrency(user.planPrice)}</td>
+                                <td className="py-4 text-gray-500 pr-4 text-sm">{formatDate(user.startDate)}</td>
+                                <td className="py-4 text-gray-500 pr-4 text-sm">{formatDate(user.endDate)}</td>
+                                <td className="py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
                                         {user.status}
                                     </span>
-                                </td> */}
-                                <td className="py-4 pr-4 text-right relative">
+                                </td>
+                                {/* <td className="py-4 pr-4 text-right relative">
                                     <div className="flex items-center justify-end">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
@@ -461,15 +424,14 @@ const Subscribers = () => {
                                         </button>
                                     </div>
 
-                                    {/* Modal for actions */}
                                     {openModal === user.userId && (
                                         <div
                                             ref={el => modalRef.current[user.userId] = el}
                                             className={`absolute ${modalPositions[user.userId] ? 'bottom-full mb-2' : 'mt-2'} right-8 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50`}
                                         >
-                                            {/* <div className="py-3 px-4 border-b border-gray-200">
+                                            <div className="py-3 px-4 border-b border-gray-200">
                                                 <Link to={`/user/${user.userId}`} className="text-gray-600 block text-left text-md hover:text-primary hover:underline hover:underline-offset-2" onClick={() => navigate(`/user/${user.userId}`, { state: { userId: user.userId } })}>View profile</Link>
-                                            </div> */}
+                                            </div>
                                             <div className="p-4">
                                                 <div className="text-gray-400 mb-2 text-md">Decisions:</div>
 
@@ -490,7 +452,7 @@ const Subscribers = () => {
                                             </div>
                                         </div>
                                     )}
-                                </td>
+                                </td> */}
                             </tr>
                         ))) : (
                             <tr>

@@ -1,5 +1,5 @@
 // /* eslint-disable react/prop-types */
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 // import assets from "../../assets/images/assets";
 // import Input from "../SHAREHOLDER/Shareholder/Ui/Input";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -10,7 +10,7 @@ import imageAsset from "../assets/imageAsset";
 import { FaAngleDown, FaArrowLeftLong } from "react-icons/fa6";
 import { LiaAngleDownSolid } from "react-icons/lia";
 import { AppContext } from "../Context/AppContext";
-import { ArrowBigLeft, ArrowLeft, Backpack } from "lucide-react";
+import { ArrowBigLeft, ArrowLeft, Backpack, User } from "lucide-react";
 import { HiArrowLongLeft } from "react-icons/hi2";
 
 
@@ -22,6 +22,7 @@ const TopBar = ({ toggleSidebar }) => {
   const navigate = useNavigate()
 
   const [logoutMenu, setLogoutMenu] = useState(false);
+  const dropdownRef = useRef(null);
   const icons = {
     menu: (
       <svg
@@ -137,6 +138,22 @@ const TopBar = ({ toggleSidebar }) => {
     }
   }, [location, formatPath]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setLogoutMenu(false);
+      }
+    };
+
+    if (logoutMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [logoutMenu]);
+
   return (
     <div className="fixed top-0 z-50 bg-white w-full">
       <div className="fixed top-0 z-10 bg-white flex justify-between border-b border-b-gray-200 left-0 right-0 h-16 lg:pl-12 pl-5 pr-5 items-center lg:ml-[200px] ">
@@ -170,7 +187,8 @@ const TopBar = ({ toggleSidebar }) => {
             </div> */}
 
             <div
-              className="flex cursor-pointer items-center"
+              ref={dropdownRef}
+              className="flex cursor-pointer items-center relative"
               onClick={() => setLogoutMenu(!logoutMenu)}
             >
               <div className="relative mr-1">
@@ -184,22 +202,25 @@ const TopBar = ({ toggleSidebar }) => {
 
               <div className="flex items-center gap-2">
                 <div className="flex flex-col text-[12px]">
-                  <p className="font-medium">{userInfo?.firstname || ''}</p>
+                  <p className="font-medium">{userInfo?.name || ''}</p>
                 </div>
                 {icons.dropDown}
               </div>
+
+              {logoutMenu && (
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-lg border shadow-lg z-50">
+                  <div className="font-medium py-2 px-6 flex items-center gap-2" onClick={() => navigate(`/user-profile/${userInfo?.id}`, { state: { userId: userInfo?.id, userName: userInfo?.name } })}>
+                    <User />
+                    <p>{userInfo?.name || ''}</p>
+                  </div>
+                  <div className="text-sm cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded flex items-center px-6 border-t py-2" onClick={handleLogout}>
+                    <IoLogOut className="mr-2 text-xl" />
+                    Logout
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-
-          {logoutMenu && (
-            <div className="absolute right-8 top-14 bg-white rounded-lg border py-2 px-6">
-              <div className="text-[1.3vw] lg:text-[1.2vw] cursor-pointer hover:text-red-600 p-1 rounded flex items-center" onClick={handleLogout}>
-                <IoLogOut className="mr-2" />
-                Logout
-              </div>
-            </div>
-          )}
 
           {/* <div className="lg:flex items-center hidden grow">
             <Icon icon="basil:notification-outline" className="text-[32px] mr-7" />

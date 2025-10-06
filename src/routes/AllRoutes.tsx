@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Login from '../pages/Auth/Login';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import Otp from '../pages/Auth/Otp';
@@ -18,6 +18,7 @@ import PrivacyPolicy from '../components/Landing/PrivacyPolicy';
 import TermsAndCondition from '../components/Landing/TermsAndCondition';
 import CookiePolicy from '../components/Landing/CookiePolicy';
 import UnderConstructionPage from '../pages/UnderConstructionPage';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 const ProtectedRoute = ({ children }: any) => {
   const token = localStorage.getItem('letsmeetToken');
@@ -25,7 +26,22 @@ const ProtectedRoute = ({ children }: any) => {
   return token ? children : <Navigate to="/login" />;
 };
 
+
 const AllRoutes = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('letsmeetToken');
+    if (token) {
+      const decoded = jwtDecode<Partial<JwtPayload>>(token);
+      // Check if token is expired
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem('letsmeetToken'); // optional: clear expired token
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [navigate]);
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />

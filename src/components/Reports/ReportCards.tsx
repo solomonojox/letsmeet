@@ -9,7 +9,7 @@ import { AppContext } from '../../Context/AppContext';
 const ReportCards = () => {
   const { formatNumberWithCommas } = useContext(AppContext);
   const { data, isLoading } = useGetAllReportsQuery([]);
-  const reports = data?.data || [];
+  const reports = data?.data?.items || [];
   // console.log(reports);
 
   const now = new Date();
