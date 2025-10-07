@@ -37,6 +37,7 @@ const AllRoutes = () => {
       // Check if token is expired
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
         localStorage.removeItem('letsmeetToken'); // optional: clear expired token
+        sessionStorage.removeItem("currentRegSidebarPath")
         navigate('/login', { replace: true });
       }
     }

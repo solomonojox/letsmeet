@@ -113,6 +113,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const logOut = () => {
     localStorage.clear()
     navigate("/login");
+    sessionStorage.removeItem("currentRegSidebarPath")
   }
 
   return (

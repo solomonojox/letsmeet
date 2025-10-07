@@ -92,7 +92,7 @@ const ReportCards = () => {
       value: formatNumberWithCommas(recentReportCount),
       icon: <HiUsers className="text-[#F4B8DC] text-xl" />,
       change: getChangeDisplay(percentageChangeNew),
-      changeText: 'since yesterday',
+      changeText: 'since a week ago',
       color: 'bg-pink-300',
       textColor: percentageChangeNew > 0 ? 'text-green-500' : 'text-red-500',
       border: 'border-l-3 border-pink-300',

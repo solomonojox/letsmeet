@@ -147,7 +147,7 @@ const ResetPassword = () => {
 
           <form onSubmit={handleSubmit} className="md:space-y-2 space-y-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Token</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Key className="text-gray-400" />
@@ -178,7 +178,7 @@ const ResetPassword = () => {
                   onChange={handleChange}
                   className={`pl-10 w-full rounded-lg border ${errors.password ? "border-red-500" : "border-gray-200"
                     } outline-none focus:border-primary py-2 px-4`}
-                  placeholder="••••••••"
+                  placeholder="Enter new password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   {showPassword ? (
@@ -228,7 +228,7 @@ const ResetPassword = () => {
                   onChange={handleChange}
                   className={`pl-10 w-full rounded-lg border ${errors.confirmPassword ? "border-red-500" : "border-gray-200"
                     } outline-none focus:border-primary py-2 px-4`}
-                  placeholder="••••••••"
+                  placeholder="Enter password again"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   {showConfirmPassword ? (
