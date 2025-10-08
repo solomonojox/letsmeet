@@ -1,11 +1,12 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosError } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
 import { EyeIcon, EyeOffIcon, Key, Lock } from "lucide-react";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import imageAsset from '../../assets/imageAsset';
-import { resetPassword } from '../../Services/passwordReset';
+import { resendOtp, resetPassword } from '../../Services/passwordReset';
+import { AppContext } from '../../Context/AppContext';
 
 interface FormData {
   email: string;
@@ -23,6 +24,7 @@ interface FormErrors {
 const ResetPassword = () => {
   // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
   const location = useLocation();
+  const { notifySuccess, notifyError, showOverlay, hideOverlay } = useContext(AppContext);
   const { email } = location.state;
   const [formData, setFormData] = useState<FormData>({
     email,
@@ -37,6 +39,7 @@ const ResetPassword = () => {
   const [loginError, setLoginError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const navigate = useNavigate();
 
   const validatePassword = (password: string) => {
@@ -120,6 +123,34 @@ const ResetPassword = () => {
     }
   };
 
+  const handleResend = async () => {
+    showOverlay();
+    setIsResending(true);
+
+    try {
+      const payload = {
+        referenceValue: email,
+        emailAddress: email,
+        phoneNumber: null,
+        tokenType: "PASSWORD_RESET",
+        durationInMinutes: 5,
+        deliveryMethod: "Email",
+        customTitle: "string"
+      }
+      const res = await resendOtp(payload);
+      if (res.data.success === true) {
+        notifySuccess("Verification code resent to your email.");
+      } else {
+        notifySuccess(res.data.message);
+      }
+    } catch (err: any) {
+      notifyError(err.response.data.responseMessage || 'Server error. Please try again.');
+    } finally {
+      setIsResending(false);
+      hideOverlay();
+    }
+  }
+
   const validation = !formData.confirmPassword || !formData.password ||
     !passwordValidation.length || !passwordValidation.uppercase ||
     !passwordValidation.number || !passwordValidation.specialChar;
@@ -141,7 +172,7 @@ const ResetPassword = () => {
           {success && (
             <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg flex items-center">
               <FaCheck className="mr-2" />
-              Logged in successfully!
+              Password reset successfully!
             </div>
           )}
 
@@ -149,7 +180,7 @@ const ResetPassword = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Token</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute  top-2.5 left-0 pl-3 flex items-center pointer-events-none">
                   <Key className="text-gray-400" />
                 </div>
                 <input
@@ -161,6 +192,14 @@ const ResetPassword = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 pl-10 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-primary text-sm"
                 />
+
+                <span>Did't recieve code? </span>
+                <button
+                  type="button"
+                  className={`${isResending ? 'text-gray-400' : 'text-primary hover:underline'} mt-2 font-semibold `}
+                  disabled={isResending}
+                  onClick={handleResend}
+                >Resend token</button>
               </div>
               {errors.passwordResetToken && <p className="mt-1 text-sm text-red-600">{errors.passwordResetToken}</p>}
             </div>
