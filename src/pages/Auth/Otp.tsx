@@ -7,6 +7,7 @@ import imageAsset from '../../assets/imageAsset';
 import { baseUrl } from '../../Services/baseUrl';
 import { jwtDecode } from 'jwt-decode';
 import { AppContext } from '../../Context/AppContext';
+import { resendOtp } from '../../Services/passwordReset';
 
 interface FormData {
     email: string;
@@ -21,7 +22,7 @@ interface FormErrors {
 const Otp = () => {
     // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
     const location = useLocation();
-    const { notifySuccess, notifyError } = useContext(AppContext);
+    const { notifySuccess, notifyError, showOverlay, hideOverlay } = useContext(AppContext);
     const { reference } = location.state
     // console.log(reference)
     const [formData, setFormData] = useState<FormData>({
@@ -139,9 +140,19 @@ const Otp = () => {
         if (!canResend) return;
         setIsResending(true);
         setMessage("");
+        showOverlay();
 
         try {
-            const res = await axios.post(`/customer/api/User/ResendOtp`);
+            const payload = {
+                referenceValue: reference,
+                emailAddress: reference,
+                phoneNumber: null,
+                tokenType: "LOGIN_ATTEMPT",
+                durationInMinutes: 5,
+                deliveryMethod: "Email",
+                customTitle: "string"
+            }
+            const res = await resendOtp(payload);
             if (res.data.success === true) {
                 setMessage("Verification code resent to your email.");
                 setCanResend(false);
@@ -150,9 +161,10 @@ const Otp = () => {
                 setMessage(res.data.message);
             }
         } catch (err: any) {
-            setMessage(err.response.data.responseMessage);
+            setMessage(err.response.data.responseMessage || 'Server error. Please try again.');
         } finally {
             setIsResending(false);
+            hideOverlay();
         }
     }
 
@@ -194,7 +206,7 @@ const Otp = () => {
                             ))}
                         </div>
 
-                        {/* <p className='pt-6 text-center text-xs'>
+                        <p className='pt-6 text-center text-xs'>
                             {`Didn't receive the code?`}{" "}
                             <button
                                 disabled={!canResend}
@@ -204,7 +216,7 @@ const Otp = () => {
                             >
                                 {canResend ? "Resend code" : `Resend code in ${countdown}s`}
                             </button>
-                        </p> */}
+                        </p>
 
                         <div className="mt-5">
                             <button
@@ -228,7 +240,7 @@ const Otp = () => {
                         </div>
                     </div>
 
-                    {message && <p className={`${message === 'Verification code resent to your email.' ? 'text-red-600' : 'text-red'} font-semibold text-[12px] mt-2 text-center`}>{message}</p>}
+                    {message && <p className={`${message === 'Verification code resent to your email.' ? 'text-green-600' : 'text-red'} font-semibold text-[12px] mt-2 text-center`}>{message}</p>}
 
                     <div className='flex justify-center mt-2'>
                         <Link
