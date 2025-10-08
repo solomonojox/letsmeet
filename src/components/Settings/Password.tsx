@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { initiateResetPassword, resetPassword } from '../../Services/passwordReset';
+import { initiateResetPassword, resendOtp, resetPassword } from '../../Services/passwordReset';
+import { AppContext } from '../../Context/AppContext';
 
 export default function Password() {
     const user = JSON.parse(localStorage.getItem('letsmeetUser')!);
+    const { notifySuccess, notifyError, showOverlay, hideOverlay } = useContext(AppContext);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [resetInitiated, setResetInitiated] = useState(false);
@@ -17,6 +19,7 @@ export default function Password() {
     });
     const [initiateLoading, setInitiateLoading] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -32,7 +35,7 @@ export default function Password() {
         setError('');
         try {
             const res = await initiateResetPassword({ email: user.email });
-            console.log(res);
+            // console.log(res);
             setResetInitiated(true);
             setSuccess('We sent a reset token to your email. Enter it below to reset your password.');
         } catch (err: any) {
@@ -70,6 +73,34 @@ export default function Password() {
         }
     };
 
+    const handleResend = async () => {
+        showOverlay();
+        setIsResending(true);
+
+        try {
+            const payload = {
+                referenceValue: user.email,
+                emailAddress: user.email,
+                phoneNumber: null,
+                tokenType: "PASSWORD_RESET",
+                durationInMinutes: 5,
+                deliveryMethod: "Email",
+                customTitle: "string"
+            }
+            const res = await resendOtp(payload);
+            if (res.data.success === true) {
+                notifySuccess("Verification code resent to your email.");
+            } else {
+                notifySuccess(res.data.message);
+            }
+        } catch (err: any) {
+            notifyError(err.response.data.responseMessage || 'Server error. Please try again.');
+        } finally {
+            setIsResending(false);
+            hideOverlay();
+        }
+    }
+
     return (
         <div className="mt-10">
             {!resetInitiated ? (
@@ -104,6 +135,13 @@ export default function Password() {
                             onChange={handleChange}
                             className="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-primary text-sm"
                         />
+                        <span>Did't recieve code? </span>
+                        <button
+                            type="button"
+                            className={`${isResending ? 'text-gray-400' : 'text-primary hover:underline'} mt-2 font-semibold `}
+                            disabled={isResending}
+                            onClick={handleResend}
+                        >Resend token</button>
                     </div>
 
                     <div className="mb-4">
