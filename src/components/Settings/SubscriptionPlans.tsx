@@ -1,97 +1,53 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Trash2 } from "lucide-react";
 import AddNewPlan from './AddNewPlan';
-import { createPlan } from '../../Services/settings';
-
-interface Plan {
-    id: string;
-    type: string;
-    price: number;
-    currency: string;
-    features: Array<{
-        text: string;
-        usageLimit?: number;
-    }>;
-}
+import { createPlan, deletePlan, getPlans } from '../../Services/settings';
+import { Plan, PlanData } from '../../types/Plans';
+import { AppContext } from '../../Context/AppContext';
 
 export default function SubscriptionPlans() {
+    const { showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const [newPlanModal, setNewPlanModal] = useState(false);
-    const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+    const [editingPlan, setEditingPlan] = useState<PlanData | null>(null);
+    const [plans, setPlans] = useState<Plan[]>([]);
+    const [refetch, setRefetch] = useState(false);
 
-    // Initial plans data
-    const [plans, setPlans] = useState<Plan[]>([
-        {
-            id: "basic-001",
-            type: "Basic Plan",
-            price: 0,
-            currency: "₦",
-            features: [
-                { text: "10 projects per month", usageLimit: 5 },
-                { text: "Basic analytics" },
-                { text: "24-hour support response time", usageLimit: 5 },
-                { text: "1GB storage space" },
-                { text: "Single user access" },
-            ],
-        },
-        {
-            id: "premium-001",
-            type: "Premium Plan",
-            price: 1000,
-            currency: "₦",
-            features: [
-                { text: "Unlimited projects", usageLimit: 5 },
-                { text: "Advanced analytics dashboard" },
-                { text: "4-hour support response time", usageLimit: 5 },
-                { text: "10GB storage space" },
-                { text: "Team collaboration (up to 5 users)" },
-            ],
-        },
-        {
-            id: "enterprise-001",
-            type: "Premium Plan",
-            price: 1000,
-            currency: "₦",
-            features: [
-                { text: "Unlimited projects and resources", usageLimit: 5 },
-                { text: "Custom analytics solutions" },
-                { text: "Dedicated support agent", usageLimit: 5 },
-                { text: "Unlimited storage space" },
-                { text: "Unlimited team members" },
-            ],
-        },
-    ]);
-
-    const handleAddNewPlan = (planData: any) => {
-        const newPlan: Plan = {
-            id: `plan-${Date.now()}`,
-            type: planData.title,
-            price: parseFloat(planData.price) || 0,
-            currency: "₦",
-            features: planData.benefits
-                .split("\n")
-                .filter((benefit: string) => benefit.trim() !== "")
-                .map((benefit: string) => ({ text: benefit })),
-        };
-
-        if (editingPlan) {
-            // Update existing plan
-            setPlans(plans.map(plan => plan.id === editingPlan.id ? { ...newPlan, id: plan.id } : plan));
-            setEditingPlan(null);
-        } else {
-            // Add new plan
-            setPlans([...plans, newPlan]);
+    useEffect(() => {
+        const getAllPlans = async () => {
+            showOverlay();
+            try {
+                const res = await getPlans();
+                setPlans(res);
+                // console.log(data);
+            } catch (error) {
+                console.error(error);
+            }            
+            finally {
+                hideOverlay();
+            }
         }
-        setNewPlanModal(false);
-    };
 
-    const handleEditPlan = (plan: Plan) => {
+        getAllPlans();
+    }, [refetch])
+
+    const handleEditPlan = (plan: any) => {
         setEditingPlan(plan);
         setNewPlanModal(true);
     };
 
-    const handleDeletePlan = (planId: string) => {
-        setPlans(plans.filter(plan => plan.id !== planId));
+    const handleDeletePlan = async (planId: string) => {
+        showOverlay();
+        try {
+            await deletePlan(planId);
+            notifySuccess('Plan deleted successfully', 'success');
+        } catch (error: any) {
+            // console.error(error.response.data.responseMessage || 'Error deleting plan');
+            notifyError(error.response.data.responseMessage || 'Error deleting plan', 'error');
+        } finally {
+            hideOverlay();
+        }
     };
+
     return (
         <div>
             <div className="mb-4">
@@ -111,26 +67,26 @@ export default function SubscriptionPlans() {
                     <div key={plan.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                         <div className="mb-2">
                             <span className="bg-blue-900 text-white px-4 py-1 rounded-full text-sm font-medium">
-                                {plan.type}
+                                {plan.name}
                             </span>
                         </div>
                         <h2 className="text-2xl font-bold mb-2">
-                            {plan.currency}{plan.price.toLocaleString()}
+                            ₦{plan.price.toLocaleString()}
                         </h2>
 
                         <div className="space-y-2">
                             {plan.features.map((feature, index) => (
                                 <PlanFeature
                                     key={`${plan.id}-feature-${index}`}
-                                    text={feature.text}
-                                    usageLimit={feature.usageLimit}
+                                    text={`${feature.featureName}: ${feature.featureFeatureDescription}`}
+                                    description={feature.featureFeatureDescription}
                                 />
                             ))}
                         </div>
 
                         <div className="mt-2 flex space-x-2">
                             <button
-                                className="bg-blue-900 text-white rounded-md py-2 w-full text-center font-medium"
+                                className="bg-primary hover:bg-primary/70 text-white rounded-md py-2 w-full text-center font-medium"
                                 onClick={() => handleEditPlan(plan)}
                             >
                                 Edit plan
@@ -150,12 +106,14 @@ export default function SubscriptionPlans() {
                 <AddNewPlan
                     isOpen={newPlanModal}
                     onClose={() => setNewPlanModal(false)}
-                    onSubmit={handleAddNewPlan}
-                    initialData={editingPlan ? {
-                        title: editingPlan.type,
-                        price: editingPlan.price.toString(),
-                        benefits: editingPlan.features.map(f => f.text).join("\n")
-                    } : undefined}
+                    onSubmit={() => { }}
+                    initialData={editingPlan}
+                    refetch={() => setRefetch(!refetch)}
+                // initialData={editingPlan ? {
+                //     // title: editingPlan.type,
+                //     price: editingPlan.price.toString(),
+                //     // benefits: editingPlan.features.map(f => f.text).join("\n")
+                // } : undefined}
                 />
             )}
         </div>
@@ -164,19 +122,19 @@ export default function SubscriptionPlans() {
 
 type PlanFeatureProps = {
     text: string;
-    usageLimit?: number;
+    description?: string;
 };
 
-function PlanFeature({ text, usageLimit }: PlanFeatureProps) {
+function PlanFeature({ text, description }: PlanFeatureProps) {
     return (
         <div>
             <div className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
                 <span className="text-sm">{text}</span>
             </div>
-            {usageLimit && (
-                <div className="text-gray-500 text-xs ml-5 mt-1">
-                    You can only use this {usageLimit} times
+            {description && (
+                <div className="text-gray-500 text-xs ml-5 mt-0">
+                    {description}
                 </div>
             )}
         </div>
