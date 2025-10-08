@@ -23,3 +23,13 @@ export const deletePlan = async (id) => {
     // console.log(res);
     return res.data;
 }
+
+export const addFeatures = async (id, data) => {
+    const res = await api.post(`/api/Plan/Feature/${id}/add-feature`, data);
+    return res.data;
+}
+
+export const removeFeature = async (planId, featureId) => {
+    const res = await api.delete(`/api/Plan/Feature/${planId}/remove-feature/${featureId}`);
+    return res.data;
+}

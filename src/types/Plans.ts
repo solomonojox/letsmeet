@@ -58,3 +58,8 @@ export interface PlanData {
         }
     ];
 }
+
+export interface Feature {
+    featureName: string;
+    featureFeatureDescription: string;
+}
