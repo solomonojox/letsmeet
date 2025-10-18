@@ -62,13 +62,19 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${baseUrl}/api/User/Authenticate`, formData);
+      const response: any = await axios.post(`${baseUrl}/api/User/Authenticate`, formData);
+      // console.log(response);
       // handle token from response if needed
       setLoginError('');
-      setSuccess(true);
-      notifySuccess('Otp sent to your email', 'success');
-      // setShowTokenModal(true); // show modal after login
-      navigate('/verify-otp', { state: { reference: formData.reference } });
+      if (response.data.data.userInformation.type === "SUPER_ADMIN") {
+        setSuccess(true);
+        notifySuccess('Otp sent to your email', 'success');
+        // setShowTokenModal(true); // show modal after login
+        navigate('/verify-otp', { state: { reference: formData.reference } });
+      } else {
+        notifyError('You are not authorized', 'error');
+        setLoginError('You are not authorized');
+      }
     } catch (error: any) {
       const axiosError = error as AxiosError;
       if (axiosError.response?.status === 401) {
@@ -83,7 +89,7 @@ const Login = () => {
     }
   };
 
-  const validation = !formData.reference || !formData.key; 
+  const validation = !formData.reference || !formData.key;
 
   // handle token input
   const handleTokenChange = (index: number, value: string) => {
