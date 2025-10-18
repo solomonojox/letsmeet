@@ -1,6 +1,12 @@
 import React, { useContext } from "react";
 import { HiOutlineMailOpen } from "react-icons/hi";
-import { useGetFriendRequestStatQuery, useGetAllFriendRequestsSentQuery, useGetAllFriendRequestsReceivedQuery } from '../../Services/API/api';
+import {
+    useGetFriendRequestStatQuery,
+    useGetAllFriendRequestsSentQuery,
+    useGetAllFriendRequestsReceivedQuery,
+    useGetFriendRequestFullStatQuery,
+    useGetFriendRequestMothlyRateQuery
+} from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import CardSkeletonLoader from "../../ui/CardSkeletonLoader";
 
@@ -11,6 +17,11 @@ const RequestCards = () => {
     const { data: requestStats, isLoading } = useGetFriendRequestStatQuery([]);
     const { data: requestReceived, isLoading: isLoadingReceived } = useGetAllFriendRequestsReceivedQuery([]);
     const { data: allRequests } = useGetAllFriendRequestsSentQuery([]);
+    const { data: fullStatData } = useGetFriendRequestFullStatQuery({});
+    const { data: rateData } = useGetFriendRequestMothlyRateQuery([]);
+    const fullStat = fullStatData?.data
+    const rate = rateData?.data[0]
+    console.log(rate)
 
     const totalRequests = allRequests?.data?.length || 0;
     const totalRequestsReceived = requestReceived?.data?.length || 0;
@@ -43,41 +54,53 @@ const RequestCards = () => {
     const cardsData = [
         {
             title: "Total Requests Sent",
-            value: formatNumberWithCommas(totalRequests),
+            value: formatNumberWithCommas(fullStat?.totalRequestsSent),
             icon: <HiOutlineMailOpen className="text-primary text-2xl" />,
-            change: getChangeDisplay(percentageChange),
-            changeText: "since yesterday",
+            // change: getChangeDisplay(percentageChange),
+            // changeText: "since yesterday",
             color: "bg-primary",
             textColor: percentageChange > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-primary",
             iconBg: "bg-[#E6E6F399]",
         },
         {
+            title: "Total Requests Pending",
+            value: formatNumberWithCommas(fullStat?.totalRequestsPending),
+            icon: <HiOutlineMailOpen className="text-yellow-500 text-2xl" />,
+            // change: getChangeDisplay(percentageChangeRejectedSinceYesterday),
+            // changeText: "since yesterday",
+            color: "bg-yellow-50",
+            textColor: percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
+            border: "border-l-3 border-yellow-500",
+            iconBg: "bg-[#FDECEC]",
+        },
+
+        {
             title: "Total Requests Accepted",
-            value: formatNumberWithCommas(totalRequestsReceived),
+            value: formatNumberWithCommas(fullStat?.totalRequestsAccepted),
             icon: <HiOutlineMailOpen className="text-[#22C55E] text-2xl" />,
-            change: getChangeDisplay(percentageChangeAcceptedSinceYesterday),
-            changeText: "since yesterday",
+            change: getChangeDisplay(rate?.acceptanceRate),
+            changeText: "since this month",
             color: "bg-green-100",
-            textColor: percentageChangeAcceptedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
+            textColor: rate?.acceptanceRate > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-[#22C55E]",
             iconBg: "bg-[#E9F9EF]",
         },
         {
             title: "Total Requests Rejected",
-            value: formatNumberWithCommas(totalRejected),
+            value: formatNumberWithCommas(fullStat?.totalRequestsDeclined),
             icon: <HiOutlineMailOpen className="text-[#EF4444] text-2xl" />,
-            change: getChangeDisplay(percentageChangeRejectedSinceYesterday),
-            changeText: "since yesterday",
+            change: getChangeDisplay(100 - rate?.acceptanceRate),
+            changeText: "since this month",
             color: "bg-red-100",
-            textColor: percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
+            textColor: (100 - rate?.acceptanceRate) > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-red-400",
             iconBg: "bg-[#FDECEC]",
         },
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {cardsData.map((card, index) => (
                 <div
                     key={index}

@@ -46,7 +46,7 @@ export const api = createApi({
         url: `/api/SubscriptionAnalytics/subscriptions`,
       }),
     }),
-    
+
     getSubscribers: builder.query({
       query: () => ({
         // url: `/api/SubscriptionAnalytics/subscriptions`,
@@ -75,6 +75,16 @@ export const api = createApi({
         url: `/api/v1/chat/friend-requests/sent`,
       }),
     }),
+    getFriendRequestFullStat: builder.query({
+      query: () => ({
+        url: `/api/admin/chat-contact-analytics/friend-requests/conversion-rate`,
+      }),
+    }),
+    getFriendRequestMothlyRate: builder.query({
+      query: () => ({
+        url: `/api/admin/chat-contact-analytics/friend-requests/monthly?months=1`,
+      }),
+    }),
     getAllFeedbacks: builder.query({
       query: () => ({
         url: `/api/Feedback/Query`,
@@ -95,5 +105,7 @@ export const {
   useGetFriendRequestStatQuery,
   useGetAllFriendRequestsReceivedQuery,
   useGetAllFriendRequestsSentQuery,
+  useGetFriendRequestFullStatQuery,
+  useGetFriendRequestMothlyRateQuery,
   useGetAllFeedbacksQuery,
 } = api;

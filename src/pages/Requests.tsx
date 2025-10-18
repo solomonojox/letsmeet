@@ -6,7 +6,7 @@ const Requests = () => {
     return (
       <div className="space-y-10 mb-20">
         <RequestCards />
-        <AllRequests />
+        {/* <AllRequests /> */}
       </div>
     );
 }
