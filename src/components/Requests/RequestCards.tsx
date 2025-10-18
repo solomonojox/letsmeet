@@ -21,7 +21,7 @@ const RequestCards = () => {
     const { data: rateData } = useGetFriendRequestMothlyRateQuery([]);
     const fullStat = fullStatData?.data
     const rate = rateData?.data[0]
-    console.log(rate)
+    // console.log(rate)
 
     const totalRequests = allRequests?.data?.length || 0;
     const totalRequestsReceived = requestReceived?.data?.length || 0;
@@ -43,7 +43,7 @@ const RequestCards = () => {
 
 
     if (isLoading) {
-        return <CardSkeletonLoader num={3} />;
+        return <CardSkeletonLoader num={2} />;
     }
 
     const getChangeDisplay = (percentage: number) => {
@@ -54,7 +54,7 @@ const RequestCards = () => {
     const cardsData = [
         {
             title: "Total Requests Sent",
-            value: formatNumberWithCommas(fullStat?.totalRequestsSent),
+            value: formatNumberWithCommas(fullStat?.totalRequestsSent || 0),
             icon: <HiOutlineMailOpen className="text-primary text-2xl" />,
             // change: getChangeDisplay(percentageChange),
             // changeText: "since yesterday",
@@ -65,7 +65,7 @@ const RequestCards = () => {
         },
         {
             title: "Total Requests Pending",
-            value: formatNumberWithCommas(fullStat?.totalRequestsPending),
+            value: formatNumberWithCommas(fullStat?.totalRequestsPending || 0),
             icon: <HiOutlineMailOpen className="text-yellow-500 text-2xl" />,
             // change: getChangeDisplay(percentageChangeRejectedSinceYesterday),
             // changeText: "since yesterday",
@@ -77,7 +77,7 @@ const RequestCards = () => {
 
         {
             title: "Total Requests Accepted",
-            value: formatNumberWithCommas(fullStat?.totalRequestsAccepted),
+            value: formatNumberWithCommas(fullStat?.totalRequestsAccepted || 0),
             icon: <HiOutlineMailOpen className="text-[#22C55E] text-2xl" />,
             change: getChangeDisplay(rate?.acceptanceRate),
             changeText: "since this month",
@@ -88,7 +88,7 @@ const RequestCards = () => {
         },
         {
             title: "Total Requests Rejected",
-            value: formatNumberWithCommas(fullStat?.totalRequestsDeclined),
+            value: formatNumberWithCommas(fullStat?.totalRequestsDeclined || 0),
             icon: <HiOutlineMailOpen className="text-[#EF4444] text-2xl" />,
             change: getChangeDisplay(100 - rate?.acceptanceRate),
             changeText: "since this month",
