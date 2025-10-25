@@ -228,6 +228,7 @@ const Subscribers = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentUsers = filteredSubscribers.slice(indexOfFirstItem, indexOfLastItem);
+    // console.log(currentUsers);
 
     // Calculate total pages
     const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
@@ -386,7 +387,7 @@ const Subscribers = () => {
                     </thead>
                     <tbody>
                         {currentUsers.length > 0 ?  (currentUsers.map((user) => (
-                            <tr key={user.userId} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
