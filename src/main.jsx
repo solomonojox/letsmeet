@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import ContextProvider from './Context/ContextProvider.jsx'
-import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './Context/auth/AuthProvider.tsx'
 import AppWrapper from './AppWrapper.jsx'
 import { Provider } from 'react-redux'
 import store from './Store/store.js'
@@ -9,9 +9,11 @@ import store from './Store/store.js'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <ContextProvider>
-        <AppWrapper />
-      </ContextProvider>
+      <AuthProvider>
+        <ContextProvider>
+          <AppWrapper />
+        </ContextProvider>
+      </AuthProvider>
     </Provider>
   </StrictMode>,
 )
