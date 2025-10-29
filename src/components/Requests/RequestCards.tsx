@@ -14,32 +14,32 @@ import CardSkeletonLoader from "../../ui/CardSkeletonLoader";
 
 const RequestCards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
-    const { data: requestStats, isLoading } = useGetFriendRequestStatQuery([]);
-    const { data: requestReceived, isLoading: isLoadingReceived } = useGetAllFriendRequestsReceivedQuery([]);
-    const { data: allRequests } = useGetAllFriendRequestsSentQuery([]);
-    const { data: fullStatData } = useGetFriendRequestFullStatQuery({});
+    // const { data: requestStats, isLoading } = useGetFriendRequestStatQuery([]);
+    // const { data: requestReceived, isLoading: isLoadingReceived } = useGetAllFriendRequestsReceivedQuery([]);
+    // const { data: allRequests } = useGetAllFriendRequestsSentQuery([]);
+    const { data: fullStatData, isLoading } = useGetFriendRequestFullStatQuery({});
     const { data: rateData } = useGetFriendRequestMothlyRateQuery([]);
     const fullStat = fullStatData?.data
     const rate = rateData?.data[0]
     // console.log(rate)
 
-    const totalRequests = allRequests?.data?.length || 0;
-    const totalRequestsReceived = requestReceived?.data?.length || 0;
+    // const totalRequests = allRequests?.data?.length || 0;
+    // const totalRequestsReceived = requestReceived?.data?.length || 0;
 
     // Total Requests since yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const totalRequestSinceYesterday = (allRequests?.data || []).filter((user: any) => new Date(user.createdAt) >= yesterday);
-    const percentageChange = totalRequests > 0 ? ((totalRequestSinceYesterday.length / totalRequests) * 100) : 0;
+    // const totalRequestSinceYesterday = (allRequests?.data || []).filter((user: any) => new Date(user.createdAt) >= yesterday);
+    // const percentageChange = totalRequests > 0 ? ((totalRequestSinceYesterday.length / totalRequests) * 100) : 0;
 
     // Total Requests accepted since yesterday
-    const totalRequestAcceptedSinceYesterday = (requestReceived?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 1));
-    const percentageChangeAcceptedSinceYesterday = requestReceived > 0 ? ((totalRequestAcceptedSinceYesterday.length / requestReceived) * 100) : 0;
+    // const totalRequestAcceptedSinceYesterday = (requestReceived?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === 1));
+    // const percentageChangeAcceptedSinceYesterday = requestReceived > 0 ? ((totalRequestAcceptedSinceYesterday.length / requestReceived) * 100) : 0;
 
     // Total Requests rejected since yesterday
-    const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === "REJECTED"));
-    const totalRejected = requestStats?.data?.rejected || 0;
-    const percentageChangeRejectedSinceYesterday = totalRequests > 0 ? ((totalRequestRejectedSinceYesterday.length / totalRequests) * 100) : 0;
+    // const totalRequestRejectedSinceYesterday = (allRequests?.data || []).filter((user: any) => (new Date(user.createdAt) >= yesterday && user.status === "REJECTED"));
+    // const totalRejected = requestStats?.data?.rejected || 0;
+    // const percentageChangeRejectedSinceYesterday = totalRequests > 0 ? ((totalRequestRejectedSinceYesterday.length / totalRequests) * 100) : 0;
 
 
     if (isLoading) {
@@ -59,7 +59,7 @@ const RequestCards = () => {
             // change: getChangeDisplay(percentageChange),
             // changeText: "since yesterday",
             color: "bg-primary",
-            textColor: percentageChange > 0 ? "text-green-500" : "text-red-500",
+            // textColor: percentageChange > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-primary",
             iconBg: "bg-[#E6E6F399]",
         },
@@ -70,7 +70,7 @@ const RequestCards = () => {
             // change: getChangeDisplay(percentageChangeRejectedSinceYesterday),
             // changeText: "since yesterday",
             color: "bg-yellow-50",
-            textColor: percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
+            // textColor: percentageChangeRejectedSinceYesterday > 0 ? "text-green-500" : "text-red-500",
             border: "border-l-3 border-yellow-500",
             iconBg: "bg-[#FDECEC]",
         },
