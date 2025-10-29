@@ -38,8 +38,8 @@ const Subscribers = () => {
         plan: {
             All: true,
             Free: false,
-            "PREMIUM PLAN": false,
-            Platinum: false
+            "PLATINUM PLAN": false,
+            "GOLD PLAN": false
         }
     });
 
@@ -198,8 +198,8 @@ const Subscribers = () => {
             plan: {
                 All: true,
                 Free: false,
-                "PREMIUM PLAN": false,
-                Platinum: false
+                "PLATINUM PLAN": false,
+                "GOLD PLAN": false
             }
         });
         setCurrentPage(1);

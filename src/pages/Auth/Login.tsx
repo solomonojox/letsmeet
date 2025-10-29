@@ -68,7 +68,7 @@ const Login = () => {
       setLoginError('');
       if (response.data.data.userInformation.type === "SUPER_ADMIN") {
         setSuccess(true);
-        notifySuccess('Otp sent to your email', 'success');
+        notifySuccess('OTP sent to your email', 'success');
         // setShowTokenModal(true); // show modal after login
         navigate('/verify-otp', { state: { reference: formData.reference } });
       } else {
