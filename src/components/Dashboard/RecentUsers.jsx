@@ -10,13 +10,19 @@ import { useDispatch } from 'react-redux';
 
 const RecentUsers = () => {
   const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
-  const { data, isLoading } = useGetAllUsersQuery([]);
-  const users = data?.data?.items || [];
 
   // State for search and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+
+  const ITEMS_PER_PAGE = 5;
+  const { data, isLoading } = useGetAllUsersQuery({
+    PageSize: ITEMS_PER_PAGE,
+    PageNumber: currentPage,
+  });
+  const users = data?.data?.items || [];
+  const totalPages = data?.data?.totalPages
 
   // State for row action menu
   const [menuAnchor, setMenuAnchor] = useState(null);
@@ -172,14 +178,6 @@ const RecentUsers = () => {
     user.createdAt.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get current items for pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = filteredUsers?.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
-
   // Generate page numbers
   const pageNumbers = [];
   const maxPageButtons = 5;
@@ -302,7 +300,7 @@ const RecentUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {currentUsers?.map((user) => (
+            {filteredUsers?.map((user) => (
               <tr key={user?.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                 <td className="py-4 pl-4">
                   <input type="checkbox" className="h-4 w-4" />
