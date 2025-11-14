@@ -7,9 +7,10 @@ import CardSkeletonLoader from '../../ui/CardSkeletonLoader';
 const SubscriptionCards = () => {
     const { formatNumberWithCommas } = useContext(AppContext);
     // const {data: totalSubscribers} = useGetTotalSubscribersQuery(0);
-    const {data: subscribers} = useGetSubscribersQuery([]);
+    const {data: subs} = useGetSubscribersQuery([]);
     const {data: stat, isLoading} = useGetSubscriptionStatQuery({});
     const allSubStat = stat?.data;
+    const subscribers = subs?.data?.items
     // console.log('stat', allSubStat);
 
     if (isLoading) {

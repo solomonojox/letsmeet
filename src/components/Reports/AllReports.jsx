@@ -14,19 +14,22 @@ const AllReports = () => {
     const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    const { data, isLoading, isError, refetch } = useGetAllReportsQuery([]);
-    const tableData = data?.data?.items || [];
     // console.log(tableData)
     // const [tableData, setTableData] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-
     const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(false);
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+
+    const ITEMS_PER_PAGE = 10;
+    const { data, isLoading, refetch } = useGetAllReportsQuery({
+        PageSize: ITEMS_PER_PAGE,
+        PageNumber: currentPage,
+    });
+    const tableData = data?.data?.items || [];
+    const totalPages = data?.data?.totalPages
 
     // State for row action menu
     const [menuAnchor, setMenuAnchor] = useState(null);
@@ -177,15 +180,6 @@ const AllReports = () => {
 
         return matchesSearch && matchesStatusFilter;
     });
-
-    // Get current items for pagination
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredReports.slice(indexOfFirstItem, indexOfLastItem);
-    // console.log(currentUsers)
-
-    // Calculate total pages
-    const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -405,7 +399,7 @@ const AllReports = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.length > 0 ? currentUsers.map((report) => (
+                        {filteredReports.length > 0 ? filteredReports.map((report) => (
                             <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />

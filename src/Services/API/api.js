@@ -20,15 +20,33 @@ export const api = createApi({
   keepUnusedDataFor: 60000,
   endpoints: (builder) => ({
     getAllUsers: builder.query({
-      query: () => "/api/User/Query",
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.PageNumber !== undefined) queryParams.append("PageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("PageSize", params.PageSize.toString());
+
+        return {
+          url: `/api/User/Get?${queryParams.toString()}`,
+          method: "GET",
+        };
+      }
     }),
     getUserById: builder.query({
       query: (userId) => `/api/User/Get/${userId}`,
     }),
     getAllReports: builder.query({
-      query: () => ({
-        url: `/api/Report/GetDetailed`,
-      }),
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.PageNumber !== undefined) queryParams.append("pageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("pageSize", params.PageSize.toString());
+
+        return {
+          url: `/api/Report/GetDetailed?${queryParams.toString()}`,
+          method: "GET",
+        };
+      },
     }),
     getActiveUsersPerMonth: builder.query({
       query: () => ({
@@ -42,9 +60,17 @@ export const api = createApi({
     }),
 
     getTotalSubscribers: builder.query({
-      query: () => ({
-        url: `/api/SubscriptionAnalytics/subscriptions`,
-      }),
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.pageNumber !== undefined) queryParams.append("pageNumber", params.pageNumber.toString());
+        if (params.pageSize !== undefined) queryParams.append("pageSize", params.pageSize.toString());
+
+        return {
+          url: `/api/SubscriptionAnalytics/subscriptions?${queryParams.toString()}`,
+          method: "GET",
+        };
+      }
     }),
 
     getSubscribers: builder.query({
@@ -65,30 +91,43 @@ export const api = createApi({
         url: `/api/v1/chat/friend-requests/sent`,
       }),
     }),
+
     getAllFriendRequestsReceived: builder.query({
       query: () => ({
         url: `/api/v1/chat/friend-requests/received`,
       }),
     }),
+
     getAllFriendRequestsSent: builder.query({
       query: () => ({
         url: `/api/v1/chat/friend-requests/sent`,
       }),
     }),
+
     getFriendRequestFullStat: builder.query({
       query: () => ({
         url: `/api/admin/chat-contact-analytics/friend-requests/conversion-rate`,
       }),
     }),
+
     getFriendRequestMothlyRate: builder.query({
       query: () => ({
         url: `/api/admin/chat-contact-analytics/friend-requests/monthly?months=1`,
       }),
     }),
+
     getAllFeedbacks: builder.query({
-      query: () => ({
-        url: `/api/Feedback/Query`,
-      }),
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.PageNumber !== undefined) queryParams.append("PageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("PageSize", params.PageSize.toString());
+
+        return {
+          url: `/api/Feedback/Get?${queryParams.toString()}`,
+          method: "GET",
+        };
+      }
     }),
   }),
 });

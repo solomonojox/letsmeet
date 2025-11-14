@@ -9,14 +9,18 @@ import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllFeedbacks = () => {
     const { formatDate } = useContext(AppContext);
-    const { data, isLoading } = useGetAllFeedbacksQuery();
-    const requestData = data?.data || [];
-    // console.log(requestData);
-
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+
+    const ITEMS_PER_PAGE = 10;
+    const { data, isLoading } = useGetAllFeedbacksQuery({
+        PageSize: ITEMS_PER_PAGE,
+        PageNumber: currentPage,
+    });
+    const requestData = data?.data?.items || [];
+    const totalPages = data?.data?.totalPages
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -226,14 +230,6 @@ const AllFeedbacks = () => {
         return matchesSearch && matchesStatusFilter && matchesPlanFilter;
     });
 
-    // Get current items for pagination
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Calculate total pages
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-
     // Generate page numbers
     const pageNumbers = [];
     const maxPageButtons = 5;
@@ -263,7 +259,7 @@ const AllFeedbacks = () => {
 
     if (isLoading) {
         return <TableSkeletonLoader headers={['Title', 'Message', 'Date sent']} />;
-    
+
     }
 
     return (
@@ -383,7 +379,7 @@ const AllFeedbacks = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.length > 0 ? (currentUsers.map((user) => (
+                        {filteredUsers.length > 0 ? (filteredUsers.map((user) => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />

@@ -11,27 +11,11 @@ import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const AllUsers = () => {
     const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
-    const { data, isLoading } = useGetAllUsersQuery([]);
-    const users = data?.data
-    // console.log(users);
-
-    // Subscription plan mapping
-    const planMapping = {
-        1: 'Free',
-        2: 'Gold',
-        3: 'Platinum'
-    };
-
-    const navigate = useNavigate();
 
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(20);
-
-    // State for row action menu
-    const [menuAnchor, setMenuAnchor] = useState(null);
-
     // Filter state
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [filters, setFilters] = useState({
@@ -48,6 +32,58 @@ const AllUsers = () => {
             Platinum: false
         }
     });
+
+    const buildODataFilter = () => {
+        const filtersArray = [];
+
+        // Filter by search term
+        if (searchTerm) {
+            filtersArray.push(
+                `(contains(FirstName, '${searchTerm}') or contains(LastName, '${searchTerm}') or contains(State, '${searchTerm}'))`
+            );
+        }
+
+        // Filter by status
+        const activeStatusFilters = Object.entries(filters.status)
+            .filter(([key, value]) => key !== "All" && value)
+            .map(([key]) => `Status eq '${key}'`);
+
+        if (activeStatusFilters.length > 0) {
+            filtersArray.push(`(${activeStatusFilters.join(" or ")})`);
+        }
+
+        // Filter by plan
+        const activePlanFilters = Object.entries(filters.plan)
+            .filter(([key, value]) => key !== "All" && value)
+            .map(([key]) => `SubscriptionPlan eq '${key}'`);
+
+        if (activePlanFilters.length > 0) {
+            filtersArray.push(`(${activePlanFilters.join(" or ")})`);
+        }
+
+        return filtersArray.join(" and ");
+    };
+
+    const ITEMS_PER_PAGE = 10;
+    const filter = buildODataFilter();
+    const { data, isLoading } = useGetAllUsersQuery({
+        PageSize: ITEMS_PER_PAGE,
+        PageNumber: currentPage,
+    });
+    const users = data?.data?.items
+    const totalPages = data?.data?.totalPages
+
+    // Subscription plan mapping
+    const planMapping = {
+        1: 'Free',
+        2: 'Gold',
+        3: 'Platinum'
+    };
+
+    const navigate = useNavigate();
+
+    // State for row action menu
+    const [menuAnchor, setMenuAnchor] = useState(null);
 
     // References for outside click detection
     const filterModalRef = useRef(null);
@@ -207,7 +243,7 @@ const AllUsers = () => {
     const currentUsers = filteredUsers?.slice(indexOfFirstItem, indexOfLastItem);
 
     // Calculate total pages
-    const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
+    // const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -408,7 +444,7 @@ const AllUsers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers?.length > 0 ? (currentUsers?.map((user) => (
+                        {filteredUsers?.length > 0 ? (filteredUsers?.map((user) => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
@@ -420,7 +456,7 @@ const AllUsers = () => {
                                             alt={`${user?.firstName} ${user?.lastName}`}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />
-                                        <span className="">{user?.firstName} {user?.lastName}</span>
+                                        <span className="cursor-pointer" onClick={() => handleNavigateToDetailsPage(user.id, `${user.firstName} ${user.lastName}`)}>{user?.firstName} {user?.lastName}</span>
                                     </div>
                                 </td>
                                 <td className="py-4 text-gray-500 min-w-34">{formatDate(user?.createdAt)}</td>
@@ -511,7 +547,8 @@ const AllUsers = () => {
                     </div>
 
                     <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        // onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         className={`flex items-center px-3 py-1 text-sm rounded-md ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
                     >

@@ -11,7 +11,7 @@ const Cards = () => {
     const { data: userData, isLoading } = useGetAllUsersQuery([]);
     const { data: reportsData } = useGetAllReportsQuery([]);
     const reports = reportsData?.data?.items || [];
-    const users = userData?.data || [];
+    const users = userData?.data.items || [];
 
     if (isLoading) {
         return <CardSkeletonLoader num={4} />;
