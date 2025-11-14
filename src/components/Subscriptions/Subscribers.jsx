@@ -11,16 +11,24 @@ import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
 const Subscribers = () => {
     const { formatDate, formatCurrency } = useContext(AppContext);
-    const { data, isLoading } = useGetTotalSubscribersQuery([])
-    const tableData = data?.data?.items || [];
-    const [loading, setLoading] = useState(false);
-
+    // const { data, isLoading } = useGetTotalSubscribersQuery([])
+    // const tableData = data?.data?.items || [];
     const navigate = useNavigate();
-
-    // State for search and pagination
+    const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+
+
+    const ITEMS_PER_PAGE = 10;
+    const { data, isLoading } = useGetTotalSubscribersQuery({
+        pageSize: ITEMS_PER_PAGE,
+        pageNumber: currentPage,
+    });
+    const tableData = data?.data?.items || [];
+    const totalPages = data?.data?.totalPages
+
+    // State for search and pagination
 
     // State to track which row's modal is open
     const [openModal, setOpenModal] = useState(null);
@@ -225,13 +233,13 @@ const Subscribers = () => {
     });
 
     // Get current items for pagination
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentUsers = filteredSubscribers.slice(indexOfFirstItem, indexOfLastItem);
+    // const indexOfLastItem = currentPage * itemsPerPage;
+    // const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    // const currentUsers = filteredSubscribers.slice(indexOfFirstItem, indexOfLastItem);
     // console.log(currentUsers);
 
     // Calculate total pages
-    const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
+    // const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
 
     // Generate page numbers
     const pageNumbers = [];
@@ -260,8 +268,8 @@ const Subscribers = () => {
         pageNumbers.push(i);
     }
 
-    if(isLoading || loading){
-        return <TableSkeletonLoader headers={["Name", "Plan", "Start Date", "End Date", "Actions"]}/>
+    if (isLoading || loading) {
+        return <TableSkeletonLoader headers={["Name", "Plan", "Start Date", "End Date", "Actions"]} />
     }
 
     return (
@@ -386,7 +394,7 @@ const Subscribers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.length > 0 ?  (currentUsers.map((user) => (
+                        {filteredSubscribers.length > 0 ? (filteredSubscribers.map((user) => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
@@ -394,7 +402,7 @@ const Subscribers = () => {
                                 <td className="py-4 pr-4">
                                     <div className="flex items-center">
                                         <img
-                                            src={user.userImage ||imageAsset.avatar}
+                                            src={user.userImage || imageAsset.avatar}
                                             alt={user.userName}
                                             className="w-8 h-8 rounded-full mr-3"
                                         />

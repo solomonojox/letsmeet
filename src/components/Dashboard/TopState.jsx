@@ -3,7 +3,7 @@ import { useGetAllUsersQuery } from '../../Services/API/api';
 
 const TopState = () => {
   const { data, isLoading, error } = useGetAllUsersQuery([]);
-  const users = data?.data || [];
+  const users = data?.data?.items || [];
 
   // Ensure we always work with an array
   const userList = users || [];

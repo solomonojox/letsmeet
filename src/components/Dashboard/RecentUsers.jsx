@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux';
 const RecentUsers = () => {
   const { formatDate, showOverlay, hideOverlay } = useContext(AppContext);
   const { data, isLoading } = useGetAllUsersQuery([]);
-  const users = data?.data
+  const users = data?.data?.items || [];
 
   // State for search and pagination
   const [searchTerm, setSearchTerm] = useState('');
