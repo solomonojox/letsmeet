@@ -23,7 +23,8 @@ import { jwtDecode, JwtPayload } from 'jwt-decode';
 const ProtectedRoute = ({ children }: any) => {
   const token = localStorage.getItem('letsmeetToken');
   // console.log(token)
-  return token ? children : <Navigate to="/login" />;
+  return token ? children : children
+  // <Navigate to="/login" />;
 };
 
 
