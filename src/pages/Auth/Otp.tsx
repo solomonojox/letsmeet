@@ -117,13 +117,15 @@ const Otp = () => {
             localStorage.setItem('letsmeetToken', token);
 
             const decoded = jwtDecode<any>(token);
+            // console.log(decoded);
             const user = {
                 id: decoded.UserId,
-                name: decoded.name,
+                name: `${response.data.data.userInformation.firstName} ${response.data.data.userInformation.lastName}`,
                 email: decoded.EmailAddress,
                 subject: decoded.Subject,
                 username: decoded.UserName
             }
+            // console.log(user);
             localStorage.setItem('letsmeetUser', JSON.stringify(user));
             notifySuccess('Login successful', 'success');
             navigate('/dashboard');

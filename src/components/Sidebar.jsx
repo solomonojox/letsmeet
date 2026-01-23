@@ -102,11 +102,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     </svg>,
 
     blockedActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.1141 16.1141C17.8019 14.4262 18.7501 12.137 18.7501 9.75006C18.7501 7.36309 17.8019 5.07389 16.1141 3.38606C14.4262 1.69822 12.137 0.75 9.75006 0.75C7.36309 0.75 5.07389 1.69822 3.38606 3.38606M16.1141 16.1141C14.4262 17.8019 12.137 18.7501 9.75006 18.7501C7.36309 18.7501 5.07389 17.8019 3.38606 16.1141C1.69822 14.4262 0.75 12.137 0.75 9.75006C0.75 7.36309 1.69822 5.07389 3.38606 3.38606M16.1141 16.1141L3.38606 3.38606" stroke="#01008A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M16.1141 16.1141C17.8019 14.4262 18.7501 12.137 18.7501 9.75006C18.7501 7.36309 17.8019 5.07389 16.1141 3.38606C14.4262 1.69822 12.137 0.75 9.75006 0.75C7.36309 0.75 5.07389 1.69822 3.38606 3.38606M16.1141 16.1141C14.4262 17.8019 12.137 18.7501 9.75006 18.7501C7.36309 18.7501 5.07389 17.8019 3.38606 16.1141C1.69822 14.4262 0.75 12.137 0.75 9.75006C0.75 7.36309 1.69822 5.07389 3.38606 3.38606M16.1141 16.1141L3.38606 3.38606" stroke="#01008A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>,
 
     blockedNotActive: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.1141 16.1141C17.8019 14.4262 18.7501 12.137 18.7501 9.75006C18.7501 7.36309 17.8019 5.07389 16.1141 3.38606C14.4262 1.69822 12.137 0.75 9.75006 0.75C7.36309 0.75 5.07389 1.69822 3.38606 3.38606M16.1141 16.1141C14.4262 17.8019 12.137 18.7501 9.75006 18.7501C7.36309 18.7501 5.07389 17.8019 3.38606 16.1141C1.69822 14.4262 0.75 12.137 0.75 9.75006C0.75 7.36309 1.69822 5.07389 3.38606 3.38606M16.1141 16.1141L3.38606 3.38606" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M16.1141 16.1141C17.8019 14.4262 18.7501 12.137 18.7501 9.75006C18.7501 7.36309 17.8019 5.07389 16.1141 3.38606C14.4262 1.69822 12.137 0.75 9.75006 0.75C7.36309 0.75 5.07389 1.69822 3.38606 3.38606M16.1141 16.1141C14.4262 17.8019 12.137 18.7501 9.75006 18.7501C7.36309 18.7501 5.07389 17.8019 3.38606 16.1141C1.69822 14.4262 0.75 12.137 0.75 9.75006C0.75 7.36309 1.69822 5.07389 3.38606 3.38606M16.1141 16.1141L3.38606 3.38606" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>,
 
     logout: <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -129,8 +129,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { id: 2, title: "Users", link: "/users", icon: icons.userActive, notActiveIcon: icons.userNotActive },
     { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive },
     { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive },
-    { id: 5, title: "Notification", link: "/notification", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive },
-    { id: 6, title: "Admin Chat", link: "/chats", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive },
+    { id: 5, title: "Notification", link: "/notifications", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive },
+    { id: 6, title: "Admin Chat", link: "/admin-chat", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive },
     { id: 7, title: "Referrals", link: "/referrals", icon: icons.referralActive, notActiveIcon: icons.referralNotActive },
     { id: 8, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive },
     { id: 9, title: "Feedback", link: "/feedback", icon: icons.feedbackActive, notActiveIcon: icons.feedbackNotActive },
@@ -145,7 +145,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   }
 
   return (
-    <div className="pb-24 font-lato">
+    <div className="pb-[64px] font-lato">
 
       {/* Mobile overlay */}
       <div

@@ -4,7 +4,7 @@ import ReportCards from '../components/Reports/ReportCards'
 
 const Reports = () => {
     return (
-        <div className="space-y-10 mb-10">
+        <div className="space-y-10 mb-10 mt-4">
             <ReportCards />
             <AllReports />
         </div>

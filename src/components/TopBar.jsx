@@ -208,13 +208,13 @@ const TopBar = ({ toggleSidebar }) => {
               </div>
 
               {logoutMenu && (
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-lg border shadow-lg z-50">
-                  <div className="font-medium py-2 px-6 flex items-center gap-2" onClick={() => navigate(`/user-profile/${userInfo?.id}`, { state: { userId: userInfo?.id, userName: userInfo?.name } })}>
-                    <User />
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-lg border shadow-lg z-50 w-full min-w-[210px]">
+                  <div className="font-medium py-2 px-6 flex items-center gap-2 text-sm" onClick={() => navigate(`/user-profile/${userInfo?.id}`, { state: { userId: userInfo?.id, userName: userInfo?.name } })}>
+                    <User className="w-4 h-4" />
                     <p>{userInfo?.name || ''}</p>
                   </div>
                   <div className="text-sm cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded flex items-center px-6 border-t py-2" onClick={handleLogout}>
-                    <IoLogOut className="mr-2 text-xl" />
+                    <IoLogOut className="mr-2 text-lg" />
                     Logout
                   </div>
                 </div>

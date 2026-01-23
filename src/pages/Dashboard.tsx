@@ -17,7 +17,7 @@ const Dashboard = () => {
     dispatch(api.endpoints.getSubscribers.initiate([]));
   })
   return (
-    <div className="space-y-10 mb-10">
+    <div className="space-y-10 mb-10 mt-4">
       <Cards />
 
       <div className="space-y-6">

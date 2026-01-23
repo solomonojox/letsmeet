@@ -120,7 +120,7 @@ const Login = () => {
       const decoded = jwtDecode<any>(token);
       const user = {
         id: decoded.UserId,
-        name: decoded.name,
+        name: `${decoded.firstName} ${decoded.lastName}`,
         email: decoded.EmailAddress,
         subject: decoded.Subject,
         username: decoded.UserName

@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Error decoding token:', error);
-        localStorage.removeItem('letsmeetToken');
+        // localStorage.removeItem('letsmeetToken');
       }
     }
   }, []);

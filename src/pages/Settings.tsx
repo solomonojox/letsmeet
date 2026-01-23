@@ -18,7 +18,7 @@ export default function Settings() {
     const [activeTab, setActiveTab] = useState("subscriptions");
 
     return (
-        <div className="mx-auto">
+        <div className="mx-auto mt-4">
             {/* Tabs */}
             <div className="flex mb-4 space-x-4">
                 <button
