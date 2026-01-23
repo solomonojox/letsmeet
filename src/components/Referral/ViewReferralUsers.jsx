@@ -10,7 +10,7 @@ import { useGetAllReportsQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
 
-const ViewReferralUsers = () => {
+const ViewReferralUsers = ({ referredUsersData }) => {
     const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -81,7 +81,7 @@ const ViewReferralUsers = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Resolved':
+            case 'Active':
                 return 'bg-green-100 text-green-600';
             case 'Closed':
                 return 'bg-red-100 text-red-600';
@@ -166,13 +166,11 @@ const ViewReferralUsers = () => {
     };
 
     // Filter users based on search term and selected filters
-    const filteredReports = tableData?.filter(report => {
+    const filteredReports = referredUsersData?.items?.filter(report => {
         // Search filter
         const matchesSearch =
-            report.reportedName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.reporterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.createdAt.toLowerCase().includes(searchTerm.toLowerCase());
+            report.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.email.toLowerCase().includes(searchTerm.toLowerCase())
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
@@ -389,7 +387,7 @@ const ViewReferralUsers = () => {
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Total referrals</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Email</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date joined</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
                             {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
@@ -400,35 +398,21 @@ const ViewReferralUsers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredReports.length > 0 ? filteredReports.map((report) => (
-                            <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                        {filteredReports?.length > 0 ? filteredReports?.map((report) => (
+                            <tr key={report.userId} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
                                 <td className="py-4">
-                                    <div className="flex items-center">
-                                        {/* <img
-                                            src={report.reporterImage || imageAsset.avatar}
-                                            alt={report.reporter}
-                                            className="w-8 h-8 rounded-full mr-3"
-                                        /> */}
-                                        <span className="text-gray-500 whitespace-nowrap">{report.reporterName}</span>
-                                    </div>
+                                    <span className="text-gray-500 whitespace-nowrap">{report.fullName}</span>
                                 </td>
                                 <td className="py-4">
-                                    <div className="flex items-center">
-                                        {/* <img
-                                            src={report.reportedImage || imageAsset.avatar}
-                                            alt={report.reported}
-                                            className="w-8 h-8 rounded-full mr-3"
-                                        /> */}
-                                        <span className="text-gray-500 whitespace-nowrap">{report.reportedName}</span>
-                                    </div>
+                                    <span className="text-gray-500 whitespace-nowrap">{report.email}</span>
                                 </td>
-                                <td className="py-4 text-gray-500 max-w-[300px]">{report.details}</td>
+                                <td className="py-4 text-gray-500 ">{formatDate(report.joinedAt)}</td>
                                 <td className="py-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.reportStatus)}`}>
-                                        {report.reportStatus}
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                                        {report.status}
                                     </span>
                                 </td>
                                 {/* <td className="py-4 pr-4 text-right">
@@ -457,7 +441,7 @@ const ViewReferralUsers = () => {
             </div>
 
             {/* Pagination - only render if there are reports to paginate */}
-            {filteredReports.length > 0 && (
+            {filteredReports?.length > 0 && (
                 <div className="flex items-center justify-between mt-4 px-2">
                     <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}

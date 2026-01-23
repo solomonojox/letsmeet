@@ -379,7 +379,7 @@ const AllReferrals = () => {
                     <button
                         className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
                         onClick={() => {
-                            navigate(`/referrals/${report.id}`);
+                            navigate(`/referrals/${report.id}` , { state: { userName: report.businessName } });
                             onClose();
                         }}
                     >
