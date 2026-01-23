@@ -392,11 +392,11 @@ const ViewReferralUsers = () => {
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Total referrals</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Date joined</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
+                            {/* <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
                                 </div>
-                            </th>
+                            </th> */}
                         </tr>
                     </thead>
                     <tbody>
@@ -431,7 +431,7 @@ const ViewReferralUsers = () => {
                                         {report.reportStatus}
                                     </span>
                                 </td>
-                                <td className="py-4 pr-4 text-right">
+                                {/* <td className="py-4 pr-4 text-right">
                                     <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
@@ -443,7 +443,7 @@ const ViewReferralUsers = () => {
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
                                     </div>
-                                </td>
+                                </td> */}
                             </tr>
                         )) : (
                             <tr>

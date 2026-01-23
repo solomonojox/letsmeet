@@ -66,38 +66,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('letsmeetToken');
-    if (token) {
-      const decoded = jwtDecode<Partial<JwtPayload>>(token);
-      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        logout();
-      }
-    }
-  })
+  // useEffect(() => {
+  //   const token = localStorage.getItem('letsmeetToken');
+  //   if (token) {
+  //     const decoded = jwtDecode<Partial<JwtPayload>>(token);
+  //     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+  //       logout();
+  //     }
+  //   }
+  // })
 
 
-  useEffect(() => {
-    const token = localStorage.getItem("letsmeetToken");
-    if (token) {
+  // useEffect(() => {
+  //   const token = localStorage.getItem("letsmeetToken");
+  //   if (token) {
 
-      const decoded = jwtDecode<Partial<any>>(token);
-      const expiry = decoded.exp ? decoded.exp * 1000 : null;
+  //     const decoded = jwtDecode<Partial<any>>(token);
+  //     const expiry = decoded.exp ? decoded.exp * 1000 : null;
 
-      if (expiry && expiry < Date.now()) {
-        logout();
-      } else if (expiry) {
-        const timeout = expiry - Date.now() - 2 * 60 * 1000;
-        refreshIntervalRef.current = setTimeout(() => {
-          logout();
-        }, Math.max(timeout, 0));
-      }
-    }
+  //     if (expiry && expiry < Date.now()) {
+  //       logout();
+  //     } else if (expiry) {
+  //       const timeout = expiry - Date.now() - 2 * 60 * 1000;
+  //       refreshIntervalRef.current = setTimeout(() => {
+  //         logout();
+  //       }, Math.max(timeout, 0));
+  //     }
+  //   }
 
-    return () => {
-      if (refreshIntervalRef.current) clearTimeout(refreshIntervalRef.current);
-    };
-  }, []);
+  //   return () => {
+  //     if (refreshIntervalRef.current) clearTimeout(refreshIntervalRef.current);
+  //   };
+  // }, []);
 
   const login = (token: string) => {
     localStorage.setItem('letsmeetToken', token);

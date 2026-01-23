@@ -23,8 +23,8 @@ export const updateReferral = async (id, data) => {
     return res.data;
 }
 
-export const getPartnerById = async (id) => {
-    const res = await api.get(`/api/Referral/GetReferralById/${id}`);
+export const getPartnerById = async (partnerId) => {
+    const res = await api.get(`/api/admin/referral-partners/${partnerId}`);
     return res.data;
 }
 

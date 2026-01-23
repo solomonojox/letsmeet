@@ -72,7 +72,7 @@ const AllRoutes = () => {
       <Route path="/settings" element={<ProtectedRoute>  <Settings />  </ProtectedRoute>} />
       <Route path="/feedback" element={<ProtectedRoute> <Feedback /> </ProtectedRoute>} />
       <Route path="/referrals" element={<ProtectedRoute> <Referral /> </ProtectedRoute>} />
-      <Route path="/referrals/:id" element={<ProtectedRoute> <ViewReferral /> </ProtectedRoute>} />
+      <Route path="/referrals/:partnerId" element={<ProtectedRoute> <ViewReferral /> </ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute> <Notifications /> </ProtectedRoute>} />
       <Route path="/admin-chat" element={<ProtectedRoute> <AdminChat /> </ProtectedRoute>} />
 
