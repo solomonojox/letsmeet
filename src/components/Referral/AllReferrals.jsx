@@ -347,40 +347,43 @@ const AllReferrals = () => {
                 <div className="p-2">
                     <div className="text-gray-400 mb-2 text-sm">Decisions:</div>
                     <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-green-500 hover:text-white rounded-md mb-1"
+                        className={`w-full flex items-center px-3 py-2 text-sm ${report.status === 'ACTIVE' ? "text-gray-300" : "hover:bg-green-500 hover:text-white"} rounded-md mb-1`}
                         onClick={() => {
                             handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Approve");
                             onClose();
                         }}
+                        disabled={report.status === 'ACTIVE'}
                     >
                         Approve
                     </button>
                     <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-yellow-600 hover:text-white rounded-md mb-1"
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-md mb-1 ${report.status === 'PENDING_KYB' ? "text-gray-300" : "hover:bg-yellow-600 hover:text-white"}`}
                         onClick={() => {
                             handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Suspend");
                             onClose();
                         }}
+                        disabled={report.status === 'PENDING_KYB'}
                     >
                         Suspend
                     </button>
-                    {/* <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
-                        onClick={() => {
-                            updateReportStatus(report.id, "Edit");
-                            onClose();
-                        }}
-                    >
-                        Edit
-                    </button> */}
                     <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-red-600 hover:text-white rounded-md mb-1"
+                        className={`w-full flex items-center px-3 py-2 text-sm rounded-md mb-1 ${report.status === 'OFFBOARDED' ? "text-gray-300" : "hover:bg-red-600 hover:text-white"}`}
                         onClick={() => {
                             handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Delete");
                             onClose();
                         }}
+                        disabled={report.status === 'OFFBOARDED'}
                     >
                         Delete
+                    </button>
+                    <button
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
+                        onClick={() => {
+                            navigate(`/referrals/${report.id}`);
+                            onClose();
+                        }}
+                    >
+                        View details
                     </button>
                 </div>
             </div>,
@@ -407,7 +410,7 @@ const AllReferrals = () => {
     }
 
     if (isLoading || loading) {
-        return <TableSkeletonLoader rows={5} headers={['Reporter', 'Reported User', 'Issue', 'Status', 'Date', 'Action']} />;
+        return <TableSkeletonLoader rows={5} headers={['Name', 'Total referrer', 'Date joined', 'Status', 'Action']} />;
     }
 
     return (

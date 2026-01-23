@@ -32,9 +32,11 @@ export const api = createApi({
         };
       }
     }),
+
     getUserById: builder.query({
       query: (userId) => `/api/User/Get/${userId}`,
     }),
+
     getAllReports: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams();
@@ -48,11 +50,13 @@ export const api = createApi({
         };
       },
     }),
+
     getActiveUsersPerMonth: builder.query({
       query: () => ({
         url: `/api/admin/UserAnalytics/registrations?groupBy=day`,
       }),
     }),
+
     getTotalRevenue: builder.query({
       query: () => ({
         url: `/api/Subscription/TotalRevenue`,
@@ -135,8 +139,8 @@ export const api = createApi({
       query: (params = {}) => {
         const queryParams = new URLSearchParams();
 
-        if (params.PageNumber !== undefined) queryParams.append("PageNumber", params.PageNumber.toString());
-        if (params.PageSize !== undefined) queryParams.append("PageSize", params.PageSize.toString());
+        if (params.PageNumber !== undefined) queryParams.append("pageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("pageSize", params.PageSize.toString());
 
         return {
           url: `/api/admin/referral-partners?${queryParams.toString()}`,
@@ -148,6 +152,12 @@ export const api = createApi({
     getReferrersCardData: builder.query({
       query: () => ({
         url: `/api/admin/referral-partners/dashboard/overview`,
+      }),
+    }),
+
+    getPartnerDashboard: builder.query({
+      query: (partnerId) => ({
+        url: `/api/admin/referral-partners/${partnerId}/dashboard`,
       }),
     }),
   }),
@@ -172,4 +182,5 @@ export const {
   // Referrals
   useGetAllPartnersQuery,
   useGetReferrersCardDataQuery,
+  useGetPartnerDashboardQuery,
 } = api;
