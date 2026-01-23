@@ -129,6 +129,27 @@ export const api = createApi({
         };
       }
     }),
+
+    // Referrals
+    getAllPartners: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.PageNumber !== undefined) queryParams.append("PageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("PageSize", params.PageSize.toString());
+
+        return {
+          url: `/api/admin/referral-partners?${queryParams.toString()}`,
+          method: "GET",
+        };
+      }
+    }),
+
+    getReferrersCardData: builder.query({
+      query: () => ({
+        url: `/api/admin/referral-partners/dashboard/overview`,
+      }),
+    }),
   }),
 });
 
@@ -147,4 +168,8 @@ export const {
   useGetFriendRequestFullStatQuery,
   useGetFriendRequestMothlyRateQuery,
   useGetAllFeedbacksQuery,
+
+  // Referrals
+  useGetAllPartnersQuery,
+  useGetReferrersCardDataQuery,
 } = api;

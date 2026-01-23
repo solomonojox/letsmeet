@@ -15,6 +15,7 @@ import privacy from './privacy.png'
 import terms from './terms.png'
 import cookie from './cookie.png'
 import underline from './underline.png'
+import no_data from './no_data.png'
 
 const imageAsset = {
     loginImage,
@@ -34,6 +35,7 @@ const imageAsset = {
     terms,
     cookie,
     underline,
+    no_data,
 };
 
 export default imageAsset;

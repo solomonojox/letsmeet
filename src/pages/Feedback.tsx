@@ -4,7 +4,7 @@ import AllFeedbacks from '../components/Feedback/AllFeedbacks'
 const Feedback = () => {
     return (
         <div>
-            <div className="space-y-10 mb-20">
+            <div className="space-y-10 mb-20 mt-4">
                 <AllFeedbacks />
             </div>
         </div>

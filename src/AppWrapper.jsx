@@ -3,6 +3,7 @@ import AllRoutes from "./routes/AllRoutes";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 import { useState } from "react";
+import BankProvider from "./Context/BankProvider";
 
 // Define all valid routes in your app
 const validRoutes = [
@@ -27,6 +28,11 @@ const validRoutes = [
   "/feedback",
   "/construction",
   "/user-profile/:id",
+  "/referrals",
+  "/chat",
+  "/notifications",
+  "/admin-chat",
+  "/referrals/:id"
 ];
 
 // Wrapper component to use hooks outside BrowserRouter
@@ -58,8 +64,10 @@ function App() {
           <TopBar toggleSidebar={toggleSidebar} />
         </>
       )}
-      <div className={!isAuthRoute ? "lg:ml-[200px] px-6" : ""}>
-        <AllRoutes />
+      <div className={!isAuthRoute ? "lg:ml-[200px] px-2" : ""}>
+        <BankProvider>
+          <AllRoutes />
+        </BankProvider>
       </div>
     </>
   );

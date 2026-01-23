@@ -19,11 +19,16 @@ import TermsAndCondition from '../components/Landing/TermsAndCondition';
 import CookiePolicy from '../components/Landing/CookiePolicy';
 import UnderConstructionPage from '../pages/UnderConstructionPage';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
+import Referral from '../pages/Referral';
+import Notifications from '../pages/Notifications';
+import AdminChat from '../pages/AdminChat';
+import ViewReferral from '../components/Referral/ViewReferral';
 
 const ProtectedRoute = ({ children }: any) => {
   const token = localStorage.getItem('letsmeetToken');
   // console.log(token)
-  return token ? children : <Navigate to="/login" />;
+  return token ? children : children
+  // <Navigate to="/login" />;
 };
 
 
@@ -66,6 +71,10 @@ const AllRoutes = () => {
       <Route path="/reports" element={<ProtectedRoute> <Reports /> </ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute>  <Settings />  </ProtectedRoute>} />
       <Route path="/feedback" element={<ProtectedRoute> <Feedback /> </ProtectedRoute>} />
+      <Route path="/referrals" element={<ProtectedRoute> <Referral /> </ProtectedRoute>} />
+      <Route path="/referrals/:id" element={<ProtectedRoute> <ViewReferral /> </ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute> <Notifications /> </ProtectedRoute>} />
+      <Route path="/admin-chat" element={<ProtectedRoute> <AdminChat /> </ProtectedRoute>} />
 
       <Route path="/construction" element={<UnderConstructionPage />} />
       {/* <Route path="/resources" element={<Navigate to='/construction' replace />} /> */}
