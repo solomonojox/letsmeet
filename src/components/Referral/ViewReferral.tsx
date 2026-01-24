@@ -12,6 +12,8 @@ const ViewReferral = () => {
     const params = useParams();
     const { data, isLoading, refetch } = useGetPartnerDashboardQuery(params.partnerId);
     const dashboardData: any = data?.data;
+    const referredUsersData = dashboardData?.referredUsers || {};
+    console.log('Dashboard Data:', referredUsersData);
 
     const handleCopyReferralCode = () => {
         if (dashboardData?.referralCode) {
@@ -71,7 +73,7 @@ const ViewReferral = () => {
 
             <ViewReferralCards cardData={dashboardData} />
 
-            <ViewReferralUsers />
+            <ViewReferralUsers referredUsersData={referredUsersData} />
         </div>
     )
 }

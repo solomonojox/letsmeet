@@ -127,12 +127,15 @@ const TopBar = ({ toggleSidebar }) => {
   };
 
   const location = useLocation()
+  console.log(location.pathname)
 
   useEffect(() => {
     if (location.pathname === "/dashboard") {
       setPageName("Welcome back, Admin");
     } else if (location.pathname.includes("user-profile")) {
       setPageName(location.state.userName + "'s Profile");
+    } else if (location.pathname.includes("referrals/")) {
+      setPageName(location.state.userName +"'s Profile");
     } else {
       setPageName(formatPath(location.pathname));
     }
