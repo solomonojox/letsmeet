@@ -296,7 +296,7 @@ const AllReferrals = () => {
     }
     const handleDeletePartner = async () => {
         showOverlay();
-        const payload ={
+        const payload = {
             partnerId: partnerId,
             reason: reason
         }
@@ -379,7 +379,7 @@ const AllReferrals = () => {
                     <button
                         className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
                         onClick={() => {
-                            navigate(`/referrals/${report.id}` , { state: { userName: report.businessName } });
+                            navigate(`/referrals/${report.id}`, { state: { userName: report.businessName } });
                             onClose();
                         }}
                     >
@@ -520,7 +520,11 @@ const AllReferrals = () => {
                                 </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
-                                        <span className="text-gray-500 whitespace-nowrap">{partner.businessName}</span>
+                                        <span className="text-gray-500 whitespace-nowrap cursor-pointer"
+                                            onClick={() => {
+                                                navigate(`/referrals/${partner.id}`, { state: { userName: partner.businessName } });
+                                            }}
+                                        >{partner.businessName}</span>
                                     </div>
                                 </td>
                                 <td className="py-4">
