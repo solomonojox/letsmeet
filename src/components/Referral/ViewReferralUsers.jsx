@@ -304,7 +304,7 @@ const ViewReferralUsers = ({ referredUsersData }) => {
         <div className="w-full mt-6 p-4 bg-white rounded-lg border">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-sm font-medium text-gray-700">List of users</h2>
-                <div className="relative flex gap-4">
+                {/* <div className="relative flex gap-4">
                     <button
                         ref={filterButtonRef}
                         className="flex items-center px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
@@ -322,7 +322,6 @@ const ViewReferralUsers = ({ referredUsersData }) => {
                             <div className="p-4">
                                 <div className="text-sm text-gray-500 mb-2">Filter by:</div>
 
-                                {/* Status Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Status</span>
@@ -362,7 +361,7 @@ const ViewReferralUsers = ({ referredUsersData }) => {
                             </div>
                         </div>
                     )}
-                </div>
+                </div> */}
             </div>
 
             {/* Search bar */}

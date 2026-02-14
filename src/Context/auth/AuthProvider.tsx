@@ -4,58 +4,39 @@ import { AuthContext } from './auth-context';
 import type { UserData, AuthContextType } from './auth-types';
 
 interface JwtPayload {
-  id?: string;
-  role?: string;
-  fullName?: string;
-  email?: string;
-  phoneNumber?: string;
-  schoolName?: string;
-  currentSession?: {
-    _id: string;
-    academicSession: string;
-    term: string;
-    startDate: string;
-    endDate: string;
-  };
-  profilePic?: string;
-  studentClass?: {
-    _id: string;
-    className: string;
-    level: string;
-    section: string;
-  };
-  isVerified?: boolean;
-  isPrincipal?: boolean;
-  isFinancialOfficer?: boolean;
+  Subject: string;
+  name: string;
+  UserId: string;
+  EmailAddress: string;
+  UserName: string;
+  nbf: number;
+  exp: number;
   iat: number;
-  exp?: number;
+  iss: string;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  // console.log(user)
 
   useEffect(() => {
     const token = localStorage.getItem('letsmeetToken');
-    // console.log(token)
+    console.log(token)
     if (token) {
       try {
         const decoded = jwtDecode<Partial<JwtPayload>>(token);
+        console.log(decoded)
         setUser({
-          id: decoded.id || '',
-          role: decoded.role || '',
-          fullName: decoded.fullName,
-          email: decoded.email || '',
-          phoneNumber: decoded.phoneNumber || '',
-          schoolName: decoded.schoolName || '',
-          currentSession: decoded.currentSession!,
-          profilePic: decoded.profilePic || '',
-          studentClass: decoded.studentClass,
-          isVerified: decoded.isVerified,
-          isPrincipal: decoded.isPrincipal,
-          isFinancialOfficer: decoded.isFinancialOfficer,
+          Subject: decoded.Subject || '',
+          name: decoded.name || '',
+          id: decoded.UserId || '',
+          EmailAddress: decoded.EmailAddress || '',
+          UserName: decoded.UserName || '',
+          nbf: decoded.nbf || 0,
+          exp: decoded.exp || 0,
+          iat: decoded.iat || 0,
+          iss: decoded.iss || '',
         });
 
         setIsAuthenticated(true);
@@ -103,18 +84,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('letsmeetToken', token);
     const decoded = jwtDecode<Partial<JwtPayload>>(token);
     setUser({
-      id: decoded.id || '',
-      role: decoded.role || '',
-      fullName: decoded.fullName,
-      email: decoded.email || '',
-      phoneNumber: decoded.phoneNumber || '',
-      schoolName: decoded.schoolName || '',
-      currentSession: decoded.currentSession!,
-      profilePic: decoded.profilePic || '',
-      studentClass: decoded.studentClass,
-      isVerified: decoded.isVerified,
-      isPrincipal: decoded.isPrincipal,
-      isFinancialOfficer: decoded.isFinancialOfficer,
+      Subject: decoded.Subject || '',
+      name: decoded.name || '',
+      id: decoded.UserId || '',
+      EmailAddress: decoded.EmailAddress || '',
+      UserName: decoded.UserName || '',
+      nbf: decoded.nbf || 0,
+      exp: decoded.exp || 0,
+      iat: decoded.iat || 0,
+      iss: decoded.iss || '',
     });
     setIsAuthenticated(true);
   };

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-// /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef, useContext } from 'react';
-import { ChevronRight, ChevronLeft, Search, Filter, Check, MoreVertical } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Search, Filter, Check, MoreVertical, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import imageAsset from '../../assets/imageAsset';
@@ -9,10 +9,16 @@ import axios from 'axios';
 import { useGetAllReportsQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
+import OtpVerify from './OtpVerify';
+import ConfirmationModal from './ConfirmationModal';
+import ViewReportDetails from './ViewReportDetails';
+import { useAuth } from '../../Context/auth/useAuth';
+import { resendOtp } from '../../Services/passwordReset';
 
 const AllReports = () => {
     const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const { user } = useAuth();
 
     // console.log(tableData)
     // const [tableData, setTableData] = useState([]);
@@ -33,6 +39,12 @@ const AllReports = () => {
 
     // State for row action menu
     const [menuAnchor, setMenuAnchor] = useState(null);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [openModal, setOpenModal] = useState(null);
+    const [countdown, setCountdown] = useState(0);
+    const [canResend, setCanResend] = useState(false);
+    const [message, setMessage] = useState('');
+    const [isResending, setIsResending] = useState(false);
 
     // Filter state
     const [showFilterModal, setShowFilterModal] = useState(false);
@@ -296,9 +308,80 @@ const AllReports = () => {
         );
     };
 
+    const [selectedId, setSelectedId] = useState(null);
+    const [reportDetail, setReportDetail] = useState(null);
+
+    useEffect(() => {
+        if (selectedId) {
+            fetchSingleReport();
+        }
+    }, [selectedId]);
+
+    const fetchSingleReport = async () => {
+        try {
+            const response = await axios.get(`${baseUrl}/api/Report/Get/${selectedId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+                },
+            });
+            console.log(response.data.data);
+            setReportDetail(response.data.data);
+        } catch (error) {
+            console.error('Error fetching single report:', error);
+            notifyError(error.response.data.responseMessage || 'Error fetching single report', 'error');
+        }
+    }
+
+    const handleSendOtp = async () => {
+        setIsResending(true);
+        setMessage("");
+        showOverlay();
+
+        try {
+            const payload = {
+                referenceValue:  user.EmailAddress,
+                emailAddress: user.EmailAddress,
+                phoneNumber: null,
+                tokenType: "ACCESS",
+                durationInMinutes: 5,
+                deliveryMethod: "Email",
+                customTitle: "string"
+            }
+            const res = await resendOtp(payload);
+            if (res.data.success === true) {
+                setMessage("Verification code resent to your email.");
+                setCanResend(false);
+                setCountdown(60);
+            } else {
+                setMessage(res.data.message);
+            }
+        } catch (err) {
+            setMessage(err.response.data.responseMessage || 'Server error. Please try again.');
+        } finally {
+            setIsResending(false);
+            hideOverlay();
+        }
+    }
+
+    const [activeContent, setActiveContent] = useState('otpverify');
+    const renderContent = () => {
+        switch (activeContent) {
+            // case 'confirmation':
+            //     return <ConfirmationModal onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} onfetch={fetchSingleReport} />;
+            case 'otpverify':
+                return <OtpVerify onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} onfetch={fetchSingleReport} />;
+            case 'viewreport':
+                return <ViewReportDetails onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} details={reportDetail} formatDate={formatDate} />;
+            default:
+                return <OtpVerify onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} />;
+        }
+    }
+
     if (isLoading || loading) {
         return <TableSkeletonLoader rows={5} headers={['Reporter', 'Reported User', 'Issue', 'Status', 'Date', 'Action']} />;
     }
+
 
     return (
         <div className="w-full">
@@ -431,8 +514,8 @@ const AllReports = () => {
                                     </span>
                                 </td>
                                 <td className="py-4 text-gray-500 whitespace-nowrap">{formatDate(report.createdAt)}</td>
-                                <td className="py-4 pr-4 text-right">
-                                    <div className="flex items-center justify-start">
+                                <td className="py-4 pr-4 text-left">
+                                    {/* <div className="flex items-center justify-start">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 flex items-center"
                                             onClick={(e) => {
@@ -442,7 +525,8 @@ const AllReports = () => {
                                         >
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
-                                    </div>
+                                    </div> */}
+                                    <button className="text-blue-600 hover:text-blue-700 underline" onClick={() => { setOpenModal(true); setSelectedId(report.id); handleSendOtp() }}>View</button>
                                 </td>
                             </tr>
                         )) : (
@@ -517,6 +601,10 @@ const AllReports = () => {
                         <ChevronRight className="w-4 h-4 ml-1" />
                     </button>
                 </div>
+            )}
+
+            {openModal && (
+                renderContent()
             )}
 
             {/* Floating menu */}
