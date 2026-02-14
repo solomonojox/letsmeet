@@ -1,27 +1,13 @@
 export interface UserData {
+  Subject?: string;
+  name?: string;
   id?: string;
-  role?: string;
-  fullName?: string;
-  email?: string;
-  phoneNumber?: string;
-  schoolName?: string;
-  currentSession: {
-    _id: string;
-    academicSession: string;
-    term: string;
-    startDate: string;
-    endDate: string;
-  };
-  profilePic?: string;
-  studentClass?: {
-    _id: string;
-    className: string;
-    level: string;
-    section: string;
-  };
-  isVerified?: boolean;
-  isPrincipal?: boolean;
-  isFinancialOfficer?: boolean;
+  EmailAddress?: string;
+  UserName?: string;
+  nbf?: number;
+  exp?: number;
+  iat?: number;
+  iss?: string;
 }
 
 export interface AuthContextType {

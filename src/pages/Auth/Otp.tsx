@@ -8,6 +8,7 @@ import { baseUrl } from '../../Services/baseUrl';
 import { jwtDecode } from 'jwt-decode';
 import { AppContext } from '../../Context/AppContext';
 import { resendOtp } from '../../Services/passwordReset';
+import { useAuth } from '../../Context/auth/useAuth';
 
 interface FormData {
     email: string;
@@ -21,6 +22,7 @@ interface FormErrors {
 
 const Otp = () => {
     // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
+    const { login } = useAuth()
     const location = useLocation();
     const { notifySuccess, notifyError, showOverlay, hideOverlay } = useContext(AppContext);
     const { reference } = location.state
@@ -115,6 +117,8 @@ const Otp = () => {
 
             const token = response.data.data.token;
             localStorage.setItem('letsmeetToken', token);
+
+            login(token);
 
             const decoded = jwtDecode<any>(token);
             // console.log(decoded);

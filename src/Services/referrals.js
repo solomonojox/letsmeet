@@ -42,3 +42,8 @@ export const deletePartner = async (partnerId, data) => {
     const res = await api.post(`/api/admin/referral-partners/${partnerId}`, data);
     return res.data;
 }
+
+export const exportData = async (partnerId, formData) => {
+    const res = await api.get(`/api/partner/dashboard/${partnerId}/export`, { params: formData }, {responseType: "blob",});
+    return res;
+}
