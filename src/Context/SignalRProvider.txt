@@ -1,0 +1,306 @@
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
+import * as signalR from "@microsoft/signalr";
+import { useDispatch, useSelector } from "react-redux";
+// import { pushNewMessageToRealm } from "../services/db/pushNewMessage";
+// import { openRealm } from "../services/db/schemas/Message";
+import {
+  setIncomingMessage,
+  setUserPresence,
+  replaceOptimisticMessage,
+  // clearOptimisticMessages,
+  setLastReadMessage,
+  setUnReadMessage,
+} from "../store/chatslice";
+import { useAppContext } from "./AppContext";
+// import { addOneHour } from "../helpers/addOneHour";
+
+let realmInstance = null;
+async function getRealm() {
+  if (realmInstance && !realmInstance.isClosed) return realmInstance;
+  realmInstance = await openRealm();
+  console.log("✅ Realm opened in getRealm");
+  return realmInstance;
+}
+
+const SignalRContext = createContext(null);
+export const useSignalR = () => useContext(SignalRContext);
+
+export default function SignalRProvider({ children }) {
+  const [connection, setConnection] = useState(null);
+  const connectionRef = useRef(null);
+  const { user, token, baseUrl } = useAppContext();
+  const dispatch = useDispatch();
+  const { userPresence, unreadMessage } = useSelector((state) => state?.chat);
+  const [messageReceivedSignal, setMessageReceivedSignal] = useState(0);
+  const [messageDeletedSignal, setMessageDeletedSignal] = useState(0);
+  const [lastReceivedMessage, setLastReceivedMessage] = useState(null);
+  const { userDetails } = useSelector((state) => state?.user);
+  const [typingUsers, setTypingUsers] = useState({});
+
+  useEffect(() => {
+    if (!token || !baseUrl) return;
+    let isMounted = true;
+
+    const startConnection = async () => {
+      try {
+        const hubConnection = new signalR.HubConnectionBuilder()
+          .withUrl(baseUrl, { accessTokenFactory: () => token })
+          .withAutomaticReconnect([0, 2000, 5000, 10000])
+          .configureLogging(signalR.LogLevel.Information)
+          .build();
+
+        connectionRef.current = hubConnection;
+        setConnection(hubConnection);
+
+        await hubConnection.start();
+        console.log("✅ SignalR connected");
+        hubConnection.on("RECEIVE_DIRECT_MESSAGE", async (data) => {
+          console.log("📥 Direct message received:", data);
+
+          try {
+            // const realm = await getRealm();
+            // pushNewMessageToRealm(realm, data);
+            if (data.tempoaryMessageId) {
+              dispatch(
+                replaceOptimisticMessage({
+                  roomId: data?.roomId,
+                  tempId: data.tempoaryMessageId,
+                  realMessage: {
+                    id: data.id || data.messageId,
+                    content: data.content,
+                    type: data.type || "Text",
+                    timestamp: data.timestamp || new Date().toISOString(),
+                    userId: data.userId,
+                    replyToMessage: data.replyToMessage,
+                    roomId: data.roomId,
+                  },
+                })
+              );
+              dispatch(
+                setIncomingMessage({
+                  id: data?.id,
+                  content: data?.content,
+                  type: data?.type,
+                  timestamp: data?.timestamp,
+                  userId: data?.userId,
+                  roomId: data?.roomId,
+                  replyToMessage: data?.replyToMessage && {
+                    id: data?.replyToMessage?.id,
+                    content: data?.replyToMessage?.content,
+                    type: data?.replyToMessage?.type,
+                    timestamp: data?.replyToMessage?.timestamp,
+                  },
+                })
+              );
+              setMessageReceivedSignal((prev) => prev + 1);
+              setLastReceivedMessage({
+                id: data?.id,
+                roomId: data?.roomId,
+                userId: data?.userId,
+                content: data?.content,
+                timestamp: data?.timestamp,
+                type: data?.type,
+              });
+            } else {
+              dispatch(
+                setIncomingMessage({
+                  id: data.id || data.messageId,
+                  content: data.content,
+                  type: data.type || "Text",
+                  timestamp: data.timestamp || new Date().toISOString(),
+                  userId: data.userId,
+                  roomId: data.roomId,
+                  replyToMessage: data.replyToMessage,
+                })
+              );
+            }
+
+            setMessageReceivedSignal((prev) => prev + 1);
+            setLastReceivedMessage({
+              id: data.id,
+              roomId: data.roomId,
+              userId: data.userId,
+              content: data.content,
+              timestamp: data.timestamp,
+              type: data.type,
+            });
+          } catch (err) {
+            console.error("❌ Failed to handle incoming message:", err);
+          }
+        });
+
+        hubConnection.on("USER_PRESENCE_CHANGED", (data) => {
+          console.log({ "User Presence Changed": data });
+          dispatch((dispatch, getState) => {
+            const currentPresence = getState().chat.userPresence || {};
+            dispatch(
+              setUserPresence({
+                ...currentPresence,
+                [data.userId]: {
+                  status: data.status,
+                  lastSeen: data.timestamp,
+                  username: data.username,
+                  currentRoom: data.currentRoom,
+                },
+              })
+            );
+          });
+        });
+
+        hubConnection.on("USER_TYPING", (data) => {
+          const { userId, username, roomId, isTyping, timestamp } = data;
+          setTypingUsers((prev) => {
+            const updatedRoom = {
+              ...prev[roomId],
+              [userId]: { username, isTyping, timestamp },
+            };
+            if (!isTyping) delete updatedRoom[userId];
+            return { ...prev, [roomId]: updatedRoom };
+          });
+        });
+
+        hubConnection.on("CHAT_HUB_CONNECTED", (data) => {
+          console.log("📥 Chat hub connected:", data);
+
+          dispatch((dispatch, getState) => {
+            const currentPresence = getState().chat.userPresence || {};
+            const updatedPresence = { ...currentPresence };
+            if (Array.isArray(data.relevantPresences)) {
+              data.relevantPresences.forEach((presence) => {
+                updatedPresence[presence.userId] = {
+                  status: presence.status,
+                  // lastSeen: addOneHour(presence.lastSeen),
+                  username: presence.username,
+                  currentRoom: presence.currentRoom,
+                };
+              });
+            }
+
+            console.log("Updated userPresence:", updatedPresence);
+            dispatch(setUserPresence(updatedPresence));
+          });
+        });
+
+        hubConnection.on("USER_ROOM_READ_UPDATED", (data) => {
+          // console.log("📥 User room read updated:", data);
+          if (userDetails?.id !== data?.callerId) {
+            if (userDetails?.id === data?.lastReadMessage?.userId) {
+              dispatch((dispatch, getState) => {
+                const currentLastReadMessage =
+                  getState().chat.lastReadMessage || {};
+                dispatch(
+                  setLastReadMessage({
+                    ...currentLastReadMessage,
+                    [data.roomId]: {
+                      id: data?.lastReadMessageId,
+                      senderId: data?.lastReadMessage?.userId,
+                      timestamp: data?.lastReadMessage?.timestamp,
+                    },
+                  })
+                );
+              });
+            }
+          }
+
+          if (userDetails?.id === data?.callerId) {
+            if (userDetails?.id !== data?.lastReadMessage?.userId) {
+              dispatch((dispatch, getState) => {
+                const unReadMessage = getState().chat.unreadMessage || {};
+                dispatch(
+                  setUnReadMessage({
+                    ...unReadMessage,
+                    [data.roomId]: {
+                      id: data?.lastReadMessageId,
+                      senderId: data?.lastReadMessage?.userId,
+                      timestamp: data?.lastReadMessage?.timestamp,
+                    },
+                  })
+                );
+              });
+            }
+          }
+          // console.log({ unreadMessage });
+        });
+
+        hubConnection.on("MESSAGE_DELETED", (data) => {
+          console.log("📥 Message Deleted:", data);
+          setMessageDeletedSignal((prev) => prev + 1);
+          setMessageReceivedSignal((prev) => prev + 1);
+        });
+
+        hubConnection.on("FETCHED_MY_ROOM", (data) => {
+          console.log("📥 Fetched Room:", data);
+        });
+
+        hubConnection.on("ROOM_MESSAGE_HISTORY", (data) => {
+          console.log("📥 Room Message History:", data);
+        });
+
+        hubConnection.on("USER_PRESENCE_UPDATED", (data) => {
+          console.log("📥 Presence Updated:", data);
+        });
+
+        hubConnection.on("ROOM_USERS", (data) => {
+          console.log("📥 Room Users:", data);
+        });
+
+        hubConnection.on("RECEIVECONNECTIONID", (data) => {
+          console.log("🔗 Connection ID:", data);
+        });
+
+        hubConnection.onreconnecting((error) => {
+          console.warn("⚠️ Reconnecting...", error?.message);
+        });
+
+        hubConnection.onreconnected(async (connectionId) => {
+          console.log("✅ Reconnected:", connectionId);
+          await getRealm();
+        });
+
+        hubConnection.onclose((error) => {
+          console.warn("❌ Connection closed:", error?.message);
+          setConnection(null);
+        });
+      } catch (err) {
+        console.error("❌ SignalR connection failed:", err);
+      }
+    };
+
+    startConnection();
+
+    return () => {
+      isMounted = false;
+      const conn = connectionRef.current;
+      if (conn) {
+        conn.off("RECEIVE_DIRECT_MESSAGE");
+        conn.off("USER_PRESENCE_CHANGED");
+        conn.off("USER_TYPING");
+        conn.off("CHAT_HUB_CONNECTED");
+        conn.off("RECEIVECONNECTIONID");
+        conn.off("MESSAGE_DELETED");
+        conn.stop().catch(console.error);
+      }
+    };
+  }, [token, user, baseUrl, dispatch]);
+
+  return (
+    <SignalRContext.Provider
+      value={{
+        connection,
+        userPresence,
+        typingUsers,
+        messageReceivedSignal,
+        lastReceivedMessage,
+        messageDeletedSignal,
+      }}
+    >
+      {children}
+    </SignalRContext.Provider>
+  );
+}

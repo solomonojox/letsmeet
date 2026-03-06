@@ -160,6 +160,12 @@ export const api = createApi({
         url: `/api/admin/referral-partners/${partnerId}/dashboard`,
       }),
     }),
+
+    getPartnerUsers: builder.query({
+      query: (partnerId) => ({
+        url: `/api/admin/referral-dashboard/partner/${partnerId}/users/detailed`,
+      }),
+    }),
   }),
 });
 

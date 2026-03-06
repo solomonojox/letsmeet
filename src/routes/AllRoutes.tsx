@@ -23,14 +23,21 @@ import Referral from '../pages/Referral';
 import Notifications from '../pages/Notifications';
 import AdminChat from '../pages/AdminChat';
 import ViewReferral from '../components/Referral/ViewReferral';
+import LoginPartners from '../pages/Auth/LoginPartners';
+import OtpPartners from '../pages/Auth/OtpPartners';
 
-const ProtectedRoute = ({ children }: any) => {
+const ProtectedRoute = ({ children, businessComponent, userType }: any) => {
   const token = localStorage.getItem('letsmeetToken');
-  // console.log(token)
-  return token ? children : children
+  const user = JSON.parse(localStorage.getItem('letsmeetUser') || '{}');
+
+  // Check if user type is Business and render appropriate component
+  if (user.userType === 'INTERNAL_ADMIN' && businessComponent) {
+    return businessComponent;
+  }
+
+  return token ? children : children;
   // <Navigate to="/login" />;
 };
-
 
 const AllRoutes = () => {
   const navigate = useNavigate();
@@ -51,8 +58,10 @@ const AllRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/partner-login" element={<LoginPartners />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-otp" element={<Otp />} />
+      <Route path="/verify-otp-partners" element={<OtpPartners />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* <Route path="/" element={<Landing />} /> */}
@@ -62,7 +71,17 @@ const AllRoutes = () => {
       <Route path="/cookies" element={<CookiePolicy />} />
 
       <Route path="/" element={<Navigate to='/dashboard' replace />} />
-      <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute
+            businessComponent={<ViewReferral />}
+            userType="INTERNAL_ADMIN"
+          >
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/user-profile/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
 
@@ -82,4 +101,4 @@ const AllRoutes = () => {
   );
 }
 
-export default AllRoutes
+export default AllRoutes;

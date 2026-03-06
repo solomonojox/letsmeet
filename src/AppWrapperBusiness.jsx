@@ -4,39 +4,16 @@ import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 import { useState } from "react";
 import BankProvider from "./Context/BankProvider";
+import SidebarBusiness from "./components/SidebarBusiness";
+import AllRoutesBusiness from "./routes/AllRoutesBusiness";
 
 // Define all valid routes in your app
 const validRoutes = [
-  "/",
-  "about",
-  "/contact",
-  "/faq",
-  "/privacy-policy",
-  "/terms",
-  "/cookies",
-  "/login",
-  "/forgot-password",
-  "/otp",
-  "/reset-password",
-  "/dashboard",
-  "/users",
-  "/user-profile/:id",
-  "/requests",
-  "/subscriptions",
-  "/reports",
-  "/settings",
-  "/feedback",
-  "/construction",
-  "/user-profile/:id",
-  "/referrals",
-  "/chat",
-  "/notifications",
-  "/admin-chat",
-  "/referrals/:id"
+  "/business-dashboard",
 ];
 
 // Wrapper component to use hooks outside BrowserRouter
-const AppWrapper = () => (
+const AppWrapperBusiness = () => (
   <BrowserRouter>
     <App />
   </BrowserRouter>
@@ -60,15 +37,15 @@ function App() {
     <>
       {shouldShowLayout && (
         <>
-          <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+          <SidebarBusiness toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
           <TopBar toggleSidebar={toggleSidebar} />
         </>
       )}
       <div className={!isAuthRoute ? "lg:ml-[200px] px-2" : ""}>
-        <AllRoutes />
+        <AllRoutesBusiness />
       </div>
     </>
   );
 }
 
-export default AppWrapper;
+export default AppWrapperBusiness;
