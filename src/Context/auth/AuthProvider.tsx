@@ -9,6 +9,7 @@ interface JwtPayload {
   UserId: string;
   EmailAddress: string;
   UserName: string;
+  UserType: string;
   nbf: number;
   exp: number;
   iat: number;
@@ -22,17 +23,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('letsmeetToken');
-    console.log(token)
     if (token) {
       try {
         const decoded = jwtDecode<Partial<JwtPayload>>(token);
-        console.log(decoded)
         setUser({
           Subject: decoded.Subject || '',
           name: decoded.name || '',
           id: decoded.UserId || '',
           EmailAddress: decoded.EmailAddress || '',
           UserName: decoded.UserName || '',
+          UserType: decoded.UserType || '',
           nbf: decoded.nbf || 0,
           exp: decoded.exp || 0,
           iat: decoded.iat || 0,
@@ -89,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: decoded.UserId || '',
       EmailAddress: decoded.EmailAddress || '',
       UserName: decoded.UserName || '',
+      UserType: decoded.UserType || '',
       nbf: decoded.nbf || 0,
       exp: decoded.exp || 0,
       iat: decoded.iat || 0,

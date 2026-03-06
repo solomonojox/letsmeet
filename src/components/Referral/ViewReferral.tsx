@@ -11,7 +11,8 @@ import { approvePartner, exportData, suspendPartner } from '../../Services/refer
 const ViewReferral = () => {
     const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError, notifyInfo } = useContext(AppContext);
     const params = useParams();
-    const { data, isLoading, refetch } = useGetPartnerDashboardQuery(params.partnerId);
+    const companyId = JSON.parse(localStorage.getItem('letsmeetUser') || '{}').companyId
+    const { data, isLoading, refetch } = useGetPartnerDashboardQuery(params.partnerId || companyId);
     const dashboardData: any = data?.data;
     const referredUsersData = dashboardData?.referredUsers || {};
     const [showSettings, setShowSettings] = useState(false);
@@ -106,11 +107,12 @@ const ViewReferral = () => {
         }
     }
 
-    const [format, setFormat] = useState('csv');
+    const [format, setFormat] = useState('xlsx');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
     const handleExportData = async () => {
+        showOverlay();
         try {
             const partnerId = params.partnerId;
             const payload = {
@@ -118,26 +120,34 @@ const ViewReferral = () => {
                 format: format,
                 startDate: startDate,
                 endDate: endDate
-            }
+            };
 
-            const res = await exportData(partnerId, payload);
-            if (res.status === 200 && format === 'csv') {
+            const res = await exportData(partnerId || companyId, payload);
+
+            if (res.status === 200) {
+                // Extract filename from Content-Disposition header
+                const disposition = res.headers["content-disposition"];
+                let fileName = `partner_report_${new Date().getTime()}`;
+
+                if (disposition && disposition.includes("filename=")) {
+                    const match = disposition.match(/filename="?([^"]+)"?/);
+                    if (match && match.length > 1) {
+                        fileName = match[1];
+                    }
+                }
+
+                // Handle different formats
                 if (format === 'csv') {
-                    // Extract filename from headers
-                    const disposition = res.headers["content-disposition"];
-                    let fileName = "partner_report.csv"; // default fallback
-                    if (disposition && disposition.includes("filename=")) {
-                        const match = disposition.match(/filename="?([^"]+)"?/);
-                        if (match && match.length > 1) {
-                            fileName = match[1];
-                        }
+                    // For CSV, ensure correct extension
+                    if (!fileName.endsWith('.csv')) {
+                        fileName += '.csv';
                     }
 
-                    // Convert blob into a downloadable link
-                    const url = window.URL.createObjectURL(new Blob([res.data]));
+                    const blob = new Blob([res.data], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.href = url;
-                    link.setAttribute("download", fileName); // <-- file name
+                    link.setAttribute("download", fileName);
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
@@ -145,106 +155,51 @@ const ViewReferral = () => {
 
                     notifySuccess("Report Downloaded!", "success");
                 } else {
-                    let blob;
-                    let filename = `partner_report_${new Date().getTime()}`;
+                    // For Excel (XLSX)
+                    if (!fileName.endsWith('.xlsx')) {
+                        fileName += '.xlsx';
+                    }
 
-                    blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    filename += '.xlsx';
+                    // res.data should already be a blob due to responseType: 'blob'
+                    const blob = new Blob([res.data], {
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    });
 
-                    // Create download link
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.setAttribute('download', filename);
+                    link.setAttribute('download', fileName);
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
                     window.URL.revokeObjectURL(url);
 
                     notifySuccess('Report exported successfully', 'success');
-                    setOpenDownloadModal(false);
+                }
+
+                setOpenDownloadModal(false);
+            } else {
+                notifyError('An error occurred while downloading!', 'error');
+            }
+        } catch (err: any) {
+            console.error('Export error:', err);
+
+            // Try to parse error response if it's JSON
+            if (err.response?.data instanceof Blob) {
+                const text = await err.response.data.text();
+                try {
+                    const errorData = JSON.parse(text);
+                    notifyError(errorData.responseMessage || 'Error exporting data', 'error');
+                } catch {
+                    notifyError('Error exporting data', 'error');
                 }
             } else {
-                notifyError("An error occurred while downloading!", "error");
+                notifyError(err.response?.data?.responseMessage || 'Error exporting data', 'error');
             }
-            if (res) {
-                // Create blob from response data
-            }
-            if (res && typeof res === 'string') {
-                convertTextToCSV(res);
-            } else {
-                // Handle other response formats
-                console.log(res);
-                notifySuccess('Data exported successfully', 'success');
-            }
-            // if (res) {
-            //     // Extract filename from headers
-            //     const disposition = res.headers["content-disposition"];
-            //     console.log(disposition)
-            //     let fileName = "Partner_report.xlsx"; // default fallback
-            //     if (disposition && disposition.includes("filename=")) {
-            //         const match = disposition.match(/filename="?([^"]+)"?/);
-            //         if (match && match.length > 1) {
-            //             fileName = match[1];
-            //         }
-            //     }
-
-            //     // Convert blob into a downloadable link
-            //     const url = window.URL.createObjectURL(new Blob([res.data]));
-            //     const link = document.createElement("a");
-            //     link.href = url;
-            //     link.setAttribute("download", fileName); // <-- file name
-            //     document.body.appendChild(link);
-            //     link.click();
-            //     link.remove();
-            //     window.URL.revokeObjectURL(url);
-
-            //     notifySuccess('Data exported successfully', 'success');
-            // } else {
-            //     notifyError('An error occurred while downloading!', 'error');
-            // }
-            console.log(res);
-            // setOpenDownloadModal(false);
-        } catch (err: any) {
-            console.log(err);
-            notifyError(err.response?.data?.responseMessage || 'Error exporting data', 'error');
+        } finally {
+            hideOverlay();
         }
-    }
-
-    const convertTextToCSV = (textResponse: string) => {
-        // Split the response into sections
-        const sections = textResponse.split('\n\n');
-
-        let allCsvData: any = [];
-
-        sections.forEach(section => {
-            const lines = section.trim().split('\n');
-            if (lines.length > 0) {
-                // Each line is already in CSV format with commas
-                allCsvData.push(lines.join('\n'));
-            }
-        });
-
-        // Combine all sections with double line breaks for separation
-        const finalCsv = allCsvData.join('\n\n');
-
-        // Create and download the CSV file
-        downloadCSV(finalCsv, `partner_report_${new Date().getTime()}.csv`);
-    }
-
-    const downloadCSV = (csvContent: string, filename: string) => {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    };
 
     // Fixed: Proper radio input handlers
     const handleFormatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,19 +208,22 @@ const ViewReferral = () => {
 
     return (
         <div className='bg-gray-50 p-4'>
-            <div className='mb-6'>
-                <span className='flex items-center mb-6 cursor-pointer gap-2 w-20 hover:text-primary hover:underline' onClick={() => window.history.back()}>
-                    <CornerUpLeft size={20} />
-                    <span className='text-lg'>Back</span>
-                </span>
-            </div>
+            {!companyId && (
+                <div className='mb-6'>
+                    <span className='flex items-center mb-6 cursor-pointer gap-2 w-20 hover:text-primary hover:underline' onClick={() => window.history.back()}>
+                        <CornerUpLeft size={20} />
+                        <span className='text-lg'>Back</span>
+                    </span>
+                </div>
+            )}
 
             <div className='relative space-y-4'>
                 <div className="h-40 w-full bg-gradient-to-r from-red-950 to-primary"></div>
                 <div className="rounded-full h-28 w-28 bg-white absolute -bottom-5 left-10">
                     <img src={imageAsset.avatar} alt="" className='w-full h-full object-cover' />
                 </div>
-                <div className="flex gap-2 justify-end items-center relative">
+
+                <div className="flex gap-2 justify-end items-center relative px-4">
                     <button
                         className={`text-sm border ${dashboardData?.status === 'PENDING_KYB'
                             ? 'border-yellow-600 bg-yellow-100 text-yellow-600'
@@ -284,49 +242,51 @@ const ViewReferral = () => {
                         Download report
                     </button>
 
-                    <div className="relative">
-                        <div className="flex cursor-pointer" onClick={toggleSettings}>
-                            <Settings size={18} />
-                            <ChevronDown size={18} />
-                        </div>
-
-                        {showSettings && (
-                            <div className='rounded border p-4 absolute right-0 top-8 bg-white space-y-2 z-50 shadow-lg' ref={menuRef}>
-                                <button
-                                    className={`text-sm ${dashboardData?.status === 'PENDING_KYB'
-                                        ? 'text-gray-400 cursor-not-allowed'
-                                        : 'hover:text-primary hover:underline cursor-pointer'
-                                        } block w-full text-left`}
-                                    onClick={() => {
-                                        if (dashboardData?.status !== 'PENDING_KYB') {
-                                            setAction('Suspend');
-                                            setOpenReasonModal(true);
-                                            setShowSettings(false);
-                                        }
-                                    }}
-                                    disabled={dashboardData?.status === 'PENDING_KYB'}
-                                >
-                                    Suspend
-                                </button>
-                                <button
-                                    className={`text-sm ${dashboardData?.status === 'ACTIVE'
-                                        ? 'text-gray-400 cursor-not-allowed'
-                                        : 'hover:text-primary hover:underline cursor-pointer'
-                                        } block w-full text-left`}
-                                    onClick={() => {
-                                        if (dashboardData?.status !== 'ACTIVE') {
-                                            setAction('Approve');
-                                            setOpenReasonModal(true);
-                                            setShowSettings(false);
-                                        }
-                                    }}
-                                    disabled={dashboardData?.status === 'ACTIVE'}
-                                >
-                                    Approve
-                                </button>
+                    {!companyId && (
+                        <div className="relative">
+                            <div className="flex cursor-pointer" onClick={toggleSettings}>
+                                <Settings size={18} />
+                                <ChevronDown size={18} />
                             </div>
-                        )}
-                    </div>
+
+                            {showSettings && (
+                                <div className='rounded border p-4 absolute right-0 top-8 bg-white space-y-2 z-50 shadow-lg' ref={menuRef}>
+                                    <button
+                                        className={`text-sm ${dashboardData?.status === 'PENDING_KYB'
+                                            ? 'text-gray-400 cursor-not-allowed'
+                                            : 'hover:text-primary hover:underline cursor-pointer'
+                                            } block w-full text-left`}
+                                        onClick={() => {
+                                            if (dashboardData?.status !== 'PENDING_KYB') {
+                                                setAction('Suspend');
+                                                setOpenReasonModal(true);
+                                                setShowSettings(false);
+                                            }
+                                        }}
+                                        disabled={dashboardData?.status === 'PENDING_KYB'}
+                                    >
+                                        Suspend
+                                    </button>
+                                    <button
+                                        className={`text-sm ${dashboardData?.status === 'ACTIVE'
+                                            ? 'text-gray-400 cursor-not-allowed'
+                                            : 'hover:text-primary hover:underline cursor-pointer'
+                                            } block w-full text-left`}
+                                        onClick={() => {
+                                            if (dashboardData?.status !== 'ACTIVE') {
+                                                setAction('Approve');
+                                                setOpenReasonModal(true);
+                                                setShowSettings(false);
+                                            }
+                                        }}
+                                        disabled={dashboardData?.status === 'ACTIVE'}
+                                    >
+                                        Approve
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

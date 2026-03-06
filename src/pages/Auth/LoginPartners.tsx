@@ -18,7 +18,7 @@ interface FormErrors {
   key?: string;
 }
 
-const Login = () => {
+const LoginPartners = () => {
   const [formData, setFormData] = useState<FormData>({ reference: '', key: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState<boolean>(false);
@@ -62,22 +62,14 @@ const Login = () => {
 
     setIsSubmitting(true);
     try {
-      const response: any = await axios.post(`${baseUrl}/api/User/Authenticate`, formData);
-      // console.log(response);
-      // handle token from response if needed
+      const response: any = await axios.post(`${baseUrl}/api/admin/referral-partners/authenticate`, formData);
       setLoginError('');
       if (response.data) {
         setSuccess(true);
         notifySuccess('OTP sent to your email', 'success');
         // setShowTokenModal(true); // show modal after login
-        navigate('/verify-otp', { state: { reference: formData.reference } });
-      } 
-      // else if (response.data.data.userInformation.type === "BUSINESS") {
-      //   setSuccess(true);
-      //   notifySuccess('OTP sent to your email', 'success');
-      //   // setShowTokenModal(true); // show modal after login
-      //   navigate('/verify-otp', { state: { reference: formData.reference } });
-      // } 
+        navigate('/verify-otp-partners', { state: { reference: formData.reference } });
+      }
       else {
         notifyError('You are not authorized', 'error');
         setLoginError('You are not authorized');
@@ -315,4 +307,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPartners;

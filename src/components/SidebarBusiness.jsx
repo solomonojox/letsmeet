@@ -8,11 +8,9 @@ import { Users } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import imageAsset from '../assets/imageAsset';
-import { useAuth } from '../Context/auth/useAuth';
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+const SidebarBusiness = ({ isSidebarOpen, toggleSidebar }) => {
   // const dispatch = useDispatch();
-  const { user } = useAuth()
   const location = useLocation();
   const navigate = useNavigate()
   const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
@@ -127,28 +125,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // console.log(sessionStorage.getItem("currentRegSidebarPath"));
 
   const sidebarData = [
-    { id: 1, title: "Dashboard", link: "/dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive, roles: ["SUPER_ADMIN", "INTERNAL_ADMIN"] },
-    { id: 2, title: "Users", link: "/users", icon: icons.userActive, notActiveIcon: icons.userNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 5, title: "Notification", link: "/notifications", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 6, title: "Admin Chat", link: "/admin-chat", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 7, title: "Referrals", link: "/referrals", icon: icons.referralActive, notActiveIcon: icons.referralNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 8, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 9, title: "Feedback", link: "/feedback", icon: icons.feedbackActive, notActiveIcon: icons.feedbackNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 10, title: "Blocked", link: "/blocked", icon: icons.blockedActive, notActiveIcon: icons.blockedNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 11, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive, roles: ["SUPER_ADMIN"] },
+    { id: 1, title: "Dashboard", link: "/business-dashboard", icon: icons.dbActive, notActiveIcon: icons.dbNotActive },
+    { id: 7, title: "Referrals", link: "/referrals", icon: icons.referralActive, notActiveIcon: icons.referralNotActive }
   ];
-
-  const filteredSidebarData = sidebarData.filter(item => item.roles.includes(user?.UserType));
 
   const logOut = () => {
     localStorage.clear()
-    if (user?.UserType === 'SUPER_ADMIN') {
-      navigate("/login");
-    } else {
-      navigate("/partner-login");
-    }
+    navigate("/login");
     sessionStorage.removeItem("currentRegSidebarPath")
   }
 
@@ -175,7 +158,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
           <div className="flex flex-col gap-2 h-[100%] overflow-y-scroll no-scrollbar">
             <p className="text-xs">Menu</p>
-            {filteredSidebarData.map((item) => {
+            {sidebarData.map((item) => {
               const isActive = isLinkActive(item.link);
               return (
                 <NavLink
@@ -254,4 +237,4 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   );
 };
 
-export default Sidebar;
+export default SidebarBusiness;

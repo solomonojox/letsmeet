@@ -20,7 +20,7 @@ interface FormErrors {
     password?: string;
 }
 
-const Otp = () => {
+const OtpPartners = () => {
     // const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
     const { login } = useAuth()
     const location = useLocation();
@@ -113,7 +113,7 @@ const Otp = () => {
         // setMessage("");
 
         try {
-            const response = await axios.post(`${baseUrl}/api/User/ValidateLoginOtp`, { key: enteredCode, reference: reference });
+            const response = await axios.post(`${baseUrl}/api/admin/referral-partners/validate-auth-code`, { key: enteredCode, reference: reference });
 
             const token = response.data.data.token;
             localStorage.setItem('letsmeetToken', token);
@@ -121,14 +121,14 @@ const Otp = () => {
             login(token);
 
             const decoded = jwtDecode<any>(token);
-            console.log(response.data);
             const user = {
                 id: decoded.UserId,
                 name: `${response.data.data.userInformation.firstName} ${response.data.data.userInformation.lastName}`,
                 email: decoded.EmailAddress,
                 subject: decoded.Subject,
                 username: decoded.UserName,
-                userType: decoded.UserType
+                userType: decoded.UserType,
+                companyId: response.data.data.metaData.CompanyId
             }
             // console.log(user);
             localStorage.setItem('letsmeetUser', JSON.stringify(user));
@@ -136,7 +136,7 @@ const Otp = () => {
             navigate('/dashboard');
         } catch (err: any) {
             const axiosError = err as any;
-            console.log(axiosError);
+            // console.log(axiosError);
             setLoginError(axiosError?.response?.data?.responseMessage || 'Server error. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -251,7 +251,7 @@ const Otp = () => {
 
                     <div className='flex justify-center mt-2'>
                         <Link
-                            to={'/login'}
+                            to={'/partner-login'}
                             className={`text-primary hover:text-primary/80 transition duration-200 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                                 }`}
                         >
@@ -268,4 +268,4 @@ const Otp = () => {
     )
 }
 
-export default Otp
+export default OtpPartners

@@ -44,6 +44,15 @@ export const deletePartner = async (partnerId, data) => {
 }
 
 export const exportData = async (partnerId, formData) => {
-    const res = await api.get(`/api/partner/dashboard/${partnerId}/export`, { params: formData }, {responseType: "blob",});
+    const res = await api.get(`/api/partner/dashboard/${partnerId}/export`, {
+        params: formData,
+        responseType: 'blob',
+        headers: {
+            // Remove Content-Type header for GET requests - it's not needed
+            // 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // Add auth headers if needed
+            // 'Authorization': `Bearer ${token}`
+        }
+    });
     return res;
 }
