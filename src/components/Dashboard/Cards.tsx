@@ -59,9 +59,9 @@ const Cards = () => {
     const totalUsers = users?.length || 0;
     const totalReports = reports?.length || 0;
 
-    const usersPerc = totalUsers > 0 ? ((yesterdayUserCount / totalUsers) * 100).toFixed(2) : '0';
-    const usersSign = Number(usersPerc) > 0 ? '+' : '';
-    const usersChangeTextColor = Number(usersPerc) > 0 ? 'text-green-500' : 'text-red-500';
+    // const usersPerc = totalUsers > 0 ? ((yesterdayUserCount / totalUsers) * 100).toFixed(2) : '0';
+    // const usersSign = Number(usersPerc) > 0 ? '+' : '';
+    // const usersChangeTextColor = Number(usersPerc) > 0 ? 'text-green-500' : 'text-red-500';
 
     const reportsPerc = totalReports > 0 ? ((yesterdayReportCount / totalReports) * 100).toFixed(2) : '0';
     const reportsSign = Number(reportsPerc) > 0 ? '+' : '';
@@ -70,12 +70,12 @@ const Cards = () => {
     const cardsData = [
         {
             title: 'Total users',
-            value: formatNumberWithCommas(totalUsers),
+            value: formatNumberWithCommas(userData?.data?.totalCount || 0),
             icon: <HiUsers className="text-primary" />,
-            change: `${usersSign} ${usersPerc}%`,
-            changeText: 'since yesterday',
+            // change: `${usersSign} ${usersPerc}%`,
+            // changeText: 'since yesterday',
             color: 'bg-primary',
-            textColor: usersChangeTextColor,
+            // textColor: usersChangeTextColor,
             border: 'border-l-3 border-primary',
             iconBg: 'bg-[#E6E6F399]',
         },
@@ -94,10 +94,10 @@ const Cards = () => {
             title: 'New users',
             value: formatNumberWithCommas(recentUserCount || 0),
             icon: <HiUsers className="text-[#F4B8DC]" />,
-            change: `${usersSign} ${usersPerc}%`,
-            changeText: 'since yesterday',
+            // change: `${usersSign} ${usersPerc}%`,
+            // changeText: 'since yesterday',
             color: 'bg-pink-100',
-            textColor: usersChangeTextColor,
+            // textColor: usersChangeTextColor,
             border: 'border-l-3 border-pink-300',
             iconBg: 'bg-[#FEF8FC]',
         },

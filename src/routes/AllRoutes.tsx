@@ -25,6 +25,7 @@ import AdminChat from '../pages/AdminChat';
 import ViewReferral from '../components/Referral/ViewReferral';
 import LoginPartners from '../pages/Auth/LoginPartners';
 import OtpPartners from '../pages/Auth/OtpPartners';
+import Blocked from '../pages/Blocked';
 
 const ProtectedRoute = ({ children, businessComponent, userType }: any) => {
   const token = localStorage.getItem('letsmeetToken');
@@ -94,6 +95,7 @@ const AllRoutes = () => {
       <Route path="/referrals/:partnerId" element={<ProtectedRoute> <ViewReferral /> </ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute> <Notifications /> </ProtectedRoute>} />
       <Route path="/admin-chat" element={<ProtectedRoute> <AdminChat /> </ProtectedRoute>} />
+      <Route path="/blocked-users" element={<ProtectedRoute> <Blocked /> </ProtectedRoute>} />
 
       <Route path="/construction" element={<UnderConstructionPage />} />
       {/* <Route path="/resources" element={<Navigate to='/construction' replace />} /> */}

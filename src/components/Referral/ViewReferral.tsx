@@ -239,7 +239,7 @@ const ViewReferral = () => {
                         className='text-sm border bg-primary text-white rounded-lg py-1 px-3'
                         onClick={() => setOpenDownloadModal(true)}
                     >
-                        Download report
+                        Export report
                     </button>
 
                     {!companyId && (
