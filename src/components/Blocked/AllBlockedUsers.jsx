@@ -1,20 +1,24 @@
 /* eslint-disable no-unused-vars */
 // /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef, useContext } from 'react';
-import { ChevronRight, ChevronLeft, Search, Filter, Check, MoreVertical, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Search, Filter, Check, MoreVertical, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import imageAsset from '../../assets/imageAsset';
 import axios from 'axios';
-import { useGetAllPartnersQuery } from '../../Services/API/api';
+import { useGetAllBlockedUsersQuery, useGetAllReportsQuery } from '../../Services/API/api';
 import { AppContext } from '../../Context/AppContext';
 import TableSkeletonLoader from '../../ui/TableSkeletonLoader';
-import CreateNewReferralAccount from './CreateNewReferralAccount';
-import { approvePartner, createReferral, deletePartner, suspendPartner } from '../../Services/referrals';
+import ViewBlockedDetails from './ViewBlockedDetails';
+import { useAuth } from '../../Context/auth/useAuth';
+import { resendOtp } from '../../Services/passwordReset';
+import { FaGear } from 'react-icons/fa6';
+import { FaAngleDown } from 'react-icons/fa';
+import OtpVerify from '../Reports/OtpVerify';
 
-const AllReferrals = () => {
+const AllBlockedUsers = () => {
     const { formatDate, showOverlay, hideOverlay, notifySuccess, notifyError } = useContext(AppContext);
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const { user } = useAuth();
 
     // console.log(tableData)
     // const [tableData, setTableData] = useState([]);
@@ -23,9 +27,10 @@ const AllReferrals = () => {
     // State for search and pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const ITEMS_PER_PAGE = 10;
-    const { data, isLoading, refetch } = useGetAllPartnersQuery({
+    const { data, isLoading, refetch } = useGetAllBlockedUsersQuery({
         PageSize: ITEMS_PER_PAGE,
         PageNumber: currentPage,
     });
@@ -34,15 +39,21 @@ const AllReferrals = () => {
 
     // State for row action menu
     const [menuAnchor, setMenuAnchor] = useState(null);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [openModal, setOpenModal] = useState(null);
+    const [countdown, setCountdown] = useState(0);
+    const [canResend, setCanResend] = useState(false);
+    const [message, setMessage] = useState('');
+    const [isResending, setIsResending] = useState(false);
 
     // Filter state
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [filters, setFilters] = useState({
         status: {
             All: true,
-            ACTIVE: false,
-            OFFBOARDED: false,
-            PENDING_KYB: false,
+            Resolved: false,
+            Closed: false,
+            Pending: false,
         }
     });
 
@@ -80,26 +91,26 @@ const AllReferrals = () => {
         setCurrentPage(1);
     }, [searchTerm]);
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'ACTIVE':
-                return 'bg-green-100 text-green-600';
-            case 'OFFBOARDED':
-                return 'bg-red-100 text-red-600';
-            case 'PENDING_KYB':
-                return 'bg-yellow-100 text-yellow-600';
-            default:
-                return 'bg-gray-100 text-gray-600';
-        }
-    };
+    // const getStatusColor = (status) => {
+    //     switch (status) {
+    //         case 'Resolved':
+    //             return 'bg-green-100 text-green-600';
+    //         case 'Closed':
+    //             return 'bg-red-100 text-red-600';
+    //         case 'Pending':
+    //             return 'bg-yellow-100 text-yellow-600';
+    //         default:
+    //             return 'bg-gray-100 text-gray-600';
+    //     }
+    // };
 
     const getStatusTextColor = (status) => {
         switch (status) {
-            case 'ACTIVE':
+            case 'Resolved':
                 return 'text-green-500';
-            case 'OFFBOARDED':
+            case 'Closed':
                 return 'text-red-500';
-            case 'PENDING_KYB':
+            case 'Pending':
                 return 'text-yellow-500';
             default:
                 return 'text-gray-500';
@@ -158,9 +169,9 @@ const AllReferrals = () => {
         setFilters({
             status: {
                 All: true,
-                ACTIVE: false,
-                OFFBOARDED: false,
-                PENDING_KYB: false
+                Resolved: false,
+                Closed: false,
+                Pending: false
             },
         });
         setCurrentPage(1);
@@ -170,12 +181,12 @@ const AllReferrals = () => {
     const filteredReports = tableData?.filter(report => {
         // Search filter
         const matchesSearch =
-            report.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.businessEmail.toLowerCase().includes(searchTerm.toLowerCase());
+            report.blockedName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.blockerName.toLowerCase().includes(searchTerm.toLowerCase())
 
         // Status filter
         const statusFilterApplied = !filters.status.All;
-        const matchesStatusFilter = statusFilterApplied ? filters.status[report.status] : true;
+        const matchesStatusFilter = statusFilterApplied ? filters.status[report.reportStatus] : true;
 
         return matchesSearch && matchesStatusFilter;
     });
@@ -207,108 +218,25 @@ const AllReferrals = () => {
         pageNumbers.push(i);
     }
 
-    const [reason, setReason] = useState('');
-    const [openReansonModal, setOpenReasonModal] = useState(false);
-    const [partnerId, setPartnerId] = useState(null);
-    const [revenueSharePercentage, setRevenueSharePercentage] = useState(null);
-    const [kybExpiryDate, setKybExpiryDate] = useState(null);
-    const [action, setAction] = useState('');
-    const [deleteModal, setDeleteModal] = useState(false);
-    // console.log(action);
-
-    const handleOpenReasonModal = (partnerId, revenueSharePercentage, kybExpiryDate, action) => {
-        setPartnerId(partnerId);
-        setRevenueSharePercentage(revenueSharePercentage);
-        setKybExpiryDate(kybExpiryDate);
-        setOpenReasonModal(true);
-        setAction(action);
-    }
-
-    const updateReportStatus = () => {
-        // console.log('keyboard');
-        if (action === "Approve") {
-            handleApprovePartner();
-        } else if (action === "Suspend") {
-            handleSuspendPartner();
-        } else if (action === "Delete") {
-            handleDeletePartner();
-        }
-    }
-
-    const handleApprovePartner = async () => {
-        // validate reason to ensure it must be at least 10 words
-        if (reason.trim().split('').length < 10) {
-            notifyError('Reason must be at least 10 letters', 'error');
-            return;
-        }
-
+    const updateReportStatus = async (reportId, status) => {
+        // console.log('Updating report status:', reportId, status);
         showOverlay();
-        const payload = {
-            partnerId: partnerId,
-            approved: true,
-            decisionRationale: reason,
-            revenueSharePercentage: revenueSharePercentage,
-            kybExpiryDate: kybExpiryDate
-        }
         try {
-            const res = await approvePartner(payload);
-            notifySuccess('Partner approved successfully', 'success');
-            setOpenReasonModal(false);
-            setReason('');
+            const response = await axios.put(`${baseUrl}/api/Report/UpdateReportStatus`, {
+                reportId,
+                reportStatus: status,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+                },
+            });
+            // console.log('Report status updated:', response.data);
+            notifySuccess('Report status updated successfully', 'success');
             refetch();
-        } catch (err) {
-            console.log(err);
-            notifyError(err.response?.data?.responseMessage || 'Error approving partner', 'error');
-        } finally {
-            hideOverlay();
-        }
-    }
-
-    const handleSuspendPartner = async () => {
-        showOverlay();
-        const payload = {
-            partnerId: partnerId,
-            newStatus: "PENDING_KYB",
-            reason: reason
-        }
-        try {
-            const res = await suspendPartner(payload);
-            notifySuccess('Partner suspended successfully', 'success');
-            setOpenReasonModal(false);
-            setReason('');
-            refetch();
-        } catch (err) {
-            console.log(err);
-            notifyError(err.response?.data?.responseMessage || 'Error suspending partner', 'error');
-        } finally {
-            hideOverlay();
-        }
-    }
-
-    const editPartner = async (partnerId) => {
-        showOverlay();
-    }
-
-    const openDeleteModal = (partnerId) => {
-        setPartnerId(partnerId);
-        setDeleteModal(true);
-    }
-    const handleDeletePartner = async () => {
-        showOverlay();
-        const payload = {
-            partnerId: partnerId,
-            reason: reason
-        }
-        try {
-            const res = await deletePartner(partnerId, payload);
-            notifySuccess('Partner offboarded successfully', 'success');
-            setOpenReasonModal(false);
-            setReason('');
-            setDeleteModal(false);
-            refetch();
-        } catch (err) {
-            console.log(err);
-            notifyError(err.response?.data?.responseMessage || 'Error deleting partner', 'error');
+        } catch (error) {
+            console.error('Error updating report status:', error);
+            notifyError(error.response.data.responseMessage || 'Error updating report status', 'error');
         } finally {
             hideOverlay();
         }
@@ -346,43 +274,31 @@ const AllReferrals = () => {
                 <div className="p-2">
                     <div className="text-gray-400 mb-2 text-sm">Decisions:</div>
                     <button
-                        className={`w-full flex items-center px-3 py-2 text-sm ${report.status === 'ACTIVE' ? "text-gray-300" : "hover:bg-green-500 hover:text-white"} rounded-md mb-1`}
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-yellow-500 hover:text-white rounded-md mb-1"
                         onClick={() => {
-                            handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Approve");
+                            updateReportStatus(report.id, "Pending");
                             onClose();
                         }}
-                        disabled={report.status === 'ACTIVE'}
                     >
-                        Approve
+                        Pending
                     </button>
                     <button
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-md mb-1 ${report.status === 'PENDING_KYB' ? "text-gray-300" : "hover:bg-yellow-600 hover:text-white"}`}
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-green-600 hover:text-white rounded-md mb-1"
                         onClick={() => {
-                            handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Suspend");
+                            updateReportStatus(report.id, "Resolved");
                             onClose();
                         }}
-                        disabled={report.status === 'PENDING_KYB'}
                     >
-                        Suspend
+                        Resolve
                     </button>
                     <button
-                        className={`w-full flex items-center px-3 py-2 text-sm rounded-md mb-1 ${report.status === 'OFFBOARDED' ? "text-gray-300" : "hover:bg-red-600 hover:text-white"}`}
+                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-red-600 hover:text-white rounded-md"
                         onClick={() => {
-                            handleOpenReasonModal(report.id, report.revenueSharePercentage, report.kybExpiryDate, "Delete");
-                            onClose();
-                        }}
-                        disabled={report.status === 'OFFBOARDED'}
-                    >
-                        Delete
-                    </button>
-                    <button
-                        className="w-full flex items-center px-3 py-2 text-sm hover:bg-primary hover:text-white rounded-md mb-1"
-                        onClick={() => {
-                            navigate(`/referrals/${report.id}`, { state: { userName: report.businessName } });
+                            updateReportStatus(report.id, "Closed");
                             onClose();
                         }}
                     >
-                        View details
+                        Close
                     </button>
                 </div>
             </div>,
@@ -390,53 +306,105 @@ const AllReferrals = () => {
         );
     };
 
-    const [createNewUserModalOpen, setCreateNewUserModalOpen] = useState(false);
-    const [creating, setCreating] = useState(false);
+    // const [selectedId, setSelectedId] = useState(null);
+    // const [reportDetail, setReportDetail] = useState(null);
+    const [details, setDetails] = useState(null);
 
-    const handleCreateNewReferralAccount = async (FormData) => {
-        setCreating(true);
-        try {
-            const res = await createReferral(FormData);
-            notifySuccess('Referral account created successfully', 'success');
-            setCreateNewUserModalOpen(false);
-            refetch();
-        } catch (error) {
-            console.error('Error creating referral account:', error);
-            notifyError(error.response?.data?.error || 'Error creating referral account', 'error');
-        } finally {
-            setCreating(false);
+    // useEffect(() => {
+    //     if (selectedId) {
+    //         fetchSingleReport();
+    //     }
+    // }, [selectedId]);
+
+    // const fetchSingleReport = async () => {
+    //     try {
+    //         const response = await axios.get(`${baseUrl}/api/Report/Get/${selectedId}`, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
+    //             },
+    //         });
+    //         console.log(response.data.data);
+    //         setReportDetail(response.data.data);
+    //     } catch (error) {
+    //         console.error('Error fetching single report:', error);
+    //         notifyError(error.response.data.responseMessage || 'Error fetching single report', 'error');
+    //     }
+    // }
+
+    // const handleSendOtp = async () => {
+    //     setIsResending(true);
+    //     setMessage("");
+    //     showOverlay();
+
+    //     try {
+    //         const payload = {
+    //             referenceValue: user.EmailAddress,
+    //             emailAddress: user.EmailAddress,
+    //             phoneNumber: null,
+    //             tokenType: "ACCESS",
+    //             durationInMinutes: 5,
+    //             deliveryMethod: "Email",
+    //             customTitle: "string"
+    //         }
+    //         const res = await resendOtp(payload);
+    //         if (res.data.success === true) {
+    //             setMessage("Verification code resent to your email.");
+    //             setCanResend(false);
+    //             setCountdown(60);
+    //         } else {
+    //             setMessage(res.data.message);
+    //         }
+    //     } catch (err) {
+    //         setMessage(err.response.data.responseMessage || 'Server error. Please try again.');
+    //     } finally {
+    //         setIsResending(false);
+    //         hideOverlay();
+    //     }
+    // }
+
+    const [activeContent, setActiveContent] = useState('viewreport');
+    const renderContent = () => {
+        switch (activeContent) {
+            // case 'confirmation':
+            //     return <ConfirmationModal onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} onfetch={fetchSingleReport} />;
+            case 'otpverify':
+                return <OtpVerify onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} onfetch={() => { }} />;
+            case 'viewreport':
+                return <ViewBlockedDetails onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} details={details} formatDate={formatDate} showOverlay={showOverlay} hideOverlay={hideOverlay} />;
+            default:
+                return <ViewBlockedDetails onClose={() => { setOpenModal(false); setActiveContent('confirmation') }} open={openModal} next={setActiveContent} details={details} formatDate={formatDate} showOverlay={showOverlay} hideOverlay={hideOverlay} />;
         }
     }
 
     if (isLoading || loading) {
-        return <TableSkeletonLoader rows={5} headers={['Name', 'Total referrer', 'Date joined', 'Status', 'Action']} />;
+        return <TableSkeletonLoader rows={5} headers={['Reporter', 'Reported User', 'Issue', 'Status', 'Date', 'Action']} />;
     }
+
 
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-md font-medium text-gray-700">User's Organizations</h2>
-                <div className="relative flex gap-4">
+                <h2 className="text-lg font-medium text-gray-700">Blocked users</h2>
+
+                {/* <div className="relative">
                     <button
                         ref={filterButtonRef}
                         className="flex items-center px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                         onClick={toggleFilterModal}
                     >
-                        <SlidersHorizontal className="w-4 h-4 mr-4" />
+                        <Filter className="w-4 h-4 mr-2" />
                         Filter
                     </button>
-
-                    <button className='bg-primary px-4 py-2 rounded-md text-white text-sm hover:bg-primary/70' onClick={() => setCreateNewUserModalOpen(true)}>Create new account</button>
 
                     {showFilterModal && (
                         <div
                             ref={filterModalRef}
-                            className="absolute right-10 mt-10 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+                            className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-50"
                         >
                             <div className="p-4">
                                 <div className="text-sm text-gray-500 mb-2">Filter by:</div>
 
-                                {/* Status Filter */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium">Status</span>
@@ -460,12 +428,12 @@ const AllReferrals = () => {
                                     </div>
                                 </div>
 
-                                {/* <button
+                                <button
                                     className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
                                     onClick={applyFilter}
                                 >
                                     Apply filter
-                                </button> */}
+                                </button>
 
                                 <button
                                     className="w-full mt-2 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50"
@@ -476,7 +444,7 @@ const AllReferrals = () => {
                             </div>
                         </div>
                     )}
-                </div>
+                </div> */}
             </div>
 
             {/* Search bar */}
@@ -500,61 +468,51 @@ const AllReferrals = () => {
                             <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Name</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Total referrals</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date joined</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
-                                <div className="flex items-center">
-                                    Action
-                                </div>
-                            </th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">User</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Blocked User</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date Blocked</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500 flex items-center gap-2">Action <FaGear /></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredReports.length > 0 ? filteredReports.map((partner) => (
-                            <tr key={partner.id} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                        {filteredReports.length > 0 ? filteredReports.map((item, index) => (
+                            <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
-                                <td className="py-4">
-                                    <div className="flex items-center">
-                                        <span className="text-gray-500 whitespace-nowrap cursor-pointer"
-                                            onClick={() => {
-                                                navigate(`/referrals/${partner.id}`, { state: { userName: partner.businessName } });
-                                            }}
-                                        >{partner.businessName}</span>
+                                <td className="py-4 whitespace-nowrap">
+                                    <div className="flex items-center gap-3">
+                                        <img src={item.blockerPhotoUrl} alt={item.blockerName} className="bg-gray-200 rounded-full h-8 w-8" />
+                                        <span className="text-gray-700">{item.blockerName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4">
-                                    <div className="flex items-center">
-                                        <span className="text-gray-500 whitespace-nowrap">{partner.totalReferredUsers}</span>
+                                <td className="py-4 whitespace-nowrap">
+                                    <div className="flex items-center gap-3">
+                                        <img src={item.blockedPhotoUrl} alt={item.blockedName} className="bg-gray-200 rounded-full h-8 w-8" />
+                                        <span className="text-gray-700">{item.blockedName}</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-gray-500 max-w-[300px]">{formatDate(partner.createdAt)}</td>
-                                <td className="py-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(partner.status)}`}>
-                                        {partner.status}
-                                    </span>
-                                </td>
-                                <td className="py-4 pr-4 text-right">
-                                    <div className="flex items-center justify-start">
+                                <td className="py-4 text-gray-500 whitespace-nowrap">{formatDate(item.blockedAt)}</td>
+                                <td className="py-4 ">
+                                    {/* <div className="flex items-center justify-start">
                                         <button
-                                            className="text-gray-500 hover:text-gray-700 flex items-center"
+                                            className="text-gray-500 hover:text-gray-700 flex items-center gap-2"
                                             onClick={(e) => {
                                                 const rect = e.currentTarget.getBoundingClientRect();
-                                                setMenuAnchor({ rect, partner });
+                                                setMenuAnchor({ rect, item });
                                             }}
                                         >
-                                            <MoreVertical className="w-4 h-4" />
+                                            <FaGear className="w-6 h-6" />
+                                            <FaAngleDown />
                                         </button>
-                                    </div>
+                                    </div> */}
+                                    <button className="text-blue-500 hover:text-blue-700 border border-primary rounded-md px-2 py-1" onClick={() => { setOpenModal(true); setDetails(item) }}>View Details</button>
                                 </td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="6" className="py-4 text-center text-gray-500">
-                                    No organization found
+                                <td colSpan="5" className="py-4 text-center text-gray-500">
+                                    No items found
                                 </td>
                             </tr>
                         )}
@@ -625,81 +583,20 @@ const AllReferrals = () => {
                 </div>
             )}
 
+            {openModal && (
+                renderContent()
+            )}
+
             {/* Floating menu */}
             {menuAnchor && (
                 <ReportActionMenu
                     anchorRect={menuAnchor.rect}
-                    report={menuAnchor.partner}
+                    report={menuAnchor.report}
                     onClose={() => setMenuAnchor(null)}
                 />
-            )}
-
-            {createNewUserModalOpen && (
-                <CreateNewReferralAccount
-                    onClose={() => setCreateNewUserModalOpen(false)}
-                    onSubmit={handleCreateNewReferralAccount}
-                    loading={creating}
-                />
-            )}
-
-            {openReansonModal && (
-                <div className="fixed inset-0 bg-black/50 z-50">
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-md shadow-lg z-50">
-                        <form action="submit">
-                            <h2 className="text-lg font-medium mb-4">What is your Reason?</h2>
-                            <textarea
-                                className="w-96 h-40 border border-gray-300 rounded-md p-2 mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                placeholder="Enter reason here..."
-                                required
-                            />
-                            <div className="flex justify-end">
-                                <button
-                                    type="button"
-                                    className={`px-4 py-2 ${action === "Delete" ? "bg-red-500 hover:bg-red-400" : "bg-primary hover:bg-primary/70"} text-white rounded-md mr-2`}
-                                    onClick={updateReportStatus}
-                                >
-                                    {action}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-md"
-                                    onClick={() => setOpenReasonModal(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {deleteModal && (
-                <div className="fixed inset-0 bg-black/50 z-50">
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-md shadow-lg z-50">
-                        <h2 className="text-lg font-medium mb-4">Are you sure you want to delete this user?</h2>
-                        <div className="flex justify-end">
-                            <button
-                                type="button"
-                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md mr-2"
-                                onClick={handleDeletePartner}
-                            >
-                                Delete
-                            </button>
-                            <button
-                                type="button"
-                                className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-md"
-                                onClick={() => setDeleteModal(false)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
         </div>
     );
 };
 
-export default AllReferrals;
+export default AllBlockedUsers;

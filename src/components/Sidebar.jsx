@@ -131,12 +131,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { id: 2, title: "Users", link: "/users", icon: icons.userActive, notActiveIcon: icons.userNotActive, roles: ["SUPER_ADMIN"] },
     { id: 3, title: "Requests", link: "/requests", icon: icons.requestsActive, notActiveIcon: icons.requestsNotActive, roles: ["SUPER_ADMIN"] },
     { id: 4, title: "Subscriptions", link: "/subscriptions", icon: icons.subscriptionActive, notActiveIcon: icons.subscriptionNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 5, title: "Notification", link: "/notifications", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive, roles: ["SUPER_ADMIN"] },
+    // { id: 5, title: "Notification", link: "/notifications", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive, roles: ["SUPER_ADMIN"] },
     { id: 6, title: "Admin Chat", link: "/admin-chat", icon: icons.notificationActive, notActiveIcon: icons.notificationNotActive, roles: ["SUPER_ADMIN"] },
     { id: 7, title: "Referrals", link: "/referrals", icon: icons.referralActive, notActiveIcon: icons.referralNotActive, roles: ["SUPER_ADMIN"] },
     { id: 8, title: "Reports", link: "/reports", icon: icons.reportsActive, notActiveIcon: icons.reportsNotActive, roles: ["SUPER_ADMIN"] },
     { id: 9, title: "Feedback", link: "/feedback", icon: icons.feedbackActive, notActiveIcon: icons.feedbackNotActive, roles: ["SUPER_ADMIN"] },
-    { id: 10, title: "Blocked", link: "/blocked", icon: icons.blockedActive, notActiveIcon: icons.blockedNotActive, roles: ["SUPER_ADMIN"] },
+    { id: 10, title: "Blocked", link: "/blocked-users", icon: icons.blockedActive, notActiveIcon: icons.blockedNotActive, roles: ["SUPER_ADMIN"] },
     { id: 11, title: "Settings", link: "/settings", icon: icons.settingsActive, notActiveIcon: icons.settingsNotActive, roles: ["SUPER_ADMIN"] },
   ];
 

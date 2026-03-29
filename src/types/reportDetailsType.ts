@@ -34,3 +34,20 @@ export interface ReportDetailsType {
     reportedPhotoUrl?: string;
     reporterPhotoUrl?: string;
 }
+
+export interface BlockDetailsType {
+    friendshipId: string;
+    blockerUserId: string;
+    blockerEmail: string;
+    blockerName: string;
+    blockerPhotoUrl: string;
+    blockedUserId: string;
+    blockedEmail: string;
+    blockedName: string;
+    blockedPhotoUrl: string;
+    blockReason: string;
+    blockedAt: string;
+    becameFriendsAt: string;
+    lastInteractionAt: string;
+    lastInteractionType: string
+}

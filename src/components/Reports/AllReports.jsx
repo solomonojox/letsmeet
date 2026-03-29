@@ -325,7 +325,6 @@ const AllReports = () => {
                     'Authorization': `Bearer ${localStorage.getItem('letsmeetToken')}`,
                 },
             });
-            console.log(response.data.data);
             setReportDetail(response.data.data);
         } catch (error) {
             console.error('Error fetching single report:', error);

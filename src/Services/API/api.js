@@ -149,9 +149,30 @@ export const api = createApi({
       }
     }),
 
+    // Blocked
+    getAllBlockedUsers: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (params.PageNumber !== undefined) queryParams.append("pageNumber", params.PageNumber.toString());
+        if (params.PageSize !== undefined) queryParams.append("pageSize", params.PageSize.toString());
+
+        return {
+          url: `/api/admin/block-analysis/blocked-users?${queryParams.toString()}`,
+          method: "GET",
+        };
+      }
+    }),
+
     getReferrersCardData: builder.query({
       query: () => ({
         url: `/api/admin/referral-partners/dashboard/overview`,
+      }),
+    }),
+
+    getBlockedCardData: builder.query({
+      query: () => ({
+        url: `/api/admin/block-analysis/insights`,
       }),
     }),
 
@@ -189,4 +210,8 @@ export const {
   useGetAllPartnersQuery,
   useGetReferrersCardDataQuery,
   useGetPartnerDashboardQuery,
+
+  // Blocked
+  useGetAllBlockedUsersQuery,
+  useGetBlockedCardDataQuery,
 } = api;

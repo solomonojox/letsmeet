@@ -32,7 +32,8 @@ const validRoutes = [
   "/chat",
   "/notifications",
   "/admin-chat",
-  "/referrals/:id"
+  "/referrals/:id",
+  "blocked-users",
 ];
 
 // Wrapper component to use hooks outside BrowserRouter
