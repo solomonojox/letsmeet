@@ -94,7 +94,7 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label htmlFor="BusinessName" className="block text-sm font-medium">
-                                Business Name *
+                                Business Name <span className='text-red-500'>*</span>
                             </label>
                             <input
                                 type="text"
@@ -163,7 +163,7 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label htmlFor="BusinessEmail" className="block text-sm font-medium">
-                                Business Email *
+                                Business Email <span className='text-red-500'>*</span>
                             </label>
                             <input
                                 type="email"
@@ -276,7 +276,7 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="block text-sm">Full Name *</label>
+                                        <label className="block text-sm">Full Name <span className='text-red-500'>*</span></label>
                                         <input
                                             type="text"
                                             required
@@ -287,8 +287,8 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="block text-sm">Ownership Percentage *</label>
+                                    {/* <div className="space-y-2">
+                                        <label className="block text-sm">Ownership Percentage <span className='text-red-500'>*</span></label>
                                         <input
                                             type="number"
                                             required
@@ -299,7 +299,7 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                                             placeholder="Percentage"
                                             className='w-full p-2 border outline-none focus:border-primary rounded-lg'
                                         />
-                                    </div>
+                                    </div> */}
 
                                     <div className="space-y-2">
                                         <label className="block text-sm">Identification Number</label>
@@ -347,6 +347,70 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium">
+                            Business Admin
+                        </label>
+
+                        <div className="border rounded-lg p-4 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="City" className="block text-sm font-medium">
+                                        Admin Email
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="AdminEmail"
+                                        name="AdminEmail"
+                                        placeholder="Admin Email"
+                                        className='w-full p-2 border outline-none focus:border-primary rounded-lg'
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="City" className="block text-sm font-medium">
+                                        Admin First Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="AdminFirstName"
+                                        name="AdminFirstName"
+                                        placeholder="Admin First Name"
+                                        className='w-full p-2 border outline-none focus:border-primary rounded-lg'
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="City" className="block text-sm font-medium">
+                                        Admin Last Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="AdminLastName"
+                                        name="AdminLastName"
+                                        placeholder="Admin Last Name"
+                                        className='w-full p-2 border outline-none focus:border-primary rounded-lg'
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="City" className="block text-sm font-medium">
+                                        Admin Password <span className='text-red-500'>*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="AdminPassword"
+                                        name="AdminPassword"
+                                        placeholder="Admin Password"
+                                        className='w-full p-2 border outline-none focus:border-primary rounded-lg'
+                                    />
+                                </div>
+
+                            </div>
+
+                        </div>
                     </div>
 
                     {/* KYC Documents */}
