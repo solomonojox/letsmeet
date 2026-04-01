@@ -37,7 +37,14 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
             formData.append(`KYBDocuments`, file)
         })
 
-        console.log(formData)
+        const password = (formData.get('AdminPassword') as string) || '';
+
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+            alert('Password must be at least 8 characters long and include uppercase, number, and special character');
+            return;
+        }
 
         // Reset beneficial owners and KYC documents
         // setBeneficialOwners([{ fullName: '', ownershipPercentage: 0, identificationNumber: '', nationality: '', dateOfBirth: '', isPEP: false }])
@@ -70,8 +77,19 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const newFiles = Array.from(e.target.files)
-            setKybDocuments([...kybDocuments, ...newFiles])
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+            const filesArray = Array.from(e.target.files);
+
+            const validFiles = filesArray.filter(file => allowedTypes.includes(file.type));
+
+            const invalidFiles = filesArray.filter(file => !allowedTypes.includes(file.type));
+
+            if (invalidFiles.length > 0) {
+                alert('Only PDF, JPG, and PNG files are allowed');
+            }
+
+            setKybDocuments([...kybDocuments, ...validFiles]);
             // Reset file input
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
@@ -400,11 +418,14 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                                         Admin Password <span className='text-red-500'>*</span>
                                     </label>
                                     <input
-                                        type="text"
+                                        type="password"
                                         id="AdminPassword"
                                         name="AdminPassword"
                                         placeholder="Admin Password"
                                         className='w-full p-2 border outline-none focus:border-primary rounded-lg'
+                                        required
+                                        pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
+                                        title="Password must be at least 8 characters long, include one uppercase letter, one number, and one special character"
                                     />
                                 </div>
 
@@ -424,7 +445,7 @@ const CreateNewReferralAccount: React.FC<Props> = ({ onClose, onSubmit, loading 
                                 type="file"
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
-                                multiple
+                                accept=".pdf,.jpg,.jpeg,.png"
                                 className="hidden"
                                 id="kyb-documents"
                             />

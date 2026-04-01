@@ -7,7 +7,7 @@ interface Props {
     onClose: () => void;
     showOverlay?: () => void;
     hideOverlay?: () => void;
-    formatDate: any;
+    formatDate?: any;
     open: boolean;
     details: BlockDetailsType;
 }
@@ -78,6 +78,13 @@ const ViewBlockedDetails: React.FC<Props> = ({ onClose, open, details, formatDat
                             </tbody>
                         </table>
                     </div> */}
+
+                    <div>
+                        <p className="text-xs font-thin mb-2">Date Blocked</p>
+                        <div className="rounded-xl border border-gray-300 p-4 max-h-[40vh] overflow-y-auto">
+                            <p>{formatDate(details?.blockedAt)}</p>
+                        </div>
+                    </div>
 
                     <div>
                         <p className="text-xs font-thin mb-2">Reason</p>

@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ReportDetailsType } from '../../types/reportDetailsType';
 
 interface Props {
@@ -12,6 +12,12 @@ interface Props {
 const preventCopy = (e: React.ClipboardEvent) => e.preventDefault();
 
 const ViewReportDetails: React.FC<Props> = ({ onClose, open, details, formatDate }) => {
+    const [previewOpen, setPreviewOpen] = useState(false);
+
+    const mediaUrl = details?.reportedChatMediaUrl || '';
+
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(mediaUrl);
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
 
     useEffect(() => {
         const blockPrint = (e: KeyboardEvent) => {
@@ -43,13 +49,15 @@ const ViewReportDetails: React.FC<Props> = ({ onClose, open, details, formatDate
             `}</style>
 
             <div>
-                <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fadeIn' onClick={onClose}></div>
+                <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fadeIn'></div>
+
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
                     <div
                         className="bg-white rounded-lg shadow-2xl max-w-2xl w-full pointer-events-auto p-8 animate-scaleIn relative max-h-[90vh] overflow-y-auto space-y-4 select-none"
                         onCopy={preventCopy}
                     >
                         <X className="absolute top-4 right-4 cursor-pointer border p-1 rounded-lg" size={30} onClick={onClose} />
+
                         <h2 className="text-lg font-semibold mb-4 text-center">Report details</h2>
 
                         <div className="flex gap-6 justify-center">
@@ -78,7 +86,7 @@ const ViewReportDetails: React.FC<Props> = ({ onClose, open, details, formatDate
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td className="text-gray-500 text-xs border-b p-3 text-left">{details?.reason}</td>
+                                        <td className="text-gray-500 text-xs border-b p-3 text-left">{isImage ? 'Image' : isVideo ? 'Video' : 'Text'}</td>
                                         <td className="text-gray-500 text-xs border-b p-3 text-left">{formatDate(details?.createdAt)}</td>
                                         <td className="text-gray-500 text-xs border-b p-3 text-left">{details?.reportStatus}</td>
                                         <td className="text-gray-500 text-xs border-b p-3 text-left">{details?.reviewedByAdminName || '-'}</td>
@@ -89,12 +97,61 @@ const ViewReportDetails: React.FC<Props> = ({ onClose, open, details, formatDate
 
                         <div>
                             <p className="text-xs font-thin mb-2">Content</p>
-                            <div className="rounded-xl border p-4 max-h-[40vh] overflow-y-auto">
+
+                            <div className="rounded-xl border p-4 max-h-[40vh] overflow-y-auto space-y-3">
+
+                                {/* MEDIA PREVIEW */}
                                 <p>{details?.details}</p>
+                                {mediaUrl && (
+                                    <p
+                                        className="cursor-pointer px-6 py-4 bg-primary hover:bg-primary/80 text-white flex items-center justify-center rounded-lg w-max text-sm mt-6"
+                                        onClick={() => setPreviewOpen(true)}
+                                    >
+                                        View Reported media
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* FULLSCREEN PREVIEW MODAL */}
+                {previewOpen && (
+                    <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4">
+                        <button
+                            className="absolute top-4 right-4 text-white"
+                            onClick={() => setPreviewOpen(false)}
+                        >
+                            <X size={30} />
+                        </button>
+
+                        <div className="max-w-4xl w-full flex justify-center">
+                            {isImage && (
+                                <img
+                                    src={mediaUrl}
+                                    alt="preview"
+                                    className="max-h-[90vh] object-contain"
+                                />
+                            )}
+
+                            {isVideo && (
+                                <video
+                                    src={mediaUrl}
+                                    controls
+                                    autoPlay
+                                    className="max-h-[90vh]"
+                                />
+                            )}
+
+                            {!isImage && !isVideo && (
+                                <iframe
+                                    src={mediaUrl}
+                                    className="w-full h-[80vh] rounded-lg bg-white"
+                                />
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     )

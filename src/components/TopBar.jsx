@@ -12,9 +12,11 @@ import { LiaAngleDownSolid } from "react-icons/lia";
 import { AppContext } from "../Context/AppContext";
 import { ArrowBigLeft, ArrowLeft, Backpack, User } from "lucide-react";
 import { HiArrowLongLeft } from "react-icons/hi2";
+import { useAuth } from "../Context/auth/useAuth";
 
 
 const TopBar = ({ toggleSidebar }) => {
+  const { user, logout } = useAuth()
   const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
   const { formatPath } = useContext(AppContext);
   const [pageName, setPageName] = useState('');
@@ -122,8 +124,13 @@ const TopBar = ({ toggleSidebar }) => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+    if (user?.UserType === 'SUPER_ADMIN') {
+      logout();
+      navigate("/login");
+    } else {
+      navigate("/partner-login");
+      logout();
+    }
   };
 
   const location = useLocation()
@@ -134,7 +141,7 @@ const TopBar = ({ toggleSidebar }) => {
     } else if (location.pathname.includes("user-profile")) {
       setPageName(location.state.userName + "'s Profile");
     } else if (location.pathname.includes("referrals/")) {
-      setPageName(location.state.userName +"'s Profile");
+      setPageName(location.state.userName + "'s Profile");
     } else {
       setPageName(formatPath(location.pathname));
     }
