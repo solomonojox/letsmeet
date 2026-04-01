@@ -143,7 +143,7 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({ onClose, next, onfetch }) => {
 
     return (
         <div>
-            <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fadeIn' onClick={onClose}></div>
+            <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fadeIn'></div>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
                 <div className="bg-white rounded-lg shadow-2xl max-w-lg w-full pointer-events-auto p-8 animate-scaleIn relative max-h-[90vh] overflow-y-auto space-y-4">
                     <X className="absolute top-4 right-4 cursor-pointer" onClick={onClose} />

@@ -12,7 +12,7 @@ import { useAuth } from '../Context/auth/useAuth';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // const dispatch = useDispatch();
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const location = useLocation();
   const navigate = useNavigate()
   const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
@@ -143,11 +143,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const filteredSidebarData = sidebarData.filter(item => item.roles.includes(user?.UserType));
 
   const logOut = () => {
-    localStorage.clear()
     if (user?.UserType === 'SUPER_ADMIN') {
+      logout();
       navigate("/login");
     } else {
       navigate("/partner-login");
+      logout();
     }
     sessionStorage.removeItem("currentRegSidebarPath")
   }

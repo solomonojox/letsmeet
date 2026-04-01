@@ -525,7 +525,7 @@ const AllReports = () => {
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
                                     </div> */}
-                                    <button className="text-blue-600 hover:text-blue-700 underline" onClick={() => { setOpenModal(true); setSelectedId(report.id); handleSendOtp() }}>View</button>
+                                    <button className="text-blue-500 hover:text-blue-700 border border-primary rounded-md px-2 py-1" onClick={() => { setOpenModal(true); setSelectedId(report.id); handleSendOtp() }}>View details</button>
                                 </td>
                             </tr>
                         )) : (

@@ -46,8 +46,8 @@ const Subscribers = () => {
         plan: {
             All: true,
             Free: false,
-            "PLATINUM PLAN": false,
-            "GOLD PLAN": false
+            "Platinum": false,
+            "Gold": false
         }
     });
 
@@ -206,8 +206,8 @@ const Subscribers = () => {
             plan: {
                 All: true,
                 Free: false,
-                "PLATINUM PLAN": false,
-                "GOLD PLAN": false
+                "Platinum": false,
+                "Gold": false
             }
         });
         setCurrentPage(1);
@@ -340,12 +340,12 @@ const Subscribers = () => {
                                     </div>
                                 </div>
 
-                                <button
+                                {/* <button
                                     className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
                                     onClick={applyFilter}
                                 >
                                     Apply filter
-                                </button>
+                                </button> */}
 
                                 <button
                                     className="w-full mt-2 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50"
