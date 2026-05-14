@@ -18,6 +18,7 @@ const Subscribers = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [planOptions, setPlanOptions] = useState([]);
 
 
     const ITEMS_PER_PAGE = 10;
@@ -27,6 +28,28 @@ const Subscribers = () => {
     });
     const tableData = data?.data?.items || [];
     const totalPages = data?.data?.totalPages
+
+    useEffect(() => {
+        if (tableData && tableData.length > 0) {
+            // Get unique plan names from the data
+            const uniquePlans = [...new Set(tableData.map(user => user.planName))];
+            setPlanOptions(uniquePlans);
+
+            // Initialize plan filters dynamically when data loads
+            const initialPlanFilters = {
+                All: true,
+                ...uniquePlans.reduce((acc, plan) => {
+                    acc[plan] = false;
+                    return acc;
+                }, {})
+            };
+
+            setFilters(prev => ({
+                ...prev,
+                plan: initialPlanFilters
+            }));
+        }
+    }, [tableData]);
 
     // State for search and pagination
 
@@ -44,10 +67,7 @@ const Subscribers = () => {
             EXPIRED: false
         },
         plan: {
-            All: true,
-            Free: false,
-            "Platinum": false,
-            "Gold": false
+            All: true
         }
     });
 
@@ -197,18 +217,25 @@ const Subscribers = () => {
     };
 
     const resetFilters = () => {
+        // Reset status filters
+        const resetStatusFilters = {
+            All: true,
+            ACTIVE: false,
+            EXPIRED: false,
+        };
+
+        // Reset plan filters with current plan options
+        const resetPlanFilters = {
+            All: true,
+            ...planOptions.reduce((acc, plan) => {
+                acc[plan] = false;
+                return acc;
+            }, {})
+        };
+
         setFilters({
-            status: {
-                All: true,
-                ACTIVE: false,
-                EXPIRED: false,
-            },
-            plan: {
-                All: true,
-                Free: false,
-                "Platinum": false,
-                "Gold": false
-            }
+            status: resetStatusFilters,
+            plan: resetPlanFilters
         });
         setCurrentPage(1);
     };
@@ -340,12 +367,6 @@ const Subscribers = () => {
                                     </div>
                                 </div>
 
-                                {/* <button
-                                    className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                                    onClick={applyFilter}
-                                >
-                                    Apply filter
-                                </button> */}
 
                                 <button
                                     className="w-full mt-2 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50"

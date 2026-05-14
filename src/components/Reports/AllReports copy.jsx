@@ -480,10 +480,11 @@ const AllReports = () => {
                             <th className="w-12 py-3">
                                 <input type="checkbox" className="h-4 w-4 accent-primary" />
                             </th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Content Type</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Report Reason</th>
-                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Reporter</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Reported User</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Issue</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500">Status</th>
+                            <th className="text-left py-3 text-sm font-medium text-gray-500">Date</th>
                             <th className="text-left py-3 text-sm font-medium text-gray-500 pr-4">
                                 <div className="flex items-center">
                                     Action
@@ -497,7 +498,16 @@ const AllReports = () => {
                                 <td className="py-4 pl-4">
                                     <input type="checkbox" className="h-4 w-4 accent-primary" />
                                 </td>
-                                <td className="py-4">{getMediaType(report?.reportedChatMediaUrl)}</td>
+                                <td className="py-4">
+                                    <div className="flex items-center">
+                                        {/* <img
+                                            src={report.reporterImage || imageAsset.avatar}
+                                            alt={report.reporter}
+                                            className="w-8 h-8 rounded-full mr-3"
+                                        /> */}
+                                        <span className="text-gray-500 whitespace-nowrap">{report.reporterName}</span>
+                                    </div>
+                                </td>
                                 <td className="py-4">
                                     <div className="flex items-center">
                                         {/* <img

@@ -12,9 +12,9 @@ import { useAuth } from '../Context/auth/useAuth';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // const dispatch = useDispatch();
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem('letsmeetUser'));
   // console.log(userInfo)
 
